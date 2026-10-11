@@ -1,15 +1,15 @@
 # Prioritized roadmap
 
-**Last reviewed:** 2026-10-11
+**Last reviewed:** 2026-10-12
 **Observed product state:** documentation only; no runtime exists.
 
-## Now — close Phase 0
+## Completed — Phase 0
 
-1. Finish cross-document consistency and local-link checks.
-2. Confirm all mandatory fault scenarios and safety boundaries are traceable.
-3. Record factual review results in the journal/handoff.
-4. Commit the documentation baseline locally. Do not push.
-5. Request explicit approval for the first implementation milestone.
+The documentation baseline is committed locally at `2bae1f3`, with 25 Markdown files, six ADRs, 16 complete failure scenarios, and ten interview Q&As. Reproducible documentation checks report zero issues; runtime metrics remain unmeasured. Mermaid source review is complete but rendering is unverified. See the journal/handoff for exact commands and review limits.
+
+## Now — Phase 1 approval gate
+
+Obtain the owner's explicit approval for P0.1, the Java 21/Maven/Spring foundation. No application code is authorized yet. The following continuity checkpoint records the baseline status and this next task.
 
 ## Next — P0 functional detection slice
 

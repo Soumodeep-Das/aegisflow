@@ -92,3 +92,15 @@ All five mandatory fault fields occur in all 16 scenarios (80 field-presence ass
 ### Commit and continuation
 
 The documentation review is complete and ready for a coherent local baseline commit. Record the actual baseline ID and checkpoint outcome after the commit; do not push. The next authorized decision is the owner's Phase 1 approval for P0.1 (Java/Maven/Spring foundation). P1 recovery remains a later product stage.
+
+### Local baseline commit completed
+
+At 2026-10-11T20:03:43Z (2026-10-12 01:33:43 IST):
+
+- Final staged validator and whitespace checks: exit 0 with the same 25/18/55/6/1/16/10/6 counts and zero issues.
+- `git commit -m "docs: establish AegisFlow phase 0 architecture baseline"`: exit 0, baseline `2bae1f3e13686194011c005c202a872f01a99815`, 25 Markdown files and 2,920 insertions.
+- `git status --porcelain=v1`: empty (clean after baseline).
+- `git remote -v`: empty (no remote configured).
+- Application source, deployment, push, and publication: none.
+
+The following local continuity checkpoint updates `HANDOFF.md`, this journal, `ROADMAP.md`, and the plan checklist with the committed baseline and approval gate. It deliberately references the baseline rather than attempting to embed its own future hash. Run `git rev-parse HEAD` and `git status --short --branch` to resolve the current checkpoint and status. Phase 0 is complete; the highest-priority next task is explicit Phase 1 approval for P0.1.

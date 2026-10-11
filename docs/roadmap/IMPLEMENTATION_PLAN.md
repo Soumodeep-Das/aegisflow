@@ -38,7 +38,7 @@ Naming note: **Phase 0** is this documentation kickoff. The owner's next **Phase
 - [x] Record ADRs for modular control plane, outbox, delivery semantics, API recovery, AI boundary, and version pinning.
 - [x] Persist roadmap, learning guide, limitations, open questions, devlog, and handoff.
 - [x] Complete final cross-document/local-link/Mermaid-source review and record factual results (rendering unavailable, explicitly recorded).
-- [ ] Create a coherent local commit; do not push.
+- [x] Create a coherent local commit; baseline `2bae1f3`, with a following continuity checkpoint; no push.
 
 ## P0: functional detection vertical slice
 
