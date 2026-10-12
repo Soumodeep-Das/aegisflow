@@ -1,6 +1,6 @@
 # P0.1 test evidence
 
-**Observed:** 2026-10-12, Windows / PowerShell 7.6.5. This is foundation evidence, not production certification or product evaluation. The source checkpoint is identified in [HANDOFF.md](../HANDOFF.md); tests ran against its source before committing. Phase 0 history remains at `2bae1f3` and `6f6daaf`.
+**Observed:** 2026-10-12, Windows / PowerShell 7.6.5. This is foundation evidence, not production certification or product evaluation. Source milestone: `cb7bfafed49a58f08cba2352aafb8d7ecf8f6e33`; tests ran against its exact source before committing. [HANDOFF.md](../HANDOFF.md) records continuation status. Phase 0 history remains at `2bae1f3` and `6f6daaf`.
 
 ## Environment and resolved baseline
 
@@ -56,6 +56,7 @@ Times are IST (UTC+05:30) on 2026-10-12.
 | `.\scripts\verify-startup.ps1` after checkpoint build | exit 0; Core, Order, Payment, Warehouse all HTTP 200 / `UP`; owned children stopped |
 | `.\scripts\verify-docs.ps1` | exit 0 at 10:25:09; Markdown=28, required=20, local links=97, Mermaid fences=7, JSON examples=1, failure scenarios=16, interview Q&A=15, ADRs=7, issues=0 |
 | `git diff --check` | exit 0; LF/CRLF conversion notices are informational, not failures |
+| `git diff --cached --check` / `git commit -m "feat(foundation): establish verified P0.1 application skeletons"` | both exit 0; milestone `cb7bfaf`, 73 scoped files; clean working tree immediately after source commit |
 | `docker compose --profile postgres config --quiet` with four temporary password environment values | exit 0; configuration parsed; no expanded credential output stored |
 | `docker info` | exit 1; Docker engine named pipe unavailable; no database startup possible |
 | `docker desktop start` | did not establish a usable engine within the bounded attempt; interrupted, exit 1; no installation/WSL changes made |

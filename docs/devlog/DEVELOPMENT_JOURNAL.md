@@ -163,3 +163,9 @@ Stop after P0.1. The next task is **P0.2 approval plus working Docker/PostgreSQL
 - Added a current `scripts/verify-docs.ps1` gate for required documents, local links, fences, JSON, failure-matrix field coverage and interview Q&A presence. The Phase 0 Markdown-only checker remains historical, not the current source-tree gate.
 - Documentation check at 2026-10-12T04:55:09Z: exit 0, Markdown=28 Required=20 LocalLinks=97 Mermaid=7 JSON=1 Scenarios=16 InterviewQA=15 ADRs=7 Issues=0. This proves documentation consistency, not Mermaid rendering or fault execution. `git diff --check` passed.
 - Wrapper line endings are explicit in `.gitattributes` (POSIX LF, Windows CRLF); the POSIX script is staged executable. This preserves portable checkout behavior without claiming POSIX runtime verification.
+
+### Local milestone checkpoint completed
+
+At 2026-10-12T04:57:16Z (10:27:16 IST), `git commit -m "feat(foundation): establish verified P0.1 application skeletons"` succeeded (exit 0) as `cb7bfafed49a58f08cba2352aafb8d7ecf8f6e33`, 73 files, 2,545 insertions and 163 deletions. Final XML totals were independently summed as 14 tests with zero failures/errors/skips; staged whitespace verification passed and the wrapper's executable mode is `100755`. Git status then showed clean `main`. No generated/private paths were staged and no remote exists.
+
+The following documentation-only continuity checkpoint records this actual source hash in the handoff, evidence and roadmap. It changes no application source. After it commits, rerun the current documentation check and inspect clean Git status; source tests remain those of `cb7bfaf`. Stop before P0.2 and request new milestone approval. Owner preparation is recorded in the handoff (Docker engine, Java 21 selection, optional local rehearsal; no AI keys needed).

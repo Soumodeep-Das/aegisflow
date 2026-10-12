@@ -3,6 +3,8 @@
 **Last reviewed:** 2026-10-12
 **Observed product state:** P0.1 foundation implemented and verified on Java 21; business functionality is not implemented.
 
+**Local source checkpoint:** `cb7bfaf`, followed by the documentation continuity checkpoint described in the handoff. No push or external deployment occurred.
+
 ## Completed — Phase 0
 
 The documentation baseline is committed locally at `2bae1f3`, with 25 Markdown files, six ADRs, 16 complete failure scenarios, and ten interview Q&As. Reproducible documentation checks report zero issues; runtime metrics remain unmeasured. Mermaid source review is complete but rendering is unverified. See the journal/handoff for exact commands and review limits.

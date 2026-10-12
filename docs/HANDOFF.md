@@ -1,13 +1,13 @@
 # Handoff — P0.1 foundation
 
-**Snapshot:** 2026-10-12, completion session; final UTC checkpoint timestamp below.
+**Snapshot:** 2026-10-12T04:57:16Z (10:27:16 IST), implementation completion session.
 **Authorization:** Phase 1 milestone P0.1 only. Owner approved it, paused, then requested continuation. **Stop here: P0.2 is not approved.**
 **Repository:** independent local Git repository `outputs/aegisflow`, branch `main`.
 **Remote / push / external deployment:** none configured or performed.
 
 ## Current commit and status
 
-Phase 0 baseline `2bae1f3e13686194011c005c202a872f01a99815` and continuity checkpoint `6f6daafe58b2eb916c373e4c49853d78d8909562` are preserved. The actual P0.1 source commit and final status are recorded in the completion entry below. Generated `target/`, `.cache/`, toolchains and private `.env` files are not committed.
+Phase 0 baseline `2bae1f3e13686194011c005c202a872f01a99815` and continuity checkpoint `6f6daafe58b2eb916c373e4c49853d78d8909562` are preserved. P0.1 source milestone commit is **`cb7bfafed49a58f08cba2352aafb8d7ecf8f6e33`**, `feat(foundation): establish verified P0.1 application skeletons`. After it committed, Git reported branch `main` with a clean working tree. This handoff/evidence/journal/roadmap update forms the following documentation-only continuity commit; resolve its HEAD with the commands below. Generated `target/`, `.cache/`, toolchains and private `.env` files are not committed.
 
 ```text
 git status --short --branch
@@ -103,4 +103,4 @@ Working flow: `main` → `SpringApplication.run` → foundation excludes JDBC/Fl
 
 Inspect status first and preserve unknown edits. Use new commits/revert review instead of destructive reset or force operations. Do not delete local database volumes casually; none were created here in P0.1. No push or external deployment is authorized.
 
-The local source commit, final UTC timestamp and clean-tree verification are recorded after the checkpoint succeeds.
+At the source checkpoint, final Surefire XML totals were independently summed: 14 tests, 0 failures/errors/skips. The documentation checker reported 28 Markdown files, 20 required documents, 97 resolving local links, 7 Mermaid fences, 1 valid JSON example, 16 complete failure scenarios, 15 interview Q&As, 7 ADRs and 0 issues. Staged whitespace checks passed; `mvnw` is stored executable (`100755`). Git contains 73 scoped source/configuration/document changes in the milestone. There is no remote configured. The final documentation-only checkpoint is followed by a clean-status check before stopping; no application source changes follow the verified milestone.
