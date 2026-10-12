@@ -104,3 +104,62 @@ At 2026-10-11T20:03:43Z (2026-10-12 01:33:43 IST):
 - Application source, deployment, push, and publication: none.
 
 The following local continuity checkpoint updates `HANDOFF.md`, this journal, `ROADMAP.md`, and the plan checklist with the committed baseline and approval gate. It deliberately references the baseline rather than attempting to embed its own future hash. Run `git rev-parse HEAD` and `git status --short --branch` to resolve the current checkpoint and status. Phase 0 is complete; the highest-priority next task is explicit Phase 1 approval for P0.1.
+
+## 2026-10-12 — P0.1 foundation implementation, pause, and completion
+
+**Entry snapshot:** 2026-10-12T04:43:38Z (10:13:38 IST).
+**Authorization:** the owner explicitly approved Phase 1 milestone P0.1, paused work, then requested continuation. P0.2 remains unapproved. Phase 0 history at `2bae1f3` and `6f6daaf` was preserved; no remote push or external deployment occurred.
+
+### Implementation and choices
+
+- Added a Maven aggregator/parent and four separately executable Spring Boot applications. Simulators have no dependency on Core or one another; Maven Enforcer bans deployable-to-deployable artifacts, with package tests providing a second check.
+- Declared ten Core packages as Modulith modules. Package-private marker classes make them discoverable without inventing domain behavior; explicit empty `allowedDependencies` forbids cross-module imports until a later intentional design update.
+- Added default `foundation` startup that deliberately excludes JDBC/Flyway, plus a separate real-PostgreSQL profile per application. Only loopback-bound Actuator health is exposed. `UP` is not a business/database/security result.
+- Added four separate PostgreSQL Compose services, networks, and volumes, with PostgreSQL 18.6 pinned by digest. Required local password variables have no committed values. Local bootstrap database owners must be replaced by restricted runtime/migration roles before P0.2 business persistence.
+- Added HTTP context tests, architecture tests, optional PostgreSQL connectivity/Flyway infrastructure test, and `scripts/verify-startup.ps1`, which checks the four packaged JARs on ephemeral ports and stops only its own child processes.
+- Added ADR 0007 for startup/infrastructure staging without changing the modular-control-plane, service-ownership, outbox, or API-only recovery decisions. No business migrations, Kafka processing, security workflow, AI, recovery, or frontend was introduced.
+
+### Toolchain and reproducibility
+
+The host's default Java 26 and Maven 3.9.15 do not satisfy this repository's baseline. Used isolated Temurin Java 21.0.12.1+1-LTS from the workspace toolchain directory without changing global settings. Maven Wrapper 3.3.4 downloads Maven 3.10.0 from the checksum-pinned distribution. Verified actual Boot 4.1.1, Spring 7.0.9, Modulith 2.1.1, Flyway 12.4.0, PostgreSQL JDBC 42.7.13, JUnit 6.0.3, Testcontainers 2.0.5, and Mockito 5.23.0 resolution.
+
+Successful commands below ran from repository root with `JAVA_HOME` pointing to Java 21. In this restricted host, `TEMP`/`TMP` pointed to repository `.cache/tmp` to avoid default-temp wrapper rename restrictions. Reusable setup and portable invocation details are in the codebase guide and test evidence.
+
+| Exact command | Factual outcome / evidence |
+|---|---|
+| `.\mvnw.cmd -B -ntp -l .cache/p0.1-verify-final.log verify` | exit 0 at 2026-10-11T20:29:19Z (01:59:19 IST); 14 tests, zero failures/errors/skips; four runnable JARs |
+| `.\mvnw.cmd -B -ntp -l .cache/p0.1-clean-verify.log clean verify` | exit 0 at 2026-10-12T04:33:06Z (10:03:06 IST); all five reactor projects successful; 14 tests, zero failures/errors/skips |
+| `.\mvnw.cmd -B -ntp -l .cache/p0.1-infrastructure-tests.log -pl control-plane -Pinfrastructure-tests verify` | exit 0 at 2026-10-12T04:33:42Z (10:03:42 IST); five Core default tests passed; one PostgreSQL integration test skipped, zero failures/errors; Docker was unavailable |
+| `.\mvnw.cmd -B -ntp -l .cache/p0.1-dependencies.log dependency:tree` | exit 0 at 2026-10-12T04:36:20Z (10:06:20 IST); resolved all four applications' dependency trees |
+| `.\mvnw.cmd -B -ntp -N help:effective-pom -Doutput=.cache/effective-pom.xml` | exit 0 at 2026-10-12T04:36:32Z (10:06:32 IST); effective parent/plugin management captured |
+| `docker compose --profile postgres config --quiet` | exit 0 with temporary local password variables; no credentials recorded; configuration validation only |
+| `& .\scripts\verify-startup.ps1` | final run exit 0; Core, Order, Payment, Warehouse each returned HTTP 200/`UP` in `foundation`; `.cache/startup/results.json` records ports/process IDs; owned children stopped in `finally` |
+| `$env:SPRING_PROFILES_ACTIVE='postgres'; .\mvnw.cmd -B -ntp -l .cache/p0.1-profile-isolation-verify.log verify` | exit 0 at 2026-10-12T04:39:57Z (10:09:57 IST); 14 tests, zero failures/errors/skips; all four context tests explicitly activated `foundation` despite the caller profile |
+
+Raw logs/reports are ignored local artifacts. The tracked evidence document preserves the important results for a future checkout; it does not imply those ignored logs are committed.
+
+### Failures, interruption, and corrections
+
+- Initial test execution compiled Core and started its context, but Mockito runtime self-attachment hung on the restricted host's Java attach pipe. It was interrupted with exit 1 and is not a passing run. Surefire now loads the Boot-managed Mockito agent explicitly at JVM startup and bounds fork duration; subsequent runs passed with Enforcer and all tests still enabled.
+- The next clean-build attempt failed because a diagnostic process held a JAR inside a temporary local-repository directory under root `target`. The diagnostic process was stopped; the later clean build passed. No destructive cleanup or test suppression was used.
+- Other diagnostic attempts encountered restricted DNS, temp-directory rename, Maven-cache lock/rename, unsupported Java 26 enforcement, and a misquoted Maven property. A Java 26/Enforcer-skip diagnostic was interrupted rather than accepted; it does not satisfy any milestone gate. The final Java 21 builds ran with Enforcer enabled.
+- The owner pause interrupted ongoing work. A checkpoint attempt at that pause was blocked by an approval-review usage limit; therefore no P0.1 commit existed at the pause. Continuation completed verification and the coherent checkpoint is recorded in the handoff.
+- The startup helper initially received JSON as a byte array from PowerShell and failed parsing after Core had already returned HTTP 200. Added explicit UTF-8 decoding, reran, and all four applications passed; earlier helper failures were not counted as four-application startup success.
+- Docker CLI/Compose were present, but the engine's named pipe was unavailable. A bounded Docker Desktop start attempt did not produce an available engine and was interrupted. PostgreSQL execution is still unverified; the optional integration test's skip is retained, not relabeled as a pass.
+- Independent review found that simulator tests relied on the default profile and that the POSIX wrapper could switch archive type despite a ZIP checksum. Tests now explicitly select `foundation`; the wrapper now requires `unzip` instead of silently switching to a differently checksummed archive. Profile-isolation regression passed; POSIX execution itself was not run.
+
+### Exit and continuation
+
+P0.1's infrastructure-free foundation is verified: 14 passing tests, ten verified Core module boundaries, and four independently started packaged JARs. Database/container execution remains an explicit environment limitation, not demonstrated readiness. Updated learning, architecture, evidence, roadmap, limitations, and handoff distinguish implemented shells from planned product behavior. The checkpoint remains local only; resolve its identifier with `git rev-parse HEAD` and the handoff's commit convention.
+
+Stop after P0.1. The next task is **P0.2 approval plus working Docker/PostgreSQL evidence**, followed by restricted database-role design and the smallest Flyway-backed transactional state/outbox slice. Do not start Kafka before P0.3 or recovery/AI before their separately approved stages.
+
+### Final review and checkpoint source verification
+
+- Fresh `clean verify` with caller `SPRING_PROFILES_ACTIVE=postgres` finished at 2026-10-12T04:44:33Z (10:14:33 IST), exit 0, all 14 tests passing. Four packaged JAR checks then passed at 04:44:58Z (10:14:58 IST), exit 0.
+- Final independent read-only review found no blocking foundation defects. Preventively changed simulator HTTP tests from `localhost` to `127.0.0.1`, matching the actual bind address and avoiding IPv6 name-resolution ambiguity.
+- `.\mvnw.cmd -B -ntp -l .cache/p0.1-checkpoint-clean-verify.log clean verify` reran after that change with the same caller profile: exit 0 at 2026-10-12T04:51:16Z (10:21:16 IST), 14 tests, zero failures/errors/skips, all five reactor projects successful.
+- `.\scripts\verify-startup.ps1` reran after the checkpoint build: exit 0; four separate executable JARs returned HTTP 200/`UP`, no internal health details, and the helper stopped its own children.
+- Added a current `scripts/verify-docs.ps1` gate for required documents, local links, fences, JSON, failure-matrix field coverage and interview Q&A presence. The Phase 0 Markdown-only checker remains historical, not the current source-tree gate.
+- Documentation check at 2026-10-12T04:55:09Z: exit 0, Markdown=28 Required=20 LocalLinks=97 Mermaid=7 JSON=1 Scenarios=16 InterviewQA=15 ADRs=7 Issues=0. This proves documentation consistency, not Mermaid rendering or fault execution. `git diff --check` passed.
+- Wrapper line endings are explicit in `.gitattributes` (POSIX LF, Windows CRLF); the POSIX script is staged executable. This preserves portable checkout behavior without claiming POSIX runtime verification.

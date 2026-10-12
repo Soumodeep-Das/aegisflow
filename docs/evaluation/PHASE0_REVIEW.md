@@ -1,5 +1,7 @@
 # Phase 0 documentation review
 
+This is a **historical documentation-only gate**, run before application implementation at the Phase 0 baseline (`2bae1f3`). Its non-Markdown check intentionally rejects the later Maven/source tree, so do not use this script as the current P0.1 gate. Current build and documentation evidence is in [TEST_RESULTS.md](../evidence/TEST_RESULTS.md). The original checklist and results are retained below.
+
 This review checks the specification, not application behavior. There are no runtime test, benchmark, AI, or security results in Phase 0.
 
 ## Reproduce the mechanical checks

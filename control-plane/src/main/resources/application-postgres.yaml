@@ -1,0 +1,9 @@
+# This application receives only its own database configuration.
+spring:
+  datasource:
+    url: ${CORE_DB_URL:jdbc:postgresql://127.0.0.1:5433/aegisflow_core}
+    username: ${CORE_DB_USER:aegisflow_core}
+    password: ${CORE_DB_PASSWORD}
+  flyway:
+    locations: classpath:db/migration
+    fail-on-missing-locations: false

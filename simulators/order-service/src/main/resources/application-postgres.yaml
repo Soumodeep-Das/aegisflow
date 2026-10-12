@@ -1,0 +1,9 @@
+# This application receives only its own database configuration.
+spring:
+  datasource:
+    url: ${ORDER_DB_URL:jdbc:postgresql://127.0.0.1:5434/aegisflow_order}
+    username: ${ORDER_DB_USER:aegisflow_order}
+    password: ${ORDER_DB_PASSWORD}
+  flyway:
+    locations: classpath:db/migration
+    fail-on-missing-locations: false

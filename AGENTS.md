@@ -4,7 +4,7 @@ This file is mandatory guidance for any human, Codex session, or other coding ag
 
 ## Mission and current boundary
 
-AegisFlow is a production-minded student portfolio project, not a production safety claim. It detects and investigates inconsistent simulated business transactions and, in later milestones, orchestrates constrained recovery through service-owned APIs. The current Phase 0 authorization covers documentation only. Do not create application source until the repository owner explicitly approves the next implementation milestone.
+AegisFlow is a production-minded student portfolio project, not a production safety claim. It will detect and investigate inconsistent simulated business transactions and, in later milestones, orchestrate constrained recovery through service-owned APIs. The owner approved Phase 1, milestone P0.1: Java 21/Maven foundation, four runnable Spring Boot applications, Core Modulith boundaries, health/startup tests, and minimal database/infrastructure configuration. Stop after P0.1; P0.2 business persistence/outbox implementation still requires approval.
 
 ## Start-of-session checklist
 

@@ -1,0 +1,64 @@
+name: aegisflow-foundation
+
+x-postgres: &postgres
+  image: postgres:18.6@sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336
+  profiles: [postgres]
+  healthcheck:
+    test: [CMD-SHELL, 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+    interval: 5s
+    timeout: 3s
+    retries: 12
+
+services:
+  core-db:
+    <<: *postgres
+    environment:
+      POSTGRES_DB: aegisflow_core
+      POSTGRES_USER: ${CORE_DB_USER:-aegisflow_core}
+      POSTGRES_PASSWORD: ${CORE_DB_PASSWORD:?Set a local CORE_DB_PASSWORD}
+    ports: ["127.0.0.1:5433:5432"]
+    volumes: [core-db-data:/var/lib/postgresql]
+    networks: [core-data]
+  order-db:
+    <<: *postgres
+    environment:
+      POSTGRES_DB: aegisflow_order
+      POSTGRES_USER: ${ORDER_DB_USER:-aegisflow_order}
+      POSTGRES_PASSWORD: ${ORDER_DB_PASSWORD:?Set a local ORDER_DB_PASSWORD}
+    ports: ["127.0.0.1:5434:5432"]
+    volumes: [order-db-data:/var/lib/postgresql]
+    networks: [order-data]
+  payment-db:
+    <<: *postgres
+    environment:
+      POSTGRES_DB: aegisflow_payment
+      POSTGRES_USER: ${PAYMENT_DB_USER:-aegisflow_payment}
+      POSTGRES_PASSWORD: ${PAYMENT_DB_PASSWORD:?Set a local PAYMENT_DB_PASSWORD}
+    ports: ["127.0.0.1:5435:5432"]
+    volumes: [payment-db-data:/var/lib/postgresql]
+    networks: [payment-data]
+  warehouse-db:
+    <<: *postgres
+    environment:
+      POSTGRES_DB: aegisflow_warehouse
+      POSTGRES_USER: ${WAREHOUSE_DB_USER:-aegisflow_warehouse}
+      POSTGRES_PASSWORD: ${WAREHOUSE_DB_PASSWORD:?Set a local WAREHOUSE_DB_PASSWORD}
+    ports: ["127.0.0.1:5436:5432"]
+    volumes: [warehouse-db-data:/var/lib/postgresql]
+    networks: [warehouse-data]
+
+volumes:
+  core-db-data:
+  order-db-data:
+  payment-db-data:
+  warehouse-db-data:
+
+networks:
+  core-data:
+    internal: true
+  order-data:
+    internal: true
+  payment-data:
+    internal: true
+  warehouse-data:
+    internal: true

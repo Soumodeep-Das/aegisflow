@@ -98,3 +98,9 @@ Before accepting the P0 foundation:
 7. re-check official release/security notes before pinning external container images.
 
 If any check fails, record the evidence and make the smallest compatible adjustment through a superseding ADR. Do not silently switch major generations or omit a failing integration test.
+
+## P0.1 implementation evidence — 2026-10-12
+
+The historical decision above is preserved. Actual Maven resolution and Java 21 compilation now verify Boot 4.1.1, Framework 7.0.9, Modulith 2.1.1, Flyway 12.4.0, PostgreSQL JDBC 42.7.13, JUnit 6.0.3, Testcontainers 2.0.5, and Mockito 5.23.0. Maven Wrapper 3.3.4 selects checksum-pinned Maven 3.10.0. All four foundation applications have started and the 14 default tests passed, including Modulith verification.
+
+PostgreSQL 18.6 is pinned in Compose and the optional test by multi-platform digest `sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336`. Docker is unavailable on the implementation host: the connectivity test is explicitly skipped, not passed. Kafka, security, AI, and telemetry versions above remain planned candidates, not resolved application dependencies. Full P0 integration obligations remain open; [ADR 0007](0007-foundation-profiles-and-stage-boundaries.md) separates the P0.1 foundation gate from later infrastructure/business gates. Exact commands and limitations are in [test evidence](../evidence/TEST_RESULTS.md).

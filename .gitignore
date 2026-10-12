@@ -1,0 +1,19 @@
+# Build products and local tools
+**/target/
+.cache/
+work/
+*.log
+
+# Private configuration; commit names/example values only
+.env
+.env.*
+!.env.example
+**/application-local.yml
+**/application-local.yaml
+
+# Editor/OS files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

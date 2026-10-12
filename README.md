@@ -1,6 +1,6 @@
 # AegisFlow
 
-> **Status:** Phase 0 documentation baseline. There is no application code, deployable service, database migration, or measured runtime result yet.
+> **Status:** P0.1 foundation implemented and verified: four runnable Spring Boot applications, HTTP health checks, and Core module-boundary tests. Business processing, database migrations, Kafka, security, AI, and recovery are not implemented. Stop before P0.2 unless the owner approves it.
 
 AegisFlow is a learning-oriented, production-minded portfolio project for detecting and safely recovering inconsistent distributed business transactions. The first scenario uses independently persisted Order, Payment, and Warehouse simulators. A control plane will correlate their events, detect breached business invariants, assemble attributable evidence, propose a constrained recovery, require deterministic policy and human approval where appropriate, invoke only versioned service APIs, and verify the result against authoritative service state.
 
@@ -42,7 +42,61 @@ flowchart LR
   AI[Optional AI provider] -. evidence-bounded advice .-> A
 ```
 
-The control plane is planned as one modular Spring Boot deployment. The three simulators remain independent deployments and each owns a separate PostgreSQL database. See [System Architecture](docs/architecture/SYSTEM_ARCHITECTURE.md) for trust boundaries and flows.
+This diagram is the intended product design, not today's runtime. P0.1 implements the four application shells and Core package boundaries. The control plane is one modular Spring Boot deployment; the simulators are separate deployables. Separate PostgreSQL instances are configured but were not started in the milestone environment. See [System Architecture](docs/architecture/SYSTEM_ARCHITECTURE.md) for implemented versus planned behavior.
+
+## Build and run the foundation
+
+Prerequisites: a **Java 21 JDK**, network access on the first build, and a writable Maven cache. The wrapper installs the pinned Maven 3.10.0 distribution; a separate Maven installation is unnecessary. POSIX also requires `unzip` for the checksum-pinned ZIP distribution. The milestone was verified on Windows/PowerShell 7; the POSIX wrapper was not executed.
+
+From the repository root on Windows, replace the JDK path with your own Java 21 installation:
+
+```powershell
+$env:JAVA_HOME = 'C:\path\to\your\jdk-21'
+.\mvnw.cmd -version
+.\mvnw.cmd -B -ntp clean verify
+.\scripts\verify-startup.ps1
+.\scripts\verify-docs.ps1
+```
+
+The last command requires PowerShell 7 on Windows. It starts all four packaged JARs on temporary ports, checks HTTP health, writes ignored reports under `.cache/startup/`, and stops only the processes it created. It does not leave services running.
+
+On POSIX:
+
+```sh
+export JAVA_HOME=/path/to/your/jdk-21
+./mvnw -version
+./mvnw -B -ntp clean verify
+"$JAVA_HOME/bin/java" -jar control-plane/target/aegisflow-core-0.1.0-SNAPSHOT.jar --spring.profiles.active=foundation
+```
+
+To keep an application running, invoke its JAR in a separate terminal using Java 21. On Windows the Core command is:
+
+```powershell
+& "$env:JAVA_HOME\bin\java.exe" -jar control-plane/target/aegisflow-core-0.1.0-SNAPSHOT.jar --spring.profiles.active=foundation
+```
+
+| Application | Executable JAR after `verify` | Default health URL |
+|---|---|---|
+| Core | `control-plane/target/aegisflow-core-0.1.0-SNAPSHOT.jar` | `http://127.0.0.1:8080/actuator/health` |
+| Order | `simulators/order-service/target/order-service-0.1.0-SNAPSHOT.jar` | `http://127.0.0.1:8081/actuator/health` |
+| Payment | `simulators/payment-service/target/payment-service-0.1.0-SNAPSHOT.jar` | `http://127.0.0.1:8082/actuator/health` |
+| Warehouse | `simulators/warehouse-service/target/warehouse-service-0.1.0-SNAPSHOT.jar` | `http://127.0.0.1:8083/actuator/health` |
+
+The default `foundation` profile needs no Docker or database. Health `UP` means the process started, **not** that commerce, authentication, or database behavior works. HTTP binds to loopback and exposes only Actuator health without internal details. Do not expose this unauthenticated foundation publicly.
+
+### Optional PostgreSQL configuration
+
+`compose.yaml` defines four separately owned PostgreSQL instances on loopback ports 5433–5436. Copy `.env.example` to an ignored local `.env` and choose four separate local passwords; never commit or share that file. Docker Compose reads `.env`, but Java does **not** automatically read it: a manually started application's matching `CORE_DB_*`, `ORDER_DB_*`, `PAYMENT_DB_*`, or `WAREHOUSE_DB_*` variables must also be set in its environment before using `--spring.profiles.active=postgres`.
+
+```powershell
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+# Fill the four password values privately, then validate/start local databases:
+docker compose --profile postgres config --quiet
+docker compose --profile postgres up -d
+.\mvnw.cmd -B -ntp -pl control-plane -Pinfrastructure-tests verify
+```
+
+These are opt-in instructions, not a claim that databases ran during P0.1. The infrastructure test skips explicitly when Docker is unavailable. Bootstrap DB owners are local administrators; restricted runtime/migration roles and business schemas remain P0.2 work. No simulator credentials belong in Core's environment. See [ADR 0007](docs/adr/0007-foundation-profiles-and-stage-boundaries.md).
 
 ## Documentation map
 
@@ -50,6 +104,7 @@ The control plane is planned as one modular Spring Boot deployment. The three si
 |---|---|
 | [Product requirements](docs/requirements/PRD.md) | users, scope, workflow, requirements, acceptance tests, competitor-aware position |
 | [System architecture](docs/architecture/SYSTEM_ARCHITECTURE.md) | containers, modules, trust boundaries, end-to-end flows |
+| [Module boundaries](docs/architecture/MODULE_BOUNDARIES.md) | actual P0.1 packages, dependency rules, and tests |
 | [Data model](docs/architecture/DATA_MODEL.md) | ownership, durable records, constraints, tenant keys |
 | [Event contracts](docs/architecture/EVENT_CONTRACTS.md) | envelope, schemas, ordering, compatibility, topics |
 | [Invariants](docs/architecture/INVARIANTS.md) | business rules, deadlines, allowed outcomes |
@@ -58,6 +113,7 @@ The control plane is planned as one modular Spring Boot deployment. The three si
 | [Failure matrix](docs/evaluation/FAILURE_MATRIX.md) | required failure injection and assertions |
 | [AI evaluation](docs/evaluation/AI_EVALUATION.md) | deterministic baseline, AI rubric, abstention, cost |
 | [Phase 0 review](docs/evaluation/PHASE0_REVIEW.md) | reproducible documentation checks and review limits |
+| [Test evidence](docs/evidence/TEST_RESULTS.md) | measured P0.1 build, startup, boundary, and skipped infrastructure checks |
 | [Implementation plan](docs/roadmap/IMPLEMENTATION_PLAN.md) | phased build plan and exit gates |
 | [Roadmap](docs/ROADMAP.md) | prioritized now/next/later view |
 | [ADRs](docs/adr/) | architectural decisions and consequences |
@@ -70,17 +126,21 @@ The control plane is planned as one modular Spring Boot deployment. The three si
 
 ## Technology baseline
 
-The proposed baseline is Java 21, Maven, Spring Boot 4.1.x, Spring Modulith 2.1.x, Spring AI 2.0.x, Kafka, PostgreSQL, Flyway, Spring Security with Keycloak, OpenTelemetry, Prometheus, Grafana, Docker Compose, JUnit, and Testcontainers. [ADR 0006](docs/adr/0006-technology-baseline-and-version-pinning.md) records documentation-verified bootstrap candidates—Boot 4.1.1, Modulith 2.1.1, and AI 2.0.1—and the BOM strategy. They become the reproducible build lock only after P0 records a dependency tree, smoke test, and integration results.
+P0.1 builds on Java 21, Maven Wrapper 3.3.4 selecting Maven 3.10.0, Spring Boot parent 4.1.1, and Spring Modulith BOM 2.1.1. Actual dependency resolution includes Spring Framework 7.0.9, Flyway 12.4.0, PostgreSQL JDBC 42.7.13, JUnit 6.0.3, and Testcontainers 2.0.5. The build rejects non-Java-21 runtimes and direct/transitive dependencies between deployable artifacts.
+
+Kafka, Spring Security/Keycloak, Spring AI 2.0.1, and full OpenTelemetry/Prometheus/Grafana integration remain future phases; they are not dependencies or functioning integrations today. [ADR 0006](docs/adr/0006-technology-baseline-and-version-pinning.md) preserves official compatibility references and the BOM strategy; [test evidence](docs/evidence/TEST_RESULTS.md) records what was actually resolved and executed.
 
 ## Current verification
 
-Phase 0 has no build or automated test command because it contains Markdown only. The documentation review checks links, required scenario coverage, Mermaid syntax, requirement/ADR consistency, and Git cleanliness. Any metric shown in the evaluation documents is a **future target**, not an observed result.
+On 2026-10-12, root `clean verify` passed with **14 tests, zero failures/errors/skips**. A later `verify` also passed all 14 tests with a caller environment selecting `postgres`; test contexts explicitly select `foundation`. Core's four architecture tests verify the ten documented modules, zero allowed cross-module dependencies, and no Core-to-simulator imports. The four independently packaged JARs each returned HTTP 200 and health `UP` in the startup check.
+
+Compose configuration validation passed. The optional PostgreSQL integration test was **skipped (1)** because Docker's engine was unavailable; database and PostgreSQL-profile startup are therefore unverified. Exact commands, initial failed attempts, environment, and limitations are in [TEST_RESULTS.md](docs/evidence/TEST_RESULTS.md). Product evaluation numbers remain future targets, not observations.
 
 ## Continue the project
 
 1. Read [the handoff](docs/HANDOFF.md), then [the implementation plan](docs/roadmap/IMPLEMENTATION_PLAN.md).
 2. Inspect `git status` and the latest local commit before editing.
-3. Obtain explicit approval for the first implementation milestone; Phase 0 does not authorize application source.
+3. P0.1 is the approved completed foundation. Obtain explicit approval before P0.2 persistence/outbox work; do not start Kafka or later features early.
 4. Preserve the milestone protocol in [AGENTS.md](AGENTS.md): tested code, updated explanations, reproducible commands with factual outcomes, devlog/roadmap updates, and a fresh handoff.
 
-No remote push, deployment, or publication is authorized by this repository baseline.
+All checkpoints are local. No remote push, external deployment, or publication is authorized.

@@ -1,8 +1,8 @@
 # Implementation plan
 
 **Planning horizon:** preserve a useful, teachable repository even if assisted coding stops after 6–7 days.
-**Current authorization:** Phase 0 documentation only.
-**Next approval gate:** explicit authorization is required before creating application source.
+**Current authorization:** P0.1 foundation explicitly approved and implemented; stop after its checkpoint.
+**Next approval gate:** explicit authorization is required for P0.2 service-owned persistence/outbox. Product P1 recovery is not authorized.
 
 ## Delivery principles
 
@@ -16,7 +16,7 @@
 
 ## Phase map
 
-Naming note: **Phase 0** is this documentation kickoff. The owner's next **Phase 1 approval** authorizes the first implementation milestone, named **P0.1** below. **P0/P1/P2/P3** are product-priority stages; product **P1 recovery** is later than the initial implementation foundation.
+Naming note: **Phase 0** was the documentation kickoff. The owner's **Phase 1 approval** authorized the first implementation milestone, named **P0.1** below. **P0/P1/P2/P3** are product-priority stages; product **P1 recovery** is later than the initial implementation foundation.
 
 | Phase | Outcome | Not included | Exit gate |
 |---|---|---|---|
@@ -26,7 +26,7 @@ Naming note: **Phase 0** is this documentation kickoff. The owner's next **Phase
 | P2 — evidence-backed assistance and operations | optional AI investigator, operational read UI, telemetry and evaluation | arbitrary tools, broad workflow designer | deterministic baseline retained; AI dataset results reported; prompt-injection tests pass; dashboard traces a scenario |
 | P3 — earned expansion | additional invariant/integration or deployment sophistication based on evidence | speculative service sprawl | decision ADR cites measured need; previous suites remain green |
 
-## Phase 0 checklist (current)
+## Phase 0 checklist (completed baseline)
 
 - [x] Establish product, scope, workflow, functional/nonfunctional requirements, and measurable acceptance tests.
 - [x] Define system/module boundaries, trust boundaries, deployment ownership, and end-to-end flows.
@@ -44,16 +44,20 @@ Naming note: **Phase 0** is this documentation kickoff. The owner's next **Phase
 
 ### P0.1 Repository and build foundation
 
-Deliverables:
+**Status:** implemented and verified on Windows/Java 21; PostgreSQL execution remains environment-dependent and unverified. See [test evidence](../evidence/TEST_RESULTS.md) and [ADR 0007](../adr/0007-foundation-profiles-and-stage-boundaries.md).
 
-- root Maven wrapper and aggregator POM;
-- modules/deployables agreed in ADR 0001;
-- Java 21 toolchain/enforcer, formatting/static checks, dependency management through Spring BOMs;
-- Spring Modulith structure verification for the control plane;
-- `.env.example` with names only, never real secrets;
-- local dependency diagram and build commands in the codebase guide.
+Delivered:
 
-Proposed layout (not yet created):
+- root Maven Wrapper 3.3.4 scripts with Maven 3.10.0 distribution checksum and an aggregator/parent POM;
+- four independent deployables agreed in ADR 0001: Core, Order, Payment, Warehouse;
+- Java 21 release/enforcer, BOM-managed dependencies, and automated artifact/package/module boundary checks;
+- exactly ten explicit Core Modulith modules, each denying cross-module dependencies in the foundation;
+- `.gitignore`, `.env.example` with blank password placeholders, loopback health, and foundation/postgres profiles;
+- four separate PostgreSQL Compose services, networks, and volumes with a pinned image digest;
+- 14 passing default automated tests, standalone packaged-JAR startup checks, and an optional PostgreSQL Testcontainers check that reports unavailable Docker as a skip;
+- actual classes/paths, execution instructions, a debugging exercise, and five additional answered interview questions in the codebase guide.
+
+Actual P0.1 layout:
 
 ```text
 aegisflow/
@@ -64,27 +68,32 @@ aegisflow/
 │   ├── order-service/
 │   ├── payment-service/
 │   └── warehouse-service/
-├── shared-contract-tests/       # schemas/test fixtures only; no shared domain model
 ├── compose.yaml
+├── scripts/verify-startup.ps1
 └── docs/
 ```
 
-Acceptance:
+Contract fixtures remain future work; no shared domain-model module was introduced.
 
-- `./mvnw --version` reports Java 21 and the pinned Maven distribution; separately record the Wrapper implementation/plugin version and distribution checksum;
-- `./mvnw verify` passes from a clean checkout;
-- the dependency tree contains one intentional version for each managed library;
-- Modulith verification finds no cycles or forbidden dependencies;
-- actual commands/results are journaled.
+P0.1 acceptance evidence:
+
+- Windows `mvnw.cmd --version` reported Java 21 and Maven 3.10.0; Wrapper 3.3.4 and the distribution checksum are committed separately.
+- Root `clean verify` passed; a later `verify` with caller `SPRING_PROFILES_ACTIVE=postgres` also passed because every Spring context test explicitly selects `foundation`. Both runs executed 14 tests, zero failures/errors/skips. A fresh-machine checkout rehearsal has not been performed.
+- Dependency tree and effective POM commands succeeded with Boot 4.1.1/Modulith 2.1.1 and their intentional managed library versions.
+- Modulith verification and module-set/dependency assertions passed; all four standalone packaged applications returned HTTP 200/health `UP`.
+- Compose configuration validation passed. Optional PostgreSQL integration execution was skipped because Docker was unavailable, so database readiness is not claimed.
+- Commands, failures, results, learning notes, and continuation state are recorded. No Kafka, AI, recovery, or business persistence was added.
 
 ### P0.2 Service-owned persistence and outbox
 
-Implement the smallest state transitions needed for the event choreography in SYSTEM_ARCHITECTURE.md. Each simulator gets its own Flyway history and PostgreSQL database/schema ownership. Consumed-event inbox, business-state mutation, and resulting outbox row commit together. Publication is asynchronous and replayable.
+**Next milestone; not authorized or started.** First make Docker available and rerun `mvnw.cmd -pl control-plane -Pinfrastructure-tests verify` with no PostgreSQL skip. Design and test separate migration/runtime roles before applications use database persistence; the P0.1 Compose owners are local bootstrap administrators only.
+
+Implement the smallest state transitions needed for the event choreography in SYSTEM_ARCHITECTURE.md. Each simulator gets its own Flyway history and PostgreSQL database/schema ownership. Business-state mutation and resulting outbox row commit together; consumed-event inbox joins this transaction when consumers arrive in P0.3. Publication will be asynchronous and replayable; actual Kafka processing remains P0.3, not P0.2.
 
 Acceptance:
 
 - a PostgreSQL integration test proves rollback leaves neither state nor outbox row;
-- a commit-then-publisher-failure test (`FM-004`) proves later publication;
+- a committed-outbox/retry test preserves stable IDs and pending publication after a simulated publisher failure; the real Kafka commit-then-publisher-failure scenario (`FM-004`) is completed with P0.3;
 - event IDs and aggregate/business IDs remain stable across publish retries;
 - runtime AegisFlow receives no simulator DB credentials or privileges; test-harness DB inspection identities are isolated and never passed to the application;
 - event JSON matches `EVENT_CONTRACTS.md` fixtures.
@@ -118,7 +127,7 @@ Provide Docker Compose for Kafka, separate PostgreSQL databases, and the four ap
 
 P0 exit commands (final spelling may differ and must be corrected in docs):
 
-These POSIX examples use `./mvnw`; on the owner's Windows/PowerShell machine use `.\mvnw.cmd` with the same arguments. The wrappers and profiles below do not exist in Phase 0.
+These POSIX examples use `./mvnw`; on the owner's Windows/PowerShell machine use `.\mvnw.cmd` with the same arguments. Wrapper execution is verified on Windows; POSIX requires `unzip` and remains unverified. The `e2e` profile and application/Kafka Compose deployment below are future P0.5 deliverables, not current runnable commands. Current P0.1 commands are in the evidence/learning documents.
 
 ```text
 ./mvnw verify

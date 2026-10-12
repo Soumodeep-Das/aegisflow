@@ -1,17 +1,20 @@
 # Known Limitations
 
-**Status:** Phase 0 documentation baseline
+**Status:** P0.1 foundation; business runtime remains planned
 
 **Last reviewed:** 2026-10-12
 
 This project is intentionally a production-oriented **student portfolio project**, not an enterprise-ready transaction-recovery product. This list separates designed intent from demonstrated capability and must be updated at every significant milestone.
 
-## 1. Current Phase 0 reality
+## 1. Current P0.1 reality
 
-- There is no application source, build, container, database migration, API, event producer/consumer, UI, model integration, or deployment yet.
-- No test, security scan, benchmark, failure injection, AI evaluation, or recovery workflow has run.
-- All architecture controls, state transitions, metrics and thresholds are specifications or provisional targets, not observed results.
-- Official documentation supports the candidate Spring/Java versions recorded in ADR 0006, but dependency resolution and runtime compatibility have not been proven by a working build.
+- Four application shells, Maven Wrapper, Java 21 enforcement, health endpoints, ten Core module declarations, and architectural boundary tests exist. The latest root build ran 14 tests with zero failures, errors, or skips; four packaged JARs returned HTTP 200 and health `UP`. See [test evidence](evidence/TEST_RESULTS.md) for dates, commands, counts, and earlier failures.
+- Boot 4.1.1 and Modulith 2.1.1 dependency resolution, compilation, testing, and foundation-profile startup were verified. Spring AI is deliberately absent; its Phase 0 candidate remains deferred until P2.
+- Default `foundation` startup excludes JDBC/Flyway configuration. Its health `UP` proves process readiness only, not database connectivity, business correctness, authentication, or event durability.
+- Four PostgreSQL configurations and Compose services exist, but no Docker engine was available. Compose syntax validation passed; the PostgreSQL Testcontainers test was skipped. PostgreSQL-profile application startup and real database connectivity remain unverified.
+- No business tables/migrations, business APIs, event producer/consumer, UI, recovery workflow, model integration, or external deployment exist. No business fault scenario, security scan, benchmark, or AI evaluation has run.
+- POSIX wrapper execution was not tested on this Windows host; it requires `unzip` for the checksum-pinned Maven ZIP. Windows wrapper execution was verified. The packaged-startup helper currently targets Windows/PowerShell.
+- Business architecture controls, state transitions, metrics, and thresholds remain specifications or future targets, not observed product results.
 - Documentation may still contain open design decisions; see [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md).
 
 ## 2. Scope limitations
@@ -20,7 +23,7 @@ This project is intentionally a production-oriented **student portfolio project*
 - The first vertical slice should implement one narrow business invariant and one safe, non-financial recovery action. It will not prove a general recovery platform.
 - No automatic refund, charge, transfer or other financial compensation is allowed in the MVP.
 - A sophisticated Next.js UI, Kubernetes, multi-region operation, Redis, Temporal, pgvector and additional microservices are deferred until justified by a measured requirement.
-- Local Docker Compose and Testcontainers, when implemented, will demonstrate reproducibility on declared hardware, not production scalability or availability.
+- Local Docker Compose and Testcontainers configuration exists, but successful container execution remains an outstanding check. It will demonstrate reproducibility on declared hardware, not production scalability or availability.
 
 ## 3. Distributed-systems limitations
 
@@ -45,7 +48,8 @@ This project is intentionally a production-oriented **student portfolio project*
 
 ## 5. Security and tenancy limitations
 
-- The threat model is a design document; Keycloak, RBAC, tenant filters, Kafka ACLs, TLS, database roles, secret injection, redaction and audit controls are not configured yet.
+- The threat model is a design document; Keycloak, RBAC, tenant filters, Kafka ACLs, TLS, least-privilege database roles, redaction, and business audit controls are not implemented yet. P0.1 exposes only loopback-bound health; do not expose the foundation publicly.
+- Compose requires local passwords and assigns a separate bootstrap owner per database. These privileged local owners are not a finished runtime-role design; restricted migration/runtime roles and privilege assertions are required in P0.2 before business persistence.
 - Application-layer tenant authorization and tenant-aware database constraints are mandatory but unimplemented. PostgreSQL row-level security is an optional defense-in-depth decision, not a current requirement or capability; a single local deployment cannot establish strong hostile multi-tenancy.
 - Malformed records may lack a validated tenant or event ID. The broker-coordinate/digest-based technical quarantine, protected payload handling, replay authorization, and distinction between security signals and business incidents remain unimplemented.
 - Canonicalization profiles and shared test vectors for event, request, and approval digests remain open. Until they are implemented, byte-format differences or inconsistent normalization could break deduplication or approval binding.

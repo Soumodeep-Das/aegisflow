@@ -1,0 +1,73 @@
+# P0.1 module boundaries
+
+**Implemented:** 2026-10-12. These are empty architectural boundaries, not completed business modules. See [system architecture](SYSTEM_ARCHITECTURE.md) for the future design and [test evidence](../evidence/TEST_RESULTS.md) for executed results.
+
+## Deployable boundaries versus Java modules
+
+The root [`pom.xml`](../../pom.xml) is both an aggregator (builds four children) and parent (shares Java/dependency/plugin rules). It is not a fifth running application. Four child modules produce separate Spring Boot executable JARs:
+
+| Maven module | Main class | Java base package |
+|---|---|---|
+| `control-plane` | [AegisFlowCoreApplication](../../control-plane/src/main/java/com/aegisflow/core/AegisFlowCoreApplication.java) | `com.aegisflow.core` |
+| `simulators/order-service` | [OrderSimulatorApplication](../../simulators/order-service/src/main/java/com/aegisflow/simulator/order/OrderSimulatorApplication.java) | `com.aegisflow.simulator.order` |
+| `simulators/payment-service` | [PaymentSimulatorApplication](../../simulators/payment-service/src/main/java/com/aegisflow/simulator/payment/PaymentSimulatorApplication.java) | `com.aegisflow.simulator.payment` |
+| `simulators/warehouse-service` | [WarehouseSimulatorApplication](../../simulators/warehouse-service/src/main/java/com/aegisflow/simulator/warehouse/WarehouseSimulatorApplication.java) | `com.aegisflow.simulator.warehouse` |
+
+Sharing a Maven parent does not share Java implementation classes. Each application has its own source tree and runtime classpath. The inherited Maven Enforcer `bannedDependencies` rule rejects direct or transitive dependencies on any of the four deployable artifacts. Simulator-to-Core communication will use versioned APIs/events, not a dependency on Core's domain classes. No shared contract artifact is needed for empty application shells.
+
+Inside Core, Spring Modulith recognizes packages immediately below `com.aegisflow.core`. [`AegisFlowCoreApplication.java`](../../control-plane/src/main/java/com/aegisflow/core/AegisFlowCoreApplication.java) marks the application with `@Modulithic`; `@SpringBootApplication` supplies the component-scan root. The main class is bootstrap code, not another business module.
+
+## Declared Core packages
+
+Each directory below `control-plane/src/main/java/com/aegisflow/core/` contains a `package-info.java` and a package-private `FoundationModule.java` marker. The marker makes an otherwise empty package discoverable; it exposes no interface, bean, or business behavior.
+
+| Package suffix | Intended owner of future behavior |
+|---|---|
+| `audit` | append-only transition/security audit |
+| `correlation` | tenant-scoped transaction facts and projections |
+| `detection` | invariant evaluations and incident creation |
+| `eventing` | envelope validation, durable inbox, quarantine |
+| `evidence` | provenance-rich authoritative observations |
+| `identity` | tenant/actor/scopes resolution |
+| `investigation` | deterministic and later AI-backed analysis |
+| `operations` | operational read APIs and telemetry |
+| `recovery` | policy, approval, claims, constrained API action |
+| `verification` | independent postcondition checks |
+
+For example, [`eventing/package-info.java`](../../control-plane/src/main/java/com/aegisflow/core/eventing/package-info.java) declares:
+
+```java
+@org.springframework.modulith.ApplicationModule(
+        displayName = "Eventing",
+        allowedDependencies = {})
+package com.aegisflow.core.eventing;
+```
+
+The explicit empty `allowedDependencies` means **no dependency on another Core application module is permitted**. It is not the unrestricted annotation default. P0.1 deliberately introduces no invented APIs between placeholders. When a later milestone needs an interaction, name the allowed dependency, design a narrow exported API or typed event, and update tests and architecture in the same change. Internal repositories must remain inaccessible to other modules.
+
+## Automated enforcement
+
+[`ControlPlaneArchitectureTests.java`](../../control-plane/src/test/java/com/aegisflow/core/ControlPlaneArchitectureTests.java) has four tests:
+
+1. `ApplicationModules.of(AegisFlowCoreApplication.class).verify()` checks cycles, access to module internals, and declared dependency rules.
+2. Discovery must return exactly the ten documented module identifiers; a missing/new package cannot silently change the architecture.
+3. Every module must declare an empty dependency allowlist, and the resolved Modulith model must also permit no application-module dependencies.
+4. ArchUnit imports compiled Core main classes and rejects references to simulator packages.
+
+Each simulator's `src/test/java/com/aegisflow/simulator/<name>/<Name>SimulatorArchitectureTest.java` also scans its compiled main classes for forbidden Core/sibling package references. For example, [`OrderSimulatorArchitectureTest.java`](../../simulators/order-service/src/test/java/com/aegisflow/simulator/order/OrderSimulatorArchitectureTest.java) rejects Core, Payment, and Warehouse references. This small bytecode check supplements the Maven artifact ban; it is not a complete runtime isolation or credential test.
+
+Run from repository root with Java 21:
+
+```powershell
+.\mvnw.cmd -B -ntp verify
+# Core architecture tests alone:
+.\mvnw.cmd -B -ntp -pl control-plane -Dtest=ControlPlaneArchitectureTests test
+```
+
+On POSIX use `./mvnw` instead. The full reactor passed 14 tests on Windows, including four Core architecture tests and one architecture test per simulator. All application-context tests explicitly activate `foundation`, so an inherited `SPRING_PROFILES_ACTIVE=postgres` cannot accidentally turn this gate into an infrastructure test. The optional Docker integration gate is separate.
+
+## What these checks do not prove
+
+Build-time boundaries prevent accidental code coupling; they do not sandbox JVM code, enforce tenant authorization, validate service credentials, or make empty modules functional. Actuator health currently comes from framework auto-configuration, not from domain code in `operations`. Separate database ownership is configured but runtime privilege isolation still requires P0.2 tests. Nothing in this foundation proves outbox delivery, Kafka durability, incident detection, safe recovery, or AI correctness.
+
+Keep [ADR 0001](../adr/0001-modular-control-plane.md) and [ADR 0007](../adr/0007-foundation-profiles-and-stage-boundaries.md) as the decision trail. The next persistence milestone still requires owner approval.

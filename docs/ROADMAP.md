@@ -1,15 +1,23 @@
 # Prioritized roadmap
 
 **Last reviewed:** 2026-10-12
-**Observed product state:** documentation only; no runtime exists.
+**Observed product state:** P0.1 foundation implemented and verified on Java 21; business functionality is not implemented.
 
 ## Completed — Phase 0
 
 The documentation baseline is committed locally at `2bae1f3`, with 25 Markdown files, six ADRs, 16 complete failure scenarios, and ten interview Q&As. Reproducible documentation checks report zero issues; runtime metrics remain unmeasured. Mermaid source review is complete but rendering is unverified. See the journal/handoff for exact commands and review limits.
 
-## Now — Phase 1 approval gate
+## Completed — P0.1 foundation
 
-Obtain the owner's explicit approval for P0.1, the Java 21/Maven/Spring foundation. No application code is authorized yet. The following continuity checkpoint records the baseline status and this next task.
+The owner approved P0.1 and resumed it after a pause. Four independent Spring Boot 4.1.1 applications compile and package with Maven 3.10.0 through Wrapper 3.3.4 on Java 21. The latest root verification ran 14 tests with zero failures, errors, or skips. All four packaged JARs separately returned HTTP 200 and health `UP` in the infrastructure-free `foundation` profile; the check then stopped only its own processes. Core's ten Modulith 2.1.1 modules are verified, and deployables cannot depend on one another's artifacts.
+
+Four service-owned PostgreSQL configurations and a digest-pinned Compose definition exist. Compose configuration validation passed, but the Docker engine was unavailable: the optional PostgreSQL integration test was **skipped**, not passed. No database or business workflow has been demonstrated. See [test evidence](evidence/TEST_RESULTS.md), [the codebase guide](learning/CODEBASE_GUIDE.md), and [ADR 0007](adr/0007-foundation-profiles-and-stage-boundaries.md).
+
+## Now — stop at P0.1 and prepare the P0.2 gate
+
+Do not start P0.2 without new owner approval. The highest-priority preparation is a working local Docker engine, then rerunning the PostgreSQL test so the persistence milestone starts from real infrastructure evidence. Use Java 21 via `JAVA_HOME`; the host's Java 26 is outside this repository's enforced baseline. No additional Maven installation is needed because the wrapper pins Maven.
+
+P0.2 must design separate migration/runtime database roles before business persistence uses the current local bootstrap owners. Core must receive only its own database credentials. Local credentials belong in ignored environment files and must never be sent in chat or committed.
 
 ## Next — P0 functional detection slice
 
@@ -17,8 +25,8 @@ The single highest-value outcome is one reproducible flow from a simulator's com
 
 Priority order:
 
-1. Java 21/Maven/Spring Boot multi-deployable foundation and Modulith boundary test.
-2. Separate simulator databases, Flyway migrations, and one transactional outbox path.
+1. Obtain P0.2 approval and prove PostgreSQL connectivity with Docker available.
+2. Design restricted database roles, then add service-owned Flyway migrations and one transactional state/outbox path.
 3. Kafka event contract fixtures and publisher recovery.
 4. Control-plane inbox uniqueness, tenant correlation, projection, and schema quarantine.
 5. One clock-driven invariant and durable incident/evidence timeline.

@@ -1,13 +1,42 @@
 # AegisFlow System Architecture
 
-**Status:** Phase 0 design baseline; no application has been implemented or tested yet.
+**Status:** Phase 0 product design preserved; P0.1 application foundation implemented and verified. Business functionality remains planned.
 **Audience:** implementers, reviewers, and students continuing without the original conversation.
 
 ## 1. Purpose and scope
 
 AegisFlow is a control plane for detecting and safely repairing inconsistent *business transactions*. The first demonstrator models an order that crosses independently persisted Order, Payment, and Warehouse simulators. Each simulator remains the authority for its own state. AegisFlow consumes facts, evaluates explicit invariants, gathers evidence, proposes a bounded recovery, applies deterministic policy and human approval, invokes a versioned service API, and verifies the result from an authoritative read.
 
-This is a production-oriented portfolio architecture, not a claim of production readiness. In Phase 0 only the specification exists. The first implementation milestone is the smallest observable vertical slice; multi-region operation, arbitrary workflow authoring, Kubernetes, Temporal, Redis, pgvector, and automatic financial compensation are outside the MVP unless later evidence justifies them.
+This is a production-oriented portfolio architecture, not a claim of production readiness. Phase 0 established the specification; P0.1 now implements only the application foundation below. Unless marked implemented, the diagrams, business flows, durable records, and security controls in this document describe the intended design. Multi-region operation, arbitrary workflow authoring, Kubernetes, Temporal, Redis, pgvector, and automatic financial compensation are outside the MVP unless later evidence justifies them.
+
+### Implemented snapshot — P0.1 (2026-10-12)
+
+```mermaid
+flowchart LR
+    Parent[Root Maven parent and aggregator] --> Core[Core executable JAR]
+    Parent --> Order[Order executable JAR]
+    Parent --> Payment[Payment executable JAR]
+    Parent --> Warehouse[Warehouse executable JAR]
+    Core --- Boundaries[10 declared Modulith packages]
+    Core --> CoreHealth[Loopback health endpoint]
+    Order --> OrderHealth[Loopback health endpoint]
+    Payment --> PaymentHealth[Loopback health endpoint]
+    Warehouse --> WarehouseHealth[Loopback health endpoint]
+```
+
+The arrows from Maven describe build organization, not application dependencies or runtime calls. No application currently calls another. Each child owns its POM, main class, configuration, tests, and executable JAR; no child depends on Core or a sibling deployable.
+
+| Concern | Implemented path and behavior | Still planned |
+|---|---|---|
+| Core bootstrap | `control-plane/src/main/java/com/aegisflow/core/AegisFlowCoreApplication.java`: `@SpringBootApplication`, `@Modulithic`, `SpringApplication.run` | domain services, persistence, event handling |
+| Simulator bootstraps | `simulators/{order,payment,warehouse}-service/src/main/java/com/aegisflow/simulator/{order,payment,warehouse}/` with one application class each | independent commerce state and APIs |
+| Core boundaries | ten annotated packages, package-private `FoundationModule` markers; [MODULE_BOUNDARIES.md](MODULE_BOUNDARIES.md) names exact packages/tests | narrow interfaces and typed events when behavior requires them |
+| Runtime configuration | each child's `src/main/resources/application.yaml`, `application-foundation.yaml`, `application-postgres.yaml` | business migrations and authenticated APIs |
+| Health | Actuator health only, loopback defaults 8080–8083; all four standalone JARs checked | database/business/Kafka readiness |
+| Infrastructure | `compose.yaml`: four digest-pinned PostgreSQL instances, separate volumes/networks/credentials, loopback ports 5433–5436 | running containers and restricted runtime/migration roles |
+| Test gate | 14 default tests passed; Modulith, deployable coupling, Spring contexts, HTTP health; `scripts/verify-startup.ps1` checks packaged JARs | required business/fault/security test suite |
+
+The default `foundation` profile excludes JDBC/Flyway auto-configuration. It is a real Spring Boot process without infrastructure, not a fake database or commerce implementation. The explicit `postgres` profile configures only the application's own database; passwords have no committed default. No business migrations exist. Docker was unavailable, so the optional PostgreSQL Testcontainers check skipped and no database-backed application startup is claimed. The health status `UP` is deliberately a much smaller claim than the product's eventual readiness contract. [ADR 0007](../adr/0007-foundation-profiles-and-stage-boundaries.md) records this milestone boundary; [TEST_RESULTS.md](../evidence/TEST_RESULTS.md) records actual observations.
 
 ## 2. Architectural principles
 
@@ -81,9 +110,9 @@ The lines to an AI provider, recovery APIs, identity provider, and Kafka cross e
 
 ## 4. Control-plane module boundaries
 
-The initial control plane is one Spring Boot deployment with Spring Modulith-enforced boundaries and one database. Modules communicate through typed application events or narrow interfaces; direct repository access across modules is prohibited.
+The initial control plane is one Spring Boot deployment with Spring Modulith-verified package boundaries and one planned database. P0.1 declares the ten modules but contains no domain methods or repositories and allows no cross-module dependencies. Future modules will communicate through deliberately declared typed application events or narrow interfaces; direct repository access across modules is prohibited. These are build-time architecture checks, not a security sandbox. Exact implementation and enforcement are in [MODULE_BOUNDARIES.md](MODULE_BOUNDARIES.md).
 
-| Module | Responsibility | Durable records |
+| Module | Planned responsibility | Planned durable records (none implemented in P0.1) |
 |---|---|---|
 | `eventing` | Validate envelopes, persist inbox records, quarantine invalid/conflicting input | inbox message, quarantine record |
 | `correlation` | Build tenant-scoped transaction timelines and derived projections | business transaction, observed fact |
@@ -169,7 +198,7 @@ Audit entries record actor/service identity, tenant, command, prior and next sta
 - **P2 intelligence/operations:** evidence-backed AI comparison against deterministic baseline, dashboard, and complete observability.
 - **P3 optional expansion:** more integrations or orchestration infrastructure only after measured need.
 
-The verified bootstrap baseline is Java 21, Spring Boot 4.1.1, Spring Modulith 2.1.1, and (only when P2 begins) Spring AI 2.0.1, as recorded with official sources in [ADR 0006](../adr/0006-technology-baseline-and-version-pinning.md). These versions are documentation-verified but not yet build-proven: P0 must resolve the dependency tree, run smoke/integration tests, and amend that ADR if the actual compatible set differs.
+The P0.1 build-proven foundation is Java 21, Maven 3.10.0, Spring Boot 4.1.1, and Spring Modulith 2.1.1. Actual Maven dependency resolution, compilation, tests, and standalone Spring application startup have run. PostgreSQL integration remains unverified because its Docker-dependent test skipped; Kafka is not introduced until P0.3. Spring AI 2.0.1 is a documentation-verified P2 candidate only, not a present dependency or proven integration. [ADR 0006](../adr/0006-technology-baseline-and-version-pinning.md) preserves official baseline references; [ADR 0007](../adr/0007-foundation-profiles-and-stage-boundaries.md) makes the staged integration gates explicit.
 
 ## 10. Traceability map
 
@@ -184,7 +213,11 @@ The verified bootstrap baseline is Java 21, Spring Boot 4.1.1, Spring Modulith 2
 | Why delivery is at least once | [ADR 0003](../adr/0003-at-least-once-idempotency.md) |
 | Why all repair is API-mediated | [ADR 0004](../adr/0004-api-mediated-recovery.md) |
 | Why AI is advisory | [ADR 0005](../adr/0005-ai-advisory-boundary.md) |
+| Current package boundaries and tests | [MODULE_BOUNDARIES.md](MODULE_BOUNDARIES.md) |
+| Why startup can run without infrastructure | [ADR 0007](../adr/0007-foundation-profiles-and-stage-boundaries.md) |
 
 ## 11. Architecture acceptance checks
 
 Before P0 exits, tests must demonstrate that a committed simulator change is eventually published after relay restart; duplicate delivery creates one inbox fact; out-of-order facts converge to the same projection; a missed deadline opens one tenant-scoped incident; and no AegisFlow database credential can access simulator databases. These are future acceptance targets, not observed results.
+
+P0.1's narrower exit checks cover successful Java 21 builds, independently packaged/runnable applications, ten verified Core modules, default HTTP health, and reproducible evidence. Completing that gate does not complete the product P0 detection slice or authorize P0.2.

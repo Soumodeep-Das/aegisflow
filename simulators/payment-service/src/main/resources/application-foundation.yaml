@@ -1,0 +1,6 @@
+# P0.1 can start without infrastructure; postgres explicitly opts into the database.
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
+      - org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration
