@@ -1,10 +1,12 @@
 # Codebase guide
 
-## Read this first: what exists at P0.1
+## Read this first: the P0.2 checkpoint
 
-P0.1 contains a compilable **application foundation**, not business functionality. There are four Spring Boot deployables, Maven build rules, health-only runtime configuration, foundation tests, and explicit control-plane module boundaries. There are still no order/payment/warehouse business APIs, database migrations, event contracts in Java, Kafka producers or consumers, incident detection, recovery actions, authentication, or AI integration.
+P0.1's four application foundations and ten control-plane module boundaries are preserved. P0.2 now has source for independent Flyway migrations, database role bootstrap, and local transactional state/idempotency/outbox paths in Order, Payment, and Warehouse. These application methods are Java boundaries for later HTTP workflows; no business HTTP controller, authentication, Kafka publisher/consumer, incident detection, recovery, or AI behavior exists.
 
-The Windows/Java 21 reactor build has passed all 14 foundation tests, and all four executable JARs have answered HTTP health checks. PostgreSQL integration remains unverified because its Docker-dependent test was skipped. The factual commands, failures, skips, and scope of these observations are in [`docs/evidence/TEST_RESULTS.md`](../evidence/TEST_RESULTS.md).
+This is an implementation checkpoint, not a completed PostgreSQL verification gate. The interrupted-session recovery found existing progress and continued it in the original repository. Real PostgreSQL behavior remains unverified until the Docker-dependent tests execute successfully. The first resumed offline reactor run also encountered a restricted-host loopback connection error in the Core HTTP test; passing P0.1 evidence remains historical evidence, not a substitute for a P0.2 rerun. Read [`docs/evidence/TEST_RESULTS.md`](../evidence/TEST_RESULTS.md) for the final dated commands, test counts, failures, and unexecuted checks.
+
+On 2026-10-13, an isolated cached-library diagnostic ran the actual pure validation/canonical-envelope test classes: **21 passed, zero failures/errors/skips**. A focused Core run passed **4 architecture tests**, while its **4 PostgreSQL ITs skipped** because Docker's pipe was denied. Compose configuration and script syntax passed. Full simulator compilation is blocked by the uncached Boot-managed JPA starter and Maven Central DNS; JPA/transaction/database/startup behavior is still unverified. The standard local gate remains `scripts/verify-persistence.ps1`, which rejects skipped integration tests.
 
 ## Actual repository map
 
@@ -13,11 +15,14 @@ aegisflow/
 ├── pom.xml                                  # parent + four-module Maven reactor
 ├── mvnw / mvnw.cmd                         # POSIX / Windows Maven wrappers
 ├── .mvn/wrapper/maven-wrapper.properties   # Maven 3.10.0, wrapper 3.3.4, SHA-256
-├── compose.yaml / .env.example             # optional four-database local infrastructure
+├── compose.yaml / .env.example             # four PostgreSQL services; three roles per database
+├── scripts/db/bootstrap-roles.sql          # non-destructive bootstrap for fresh/existing volumes
+├── scripts/bootstrap-databases.ps1         # run role bootstrap on all four Compose services
+├── scripts/verify-persistence.ps1          # Docker + Java 21 gate; rejects skipped ITs
 ├── scripts/verify-startup.ps1              # Windows executable-JAR health verification
 ├── scripts/verify-docs.ps1                 # continuity-document consistency check
 ├── control-plane/
-│   ├── pom.xml                              # MVC, Actuator, JDBC/Flyway, Modulith, tests
+│   ├── pom.xml                              # MVC, Actuator, JDBC/Flyway, Modulith, Testcontainers
 │   └── src/
 │       ├── main/java/com/aegisflow/core/
 │       │   ├── AegisFlowCoreApplication.java
@@ -28,17 +33,26 @@ aegisflow/
 │       ├── main/resources/
 │       │   ├── application.yaml
 │       │   ├── application-foundation.yaml
-│       │   └── application-postgres.yaml
+│       │   ├── application-postgres.yaml
+│       │   └── db/migration/V1__core_database_boundary.sql
 │       └── test/java/com/aegisflow/core/
 │           ├── AegisFlowCoreApplicationTests.java
 │           ├── ControlPlaneArchitectureTests.java
 │           └── PostgresInfrastructureIT.java
 ├── simulators/
-│   ├── order-service/
-│   ├── payment-service/
-│   └── warehouse-service/
-│       # each simulator has its own pom.xml, Application class,
-│       # three application*.yaml files, HTTP test, and architecture test
+│   ├── order-service/src/main/java/com/aegisflow/simulator/order/persistence/
+│   │   ├── CreateOrder.java / OrderPersistenceService.java
+│   │   ├── OrderEntity.java / OrderKey.java / OrderRepository.java
+│   │   └── OrderOutbox.java / CanonicalJson.java
+│   ├── payment-service/src/main/java/com/aegisflow/simulator/payment/
+│   │   ├── PaymentCreation.java / CreatePaymentCommand.java / RecordedPayment.java
+│   │   └── persistence/internal/            # transaction service, JPA stores, outbox, validation
+│   └── warehouse-service/src/main/java/com/aegisflow/simulator/warehouse/reservation/
+│       ├── CreateReservationCommand.java / ReservationApplicationService.java
+│       ├── ReservationEntity.java / ReservationLineEntity.java / repositories
+│       └── IdempotencyRepository.java / WarehouseEventFactory.java / OutboxEventRepository.java
+│       # each module also owns application*.yaml, db/migration/V1__*.sql,
+│       # foundation/architecture tests, unit contract tests, and persistence ITs
 ├── docs/                                    # architecture, ADRs, evidence, handoff, learning
 └── AGENTS.md                                # continuity and safety protocol
 ```
@@ -47,12 +61,12 @@ The source of truth is the repository, not this abbreviated tree. In particular,
 
 The concrete path index is:
 
-| Module | POM and main source | Runtime resources | Foundation tests |
+| Module | POM and main source | Runtime resources | Test paths |
 |---|---|---|---|
 | Control plane | `control-plane/pom.xml`; `control-plane/src/main/java/com/aegisflow/core/AegisFlowCoreApplication.java` | `control-plane/src/main/resources/application*.yaml` | `control-plane/src/test/java/com/aegisflow/core/{AegisFlowCoreApplicationTests,ControlPlaneArchitectureTests,PostgresInfrastructureIT}.java` |
-| Order | `simulators/order-service/pom.xml`; `simulators/order-service/src/main/java/com/aegisflow/simulator/order/OrderSimulatorApplication.java` | `simulators/order-service/src/main/resources/application*.yaml` | `simulators/order-service/src/test/java/com/aegisflow/simulator/order/{OrderSimulatorApplicationTests,OrderSimulatorArchitectureTest}.java` |
-| Payment | `simulators/payment-service/pom.xml`; `simulators/payment-service/src/main/java/com/aegisflow/simulator/payment/PaymentSimulatorApplication.java` | `simulators/payment-service/src/main/resources/application*.yaml` | `simulators/payment-service/src/test/java/com/aegisflow/simulator/payment/{PaymentSimulatorApplicationTests,PaymentSimulatorArchitectureTest}.java` |
-| Warehouse | `simulators/warehouse-service/pom.xml`; `simulators/warehouse-service/src/main/java/com/aegisflow/simulator/warehouse/WarehouseSimulatorApplication.java` | `simulators/warehouse-service/src/main/resources/application*.yaml` | `simulators/warehouse-service/src/test/java/com/aegisflow/simulator/warehouse/{WarehouseSimulatorApplicationTests,WarehouseSimulatorArchitectureTest}.java` |
+| Order | `simulators/order-service/pom.xml`; `simulators/order-service/src/main/java/com/aegisflow/simulator/order/OrderSimulatorApplication.java` | `simulators/order-service/src/main/resources/application*.yaml`; `db/migration/V1__order_state_and_outbox.sql` under the same resources root | Foundation/architecture tests under `simulators/order-service/src/test/java/com/aegisflow/simulator/order`; `persistence/OrderPersistenceTests.java` and `persistence/OrderPersistenceIT.java` |
+| Payment | `simulators/payment-service/pom.xml`; `simulators/payment-service/src/main/java/com/aegisflow/simulator/payment/PaymentSimulatorApplication.java` | `simulators/payment-service/src/main/resources/application*.yaml`; `db/migration/V1__payment_state_and_outbox.sql` | Foundation/architecture tests under `simulators/payment-service/src/test/java/com/aegisflow/simulator/payment`; `persistence/internal/{PaymentCommandValidatorTest,CanonicalJsonTest,PaymentPersistenceIT}.java` |
+| Warehouse | `simulators/warehouse-service/pom.xml`; `simulators/warehouse-service/src/main/java/com/aegisflow/simulator/warehouse/WarehouseSimulatorApplication.java` | `simulators/warehouse-service/src/main/resources/application*.yaml`; `db/migration/V1__warehouse_reservation_and_outbox.sql` | Foundation/architecture tests under `simulators/warehouse-service/src/test/java/com/aegisflow/simulator/warehouse`; `reservation/{CreateReservationCommandTests,WarehouseEventContractTests,WarehousePersistenceIT}.java` |
 
 ## Maven reactor and four deployables
 
@@ -67,7 +81,7 @@ The root `pom.xml` is both the parent POM and the aggregator. Parent inheritance
 
 The root build pins Spring Boot `4.1.1`, compiles with Java release `21`, and imports Spring Modulith BOM `2.1.1`. Maven Enforcer requires Java `[21,22)` and Maven `[3.10.0,3.11.0)`. The wrapper properties select Maven `3.10.0`, wrapper implementation/plugin `3.3.4`, and a distribution checksum. The distinction matters: `3.3.4` is the Maven Wrapper version, while `3.10.0` is the Maven distribution that executes the build.
 
-The child POMs deliberately share web MVC, Actuator, JDBC, Flyway, PostgreSQL runtime support, tests, and the Spring Boot Maven plugin. Only the control plane currently adds Spring Modulith and Testcontainers dependencies. Spring AI, Kafka, and Spring Security are not dependencies yet because P0.1 does not implement their behavior.
+The child POMs share web MVC, Actuator, Flyway, PostgreSQL runtime support, tests, and the Spring Boot Maven plugin. Core retains JDBC and adds Spring Modulith. The three simulators now use `spring-boot-starter-data-jpa`; all four modules have PostgreSQL/JUnit Testcontainers dependencies. Boot's Flyway starter supplies the auto-configuration, while `flyway-database-postgresql` supplies PostgreSQL support. The root `infrastructure-tests` profile activates Maven Failsafe for `*IT` classes throughout the reactor. Spring AI, Kafka, and Spring Security remain absent.
 
 The parent also bans dependencies on all four deployable artifacts. That prevents a module from quietly importing another service's implementation instead of using a future versioned API or event contract.
 
@@ -88,17 +102,21 @@ There are no user-written controllers at this milestone. The HTTP route that exi
 Every deployable has the same profile pattern:
 
 - `application.yaml` sets its application name, loopback address, default port, graceful shutdown, the `foundation` default profile, and health-only Actuator exposure.
-- `application-foundation.yaml` excludes data-source and Flyway auto-configuration. This lets the process and HTTP tests start without pretending a database exists.
-- `application-postgres.yaml` opts into that deployable's own PostgreSQL URL, username, password, and Flyway location.
+- `application-foundation.yaml` excludes data-source and Flyway auto-configuration; the simulator files also exclude Hibernate JPA and Spring Data JPA repository auto-configuration. Persistence components belong to `postgres`, keeping the infrastructure-free foundation contract.
+- `application-postgres.yaml` selects that deployable's PostgreSQL runtime connection and a separate Flyway migration connection. Simulator Hibernate configuration uses `ddl-auto: validate`, not schema generation; `open-in-view: false` prevents an HTTP view from keeping a persistence context open.
 
-| Deployable | PostgreSQL URL default | Required password variable |
+| Deployable | PostgreSQL URL default | Required password variables |
 |---|---|---|
-| Control plane | `jdbc:postgresql://127.0.0.1:5433/aegisflow_core` | `CORE_DB_PASSWORD` |
-| Order | `jdbc:postgresql://127.0.0.1:5434/aegisflow_order` | `ORDER_DB_PASSWORD` |
-| Payment | `jdbc:postgresql://127.0.0.1:5435/aegisflow_payment` | `PAYMENT_DB_PASSWORD` |
-| Warehouse | `jdbc:postgresql://127.0.0.1:5436/aegisflow_warehouse` | `WAREHOUSE_DB_PASSWORD` |
+| Control plane | `jdbc:postgresql://127.0.0.1:5433/aegisflow_core` | `CORE_DB_RUNTIME_PASSWORD`, `CORE_DB_MIGRATION_PASSWORD` |
+| Order | `jdbc:postgresql://127.0.0.1:5434/aegisflow_order` | `ORDER_DB_RUNTIME_PASSWORD`, `ORDER_DB_MIGRATION_PASSWORD` |
+| Payment | `jdbc:postgresql://127.0.0.1:5435/aegisflow_payment` | `PAYMENT_DB_RUNTIME_PASSWORD`, `PAYMENT_DB_MIGRATION_PASSWORD` |
+| Warehouse | `jdbc:postgresql://127.0.0.1:5436/aegisflow_warehouse` | `WAREHOUSE_DB_RUNTIME_PASSWORD`, `WAREHOUSE_DB_MIGRATION_PASSWORD` |
 
-The `postgres` profile is optional in P0.1 and must be selected explicitly. Its configuration does not create PostgreSQL or its databases. There are no business migration files yet; `fail-on-missing-locations: false` is temporary foundation behavior, and `PostgresInfrastructureIT` is limited to JDBC/Flyway connectivity.
+Each prefix also has optional `*_DB_URL`, `*_DB_RUNTIME_USER`, and `*_DB_MIGRATION_USER` overrides. Default role names are `aegisflow_<service>_runtime` and `aegisflow_<service>_migrator`. Payment additionally permits `PAYMENT_DB_MIGRATION_URL`; use the same owning database. The older `*_DB_PASSWORD` variables are bootstrap-owner passwords for Compose administration, not application runtime passwords.
+
+The explicit `postgres` profile needs existing databases, roles, and the `aegisflow` schema. `scripts/db/bootstrap-roles.sql` provisions these via the local owner before Flyway runs. All four profiles now require migration locations; each database has its own `aegisflow.flyway_schema_history`. Similar table names in different databases do not imply shared ownership. Core's V1 establishes its schema boundary without implementing future inbox/projection/incident tables. Order/Payment/Warehouse V1 files create only their own business state, idempotency record, and outbox tables.
+
+The runtime account has table-specific business grants and only publication-metadata update grants on the outbox. The migrator owns schema changes and history. The owner remains administration-only. These rules exist in SQL and have assertion tests; successful PostgreSQL execution is still required before describing their isolation as demonstrated security.
 
 ## Actuator request and test flow
 
@@ -161,9 +179,11 @@ Windows PowerShell:
 
 ```powershell
 .\mvnw.cmd --version
-.\mvnw.cmd verify
+.\mvnw.cmd clean verify
 .\mvnw.cmd -pl control-plane -am test
-.\mvnw.cmd -pl control-plane -Pinfrastructure-tests verify
+.\mvnw.cmd -Pinfrastructure-tests clean verify
+# Prefer the gate helper: fails when Docker is unavailable or an IT is skipped.
+.\scripts\verify-persistence.ps1
 # After verify has produced all four runnable JARs (PowerShell 7 on Windows):
 .\scripts\verify-startup.ps1
 .\scripts\verify-docs.ps1
@@ -181,9 +201,9 @@ POSIX shell:
 
 ```bash
 ./mvnw --version
-./mvnw verify
+./mvnw clean verify
 ./mvnw -pl control-plane -am test
-./mvnw -pl control-plane -Pinfrastructure-tests verify
+./mvnw -Pinfrastructure-tests clean verify
 
 # Start one foundation app; stop it with Ctrl+C.
 ./mvnw -pl control-plane spring-boot:run
@@ -196,21 +216,24 @@ curl --fail --silent http://127.0.0.1:8081/actuator/health
 
 The infrastructure command uses Testcontainers and therefore requires a usable Docker-compatible runtime. Whether it ran, failed, or was skipped must be read from [`docs/evidence/TEST_RESULTS.md`](../evidence/TEST_RESULTS.md), not assumed here.
 
-To prepare optional local databases, copy `.env.example` to an ignored `.env`, fill all four passwords privately, and use `docker compose --profile postgres config --quiet` before `docker compose --profile postgres up -d --wait`. Do not print the expanded Compose configuration because it contains credentials. `docker compose --profile postgres down` stops containers without deleting volumes; do not use `down -v` unless deliberately discarding local data.
+To prepare local databases, copy `.env.example` to an ignored `.env` and fill its twelve distinct passwords privately: owner, migrator, and runtime for each of four services. Validate using `docker compose --profile postgres config --quiet`, then run `docker compose --profile postgres up -d --wait` and `.\scripts\bootstrap-databases.ps1`. The bootstrap helper also supports existing volumes without deleting their data. Do not print expanded Compose configuration because it contains credentials. `docker compose --profile postgres down` preserves volumes; do not use `down -v` unless deliberately discarding local data.
 
-Compose reads `.env`, but an independently launched Java process does **not** automatically load that file. Supply only that application's own credentials through its environment. For example, after preparing its database, prompt locally for the Core password:
+Compose reads `.env`, but an independently launched Java process does **not** automatically load that file. Supply only that application's owning-database credentials through its environment. For example, after preparing its database, prompt locally for Core's runtime and migration passwords:
 
 ```powershell
 $env:SPRING_PROFILES_ACTIVE = "postgres"
-$env:CORE_DB_PASSWORD = Read-Host "Local Core database password" -MaskInput
+$env:CORE_DB_RUNTIME_PASSWORD = Read-Host "Local Core runtime password" -MaskInput
+$env:CORE_DB_MIGRATION_PASSWORD = Read-Host "Local Core migration password" -MaskInput
 .\mvnw.cmd -pl control-plane spring-boot:run
+Remove-Item Env:CORE_DB_RUNTIME_PASSWORD, Env:CORE_DB_MIGRATION_PASSWORD, Env:SPRING_PROFILES_ACTIVE
 ```
 
 ```bash
-read -r -s -p 'Local Core database password: ' CORE_DB_PASSWORD
-export CORE_DB_PASSWORD
+read -r -s -p 'Local Core runtime password: ' CORE_DB_RUNTIME_PASSWORD
+read -r -s -p 'Local Core migration password: ' CORE_DB_MIGRATION_PASSWORD
+export CORE_DB_RUNTIME_PASSWORD CORE_DB_MIGRATION_PASSWORD
 SPRING_PROFILES_ACTIVE=postgres ./mvnw -pl control-plane spring-boot:run
-unset CORE_DB_PASSWORD
+unset CORE_DB_RUNTIME_PASSWORD CORE_DB_MIGRATION_PASSWORD
 ```
 
 ## Practical debugging exercise: identify a profile failure
@@ -218,16 +241,97 @@ unset CORE_DB_PASSWORD
 Goal: distinguish “the application foundation is broken” from “optional infrastructure was selected but is unavailable.”
 
 1. Start the control plane with no active-profile override. Confirm from the startup log that `foundation` is active, then request `/actuator/health`.
-2. Stop it. Set `SPRING_PROFILES_ACTIVE=postgres` but deliberately omit `CORE_DB_PASSWORD`, then start it again.
+2. Stop it. Set `SPRING_PROFILES_ACTIVE=postgres` but deliberately omit `CORE_DB_RUNTIME_PASSWORD` and `CORE_DB_MIGRATION_PASSWORD`, then start it again.
 3. Read the earliest useful cause in the exception chain. Look for unresolved database configuration before changing Java code.
 4. Supply a non-secret local value but leave PostgreSQL stopped. Compare the new failure: configuration can now resolve, but the connection should be unavailable.
 5. Remove the environment variables and return to `foundation`.
 
 The learning point is that profiles select different runtime contracts. The default profile proves the Boot shell and health route without infrastructure; the PostgreSQL profile promises that the named database and credential exist. Do not “fix” the latter by hard-coding a password or disabling Flyway. Record actual observations in the evidence file because exact diagnostics depend on the local runtime.
 
+## P0.2: how state and publication intent become durable
+
+The simulator transaction methods accept validated commands from trusted Java callers. They do not call another database or service. A tenant is part of every aggregate key and idempotency lookup. This gives tenant-aware persistence; it does not authenticate the caller or authorize an HTTP request. A future ingress must derive tenant identity from a trusted authentication boundary rather than accepting an arbitrary caller-supplied tenant.
+
+### Spring Data JPA, Hibernate, and explicit SQL
+
+JPA describes object-to-table mapping and persistence operations. Hibernate is the JPA provider used by these simulator modules: it tracks entities and creates SQL when a persistence context flushes. Spring Data JPA supplies repository implementations such as `OrderRepository` and `PaymentJpaRepository`; their `saveAndFlush` saves the entity and forces pending SQL to run before the method proceeds. Warehouse uses its own `ReservationRepository`/`ReservationLineRepository` around `EntityManager.persist` and an explicit final flush instead of Spring Data interfaces. These choices fit the same local JPA transaction model.
+
+`JdbcTemplate` executes the SQL that benefits from explicit PostgreSQL behavior: `INSERT ... ON CONFLICT DO NOTHING` for durable idempotency, and Order/Warehouse outbox inserts. Under Spring's JPA transaction manager, JPA and `JdbcTemplate` configured for the same application `DataSource` participate in the same transaction and connection. The `@Transactional` application method is invoked through Spring's proxy; an unchecked exception escaping that boundary causes rollback. An independently constructed service or a self-invoked method does not automatically create this boundary. No `REQUIRES_NEW` or second connection is used to append the outbox.
+
+A flush is not a commit. It can reveal a constraint violation early, but rows remain uncommitted until the outer application method finishes and Spring successfully commits. This distinction makes the failure-after-outbox test meaningful: all inserts have reached PostgreSQL, yet one injected exception must remove the business state, idempotency record, and outbox together. Deferred foreign keys allow claiming the idempotency key before its referenced aggregate and event exist; they must all be present by commit.
+
+### Keys, money, and versions
+
+Commands carry explicit aggregate UUIDs. The database primary key pairs `tenant_id` with the resource ID, and line/event foreign keys include the tenant. Event IDs are UUIDs generated once for a successful new command; a replay returns the stored ID instead of inventing another event. Global event-ID uniqueness is enforced within each service-owned outbox database, not by a cross-service global registry.
+
+Order and Payment represent money as `BigDecimal`/PostgreSQL `numeric(19,4)`. Their command validation checks positive amounts, ISO currency, fit, and the currency's supported fraction digits without silent rounding; event amounts use decimal strings. Binary floating-point money would make equality and request fingerprints unreliable. Warehouse records reservation outcomes and lines; it does not implement a stock ledger or a remote order foreign key.
+
+The aggregate `@Version Long lockVersion` is a Hibernate optimistic-lock token. A new persisted row begins at `0`; the externally meaningful business version is explicitly `lockVersion + 1`, beginning at `1`. Order/Payment read it after `saveAndFlush`; Warehouse checks it after its final flush. A stale write must fail instead of silently overwriting a newer row. Later business transitions still require dedicated domain guards and atomic event appends; this checkpoint does not implement them just because an enum or SQL constraint names a future state.
+
+### Durable replay and immutable outbox intent
+
+Each service binds `(tenant_id, operation, idempotency_key)` to a versioned request fingerprint, resource/version, result, and event ID. `ON CONFLICT ... DO NOTHING` lets the PostgreSQL unique key serialize a race: a losing transaction waits for the competing insert to finish, then reads the committed stored result. Equal material content replays that result; changed material content under the same key raises a conflict. If the winner rolls back, its claim disappears. This design depends on the local database transaction, not an in-memory set or catching an insert error in an already-aborted transaction.
+
+`CanonicalJson` implementations use the `aegisflow-json-v1` profile, sorted object keys, normalized values, stable line ordering, and UTF-8 SHA-256. Material request fields determine replay identity; diagnostic correlation identifiers do not create a second business operation. The profile is recorded beside hashes so a later normalization change needs deliberate compatibility handling.
+
+Outbox rows retain the complete versioned event envelope, stable event ID, aggregate version, hash/profile, and `PENDING` publication status. Runtime grants and immutable-payload triggers separate envelope/identity fields from future publication metadata. This is durable publication intent. No worker publishes it, advances a lease, or retries Kafka in P0.2. A later relay may deliver duplicates after a crash; durable replay here does not establish universal exactly-once delivery or external effects.
+
+### Trace the actual Order create call
+
+Start at `simulators/order-service/src/main/java/com/aegisflow/simulator/order/persistence/OrderPersistenceService.java`, method `create(CreateOrder)`:
+
+1. `CreateOrder` validates and normalizes the command; Spring's proxy opens the local transaction when `create` is called.
+2. `CanonicalJson.requestHash` computes the material request fingerprint. `JdbcTemplate` claims the tenant/`CREATE_ORDER`/key row in `aegisflow.idempotency_record` using `ON CONFLICT DO NOTHING`.
+3. On a replay, the service compares the stored hash/profile and returns the stored order ID, version, and event ID. It performs no new order or outbox insert.
+4. On a new claim, `orders.saveAndFlush(new OrderEntity(...))` inserts the order and establishes business version `1`. Explicit SQL inserts its `order_lines`.
+5. `OrderOutbox.append` builds `OrderCreated` and inserts one `PENDING` envelope and its hash into the owning database's `outbox_event`.
+6. The returned `Result` becomes usable only after Spring commits successfully. A line, outbox, deferred-FK, or injected failure causes rollback of the claim and business/event rows together.
+
+No HTTP ingress or Kafka output is hidden in this trace. `OrderPersistenceService.status(tenantId, orderId)` is a tenant-keyed Java read, not an authenticated public API.
+
+### Payment and Warehouse entry points
+
+Payment's public Java interface is `simulators/payment-service/src/main/java/com/aegisflow/simulator/payment/PaymentCreation.java`, method `recordInitialOutcome(CreatePaymentCommand)`. Its package-private implementation is `persistence/internal/TransactionalPaymentCreationService.java`. `PaymentCommandValidator` normalizes a simulated `AUTHORIZED` or `DECLINED` outcome, `IdempotencyRecordStore` claims or replays, `PaymentJpaRepository.saveAndFlush` inserts the payment, and `JpaPaymentOutboxAppender` saves the corresponding `PaymentAuthorized`/`PaymentDeclined` envelope in the same transaction. `RecordedPayment` retains the stored identity and occurrence time on replay. No real payment provider, charge, refund, or compensation exists.
+
+Warehouse's entry is `simulators/warehouse-service/src/main/java/com/aegisflow/simulator/warehouse/reservation/ReservationApplicationService.java`, method `createReservation(CreateReservationCommand)`. `IdempotencyRepository` claims or replays; `ReservationRepository` and `ReservationLineRepository` persist the reservation outcome/lines; `WarehouseEventFactory` produces `InventoryReserved`/`InventoryRejected`; `OutboxEventRepository` inserts the envelope; the final flush checks pending entity SQL and version before commit. This records a supplied simulated outcome; it does not calculate stock availability. The aggregate/outbox foreign key is deferred because the explicit SQL outbox insert may run before Hibernate's final entity flush.
+
+## P0.2 debugging exercise: fail after the outbox insert
+
+Prerequisite: Java 21, an accessible Docker engine, and an IDE running the actual Testcontainers integration test. This exercise is runnable test design until local PostgreSQL verification succeeds; do not label its expected observations as observed evidence.
+
+1. Open `simulators/order-service/src/test/java/com/aegisflow/simulator/order/persistence/OrderPersistenceIT.java` and select `failureAfterOutboxInsertRollsBackAllRows`.
+2. Set a breakpoint after `OrderOutbox.append` executes its `JdbcTemplate.update`. The spy in the test calls the real append, then throws `IllegalStateException` before the transaction commits.
+3. From the transactional connection, the order, line, idempotency claim, and outbox have been inserted. A separate connection must not see these uncommitted rows; do not mistake that invisibility for evidence that the inserts never ran.
+4. Continue past the injected exception. The test calls the proxied service, catches the escaped failure, then queries the database after rollback. Counts for `orders`, `order_lines`, `idempotency_record`, and `outbox_event` under the test tenant must all be `0`.
+5. Run `commitPersistsStateAndContractEnvelopeTogether` separately. The success path must retain business state and one matching event. Record the actual run, Docker environment, counts, and exit status in the evidence document.
+
+If rows remain after the failure, first check proxy invocation, the `DataSource` shared by JPA/JDBC, and accidental independent transactions/connections. Do not move the outbox insert outside the transaction or suppress the exception to make the test pass.
+
+## Five P0.2 backend interview questions and answers
+
+### Q16. Why combine Spring Data JPA with JdbcTemplate in one transaction?
+
+JPA/Hibernate provides entity mapping and optimistic locking for aggregate state. Explicit SQL gives PostgreSQL's conflict handling for a durable idempotency claim. With one application `DataSource` and Spring's JPA transaction manager, both participate in the same local transaction. Separate connections or `REQUIRES_NEW` would undermine the state/outbox rollback guarantee. The integration tests must prove that wiring against real PostgreSQL.
+
+### Q17. Why flush an entity before emitting its version, and why is the event version one higher?
+
+Hibernate initializes the new entity's optimistic lock version when it persists/flushes. The SQL token begins at `0`, while the business/event contract begins at `1`, so the code explicitly exposes `lockVersion + 1`. `saveAndFlush` reveals generated version state and early SQL errors without committing. The surrounding transaction still owns commit or rollback.
+
+### Q18. How does ON CONFLICT make two same-key commands safe?
+
+The unique `(tenant, operation, key)` index arbitrates competing claims inside PostgreSQL. The loser does not create another aggregate; it reads the winner's committed result and compares the canonical material request hash. A changed request conflicts, an equal request returns the same resource/version/event ID, and a rolled-back winner leaves no durable claim. This is stronger than a process-local cache, but it still needs concurrency and rollback tests.
+
+### Q19. Why does each deployable need separate Flyway history and migration credentials?
+
+Each service owns one database, including its schema evolution. Separate histories avoid coupling deployment order or schema versions across services. The migrator may change tables and history; the runtime may use only explicit business/publication-metadata grants. Core has no simulator credentials or database access path. The SQL is implemented, while real role-isolation assertions remain part of the unpassed PostgreSQL gate.
+
+### Q20. What does a successful transactional outbox write guarantee?
+
+It makes the local business change and immutable publication intent durable together, or rolls them back together. It does not prove Kafka received anything, authenticate the tenant, or prevent every external duplicate effect. A later relay must preserve event identity across retries, and consumers/recovery APIs need their own durable idempotency and authoritative verification.
+
 ## Historical Phase 0 design concepts
 
-The following material is retained from the documentation-only phase. It explains the intended distributed-systems behavior; it does **not** claim that P0.1 implements it.
+The following material is retained from the documentation-only phase. The local simulator state/outbox write is now implemented in source; the remaining distributed flow is still planned and unverified.
 
 ### Planned end-to-end business flow
 
@@ -335,4 +439,4 @@ It uses several independent layers: Maven modules avoid compile-time implementat
 
 ## Honest next step
 
-After new owner approval, P0.2 adds service-owned persistence, restricted runtime/migration roles, Flyway migrations, and one atomic business-change/outbox path. Kafka transport starts in P0.3, not this foundation. First unblock Docker and run the PostgreSQL check without a skip. Update this guide with actual classes, migrations, flow, and results at that milestone. Until then, the repository proves only a foundation.
+Finish the documented P0.2 verification gate in an environment with Java 21, usable loopback HTTP, and Docker. `scripts/verify-persistence.ps1` requires an executed PostgreSQL test suite with zero failures/errors/skips; follow it with `scripts/verify-startup.ps1` for the packaged foundation processes and the documented Compose/PostgreSQL-profile startup checks. Use the handoff's exact next task and preserve existing progress. P0.3 remains unapproved; Kafka transport requires a new owner decision after P0.2 evidence is complete.

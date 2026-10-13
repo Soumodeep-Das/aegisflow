@@ -16,8 +16,14 @@ services:
       POSTGRES_DB: aegisflow_core
       POSTGRES_USER: ${CORE_DB_USER:-aegisflow_core}
       POSTGRES_PASSWORD: ${CORE_DB_PASSWORD:?Set a local CORE_DB_PASSWORD}
+      MIGRATION_DB_USER: ${CORE_DB_MIGRATION_USER:-aegisflow_core_migrator}
+      MIGRATION_DB_PASSWORD: ${CORE_DB_MIGRATION_PASSWORD:?Set a local CORE_DB_MIGRATION_PASSWORD}
+      RUNTIME_DB_USER: ${CORE_DB_RUNTIME_USER:-aegisflow_core_runtime}
+      RUNTIME_DB_PASSWORD: ${CORE_DB_RUNTIME_PASSWORD:?Set a local CORE_DB_RUNTIME_PASSWORD}
     ports: ["127.0.0.1:5433:5432"]
-    volumes: [core-db-data:/var/lib/postgresql]
+    volumes:
+      - core-db-data:/var/lib/postgresql
+      - ./scripts/db/bootstrap-roles.sql:/opt/aegisflow/bootstrap-roles.sql:ro
     networks: [core-data]
   order-db:
     <<: *postgres
@@ -25,8 +31,14 @@ services:
       POSTGRES_DB: aegisflow_order
       POSTGRES_USER: ${ORDER_DB_USER:-aegisflow_order}
       POSTGRES_PASSWORD: ${ORDER_DB_PASSWORD:?Set a local ORDER_DB_PASSWORD}
+      MIGRATION_DB_USER: ${ORDER_DB_MIGRATION_USER:-aegisflow_order_migrator}
+      MIGRATION_DB_PASSWORD: ${ORDER_DB_MIGRATION_PASSWORD:?Set a local ORDER_DB_MIGRATION_PASSWORD}
+      RUNTIME_DB_USER: ${ORDER_DB_RUNTIME_USER:-aegisflow_order_runtime}
+      RUNTIME_DB_PASSWORD: ${ORDER_DB_RUNTIME_PASSWORD:?Set a local ORDER_DB_RUNTIME_PASSWORD}
     ports: ["127.0.0.1:5434:5432"]
-    volumes: [order-db-data:/var/lib/postgresql]
+    volumes:
+      - order-db-data:/var/lib/postgresql
+      - ./scripts/db/bootstrap-roles.sql:/opt/aegisflow/bootstrap-roles.sql:ro
     networks: [order-data]
   payment-db:
     <<: *postgres
@@ -34,8 +46,14 @@ services:
       POSTGRES_DB: aegisflow_payment
       POSTGRES_USER: ${PAYMENT_DB_USER:-aegisflow_payment}
       POSTGRES_PASSWORD: ${PAYMENT_DB_PASSWORD:?Set a local PAYMENT_DB_PASSWORD}
+      MIGRATION_DB_USER: ${PAYMENT_DB_MIGRATION_USER:-aegisflow_payment_migrator}
+      MIGRATION_DB_PASSWORD: ${PAYMENT_DB_MIGRATION_PASSWORD:?Set a local PAYMENT_DB_MIGRATION_PASSWORD}
+      RUNTIME_DB_USER: ${PAYMENT_DB_RUNTIME_USER:-aegisflow_payment_runtime}
+      RUNTIME_DB_PASSWORD: ${PAYMENT_DB_RUNTIME_PASSWORD:?Set a local PAYMENT_DB_RUNTIME_PASSWORD}
     ports: ["127.0.0.1:5435:5432"]
-    volumes: [payment-db-data:/var/lib/postgresql]
+    volumes:
+      - payment-db-data:/var/lib/postgresql
+      - ./scripts/db/bootstrap-roles.sql:/opt/aegisflow/bootstrap-roles.sql:ro
     networks: [payment-data]
   warehouse-db:
     <<: *postgres
@@ -43,8 +61,14 @@ services:
       POSTGRES_DB: aegisflow_warehouse
       POSTGRES_USER: ${WAREHOUSE_DB_USER:-aegisflow_warehouse}
       POSTGRES_PASSWORD: ${WAREHOUSE_DB_PASSWORD:?Set a local WAREHOUSE_DB_PASSWORD}
+      MIGRATION_DB_USER: ${WAREHOUSE_DB_MIGRATION_USER:-aegisflow_warehouse_migrator}
+      MIGRATION_DB_PASSWORD: ${WAREHOUSE_DB_MIGRATION_PASSWORD:?Set a local WAREHOUSE_DB_MIGRATION_PASSWORD}
+      RUNTIME_DB_USER: ${WAREHOUSE_DB_RUNTIME_USER:-aegisflow_warehouse_runtime}
+      RUNTIME_DB_PASSWORD: ${WAREHOUSE_DB_RUNTIME_PASSWORD:?Set a local WAREHOUSE_DB_RUNTIME_PASSWORD}
     ports: ["127.0.0.1:5436:5432"]
-    volumes: [warehouse-db-data:/var/lib/postgresql]
+    volumes:
+      - warehouse-db-data:/var/lib/postgresql
+      - ./scripts/db/bootstrap-roles.sql:/opt/aegisflow/bootstrap-roles.sql:ro
     networks: [warehouse-data]
 
 volumes:

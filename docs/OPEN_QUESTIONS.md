@@ -1,10 +1,12 @@
 # Open Questions and Decision Register
 
-**Status:** Phase 0
+**Status:** Phase 0 register preserved; P0.2 producer/storage decisions recorded below
 
-**Last reviewed:** 2026-10-11
+**Last reviewed:** 2026-10-13
 
 This register prevents unresolved design choices from becoming accidental implementation. “Provisional default” enables planning; it is not a final ADR. Decisions should be closed with an ADR, affected documentation updates, and explicit acceptance tests.
+
+P0.2 decisions are in [ADR 0008](adr/0008-persistence-primitives-and-database-roles.md): separate bootstrap/migrator/runtime identities and independent histories; explicit UUID aggregate/event IDs; exact numeric money; nonnegative ORM lock counter plus positive exposed version; and `aegisflow-json-v1` for typed producer/request material. OQ-05 now has durable internal Order-create replay storage, while authenticated HTTP submission semantics remain later work. OQ-14's typed producer profile has passed unit vectors; consumer interpretation of arbitrary JSON and recovery/approval binding profiles remain open. OQ-01's durable outbox storage is implemented, with relay behavior deferred to P0.3. RLS/OQ-11 stays optional and unimplemented; tenant composite keys and tenant-required methods are present in source, not a complete authenticated multi-tenant proof.
 
 ## 1. Blocking or early implementation decisions
 

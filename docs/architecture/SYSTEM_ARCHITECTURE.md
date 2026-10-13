@@ -1,6 +1,6 @@
 # AegisFlow System Architecture
 
-**Status:** Phase 0 product design preserved; P0.1 application foundation implemented and verified. Business functionality remains planned.
+**Status:** Phase 0 design and verified P0.1 history preserved. P0.2 persistence source checkpoint implemented; its real PostgreSQL/build verification gate remains pending.
 **Audience:** implementers, reviewers, and students continuing without the original conversation.
 
 ## 1. Purpose and scope
@@ -10,6 +10,10 @@ AegisFlow is a control plane for detecting and safely repairing inconsistent *bu
 This is a production-oriented portfolio architecture, not a claim of production readiness. Phase 0 established the specification; P0.1 now implements only the application foundation below. Unless marked implemented, the diagrams, business flows, durable records, and security controls in this document describe the intended design. Multi-region operation, arbitrary workflow authoring, Kubernetes, Temporal, Redis, pgvector, and automatic financial compensation are outside the MVP unless later evidence justifies them.
 
 ### Implemented snapshot — P0.1 (2026-10-12)
+
+The following P0.1 snapshot is historical. Current P0.2 source adds independent V1 migrations, restricted runtime/migration roles, and internal Order/Payment/Warehouse persistence operations. The default foundation still exposes health only. With `postgres`, each simulator has its own JPA entities/repositories and a Spring transaction joining local state, a durable replay result, and immutable outbox intent. Core V1 establishes only its own schema/migration boundary. No application calls a sibling or writes another owner's database. [ADR 0008](../adr/0008-persistence-primitives-and-database-roles.md) and [DATA_MODEL section 0](DATA_MODEL.md) name the implemented subset; the evidence/handoff distinguishes source from executed results.
+
+The current stored flow is `internal typed command → validation/canonical request digest → unique replay claim → owned aggregate/lines → immutable outbox envelope → local commit`. Replays return the original resource/event result; changed material conflicts. An exception rolls the entire unit back. These internal methods have no HTTP ingress yet; authenticated APIs and event consumers will supply trusted tenant context in their approved stages. Outbox rows remain pending until a P0.3 relay exists.
 
 ```mermaid
 flowchart LR

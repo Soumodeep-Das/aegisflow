@@ -2,6 +2,8 @@
 
 **Status:** Phase 0 specification. Deadlines are configurable design assumptions until product values are chosen. No invariant engine or measured result exists yet.
 
+P0.2 adds source-level storage guards relevant to SAFE-001/002/004 and INV-005: separate database roles, composite tenant references, stable replay/event identities, optimistic versions, and same-aggregate/version outbox uniqueness. Producer input/hash vectors have focused unit evidence; the PostgreSQL assertions remain unexecuted. No invariant evaluation, authenticated API, worker, recovery or resolution implementation exists yet. See [ADR 0008](../adr/0008-persistence-primitives-and-database-roles.md) and [test evidence](../evidence/TEST_RESULTS.md).
+
 ## 1. Evaluation model
 
 An invariant is a versioned, machine-evaluable rule with:

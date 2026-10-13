@@ -1,7 +1,7 @@
 # Prioritized roadmap
 
-**Last reviewed:** 2026-10-12
-**Observed product state:** P0.1 foundation implemented and verified on Java 21; business functionality is not implemented.
+**Last reviewed:** 2026-10-13
+**Observed product state:** P0.1 remains the last fully verified milestone. Approved P0.2 persistence source checkpoint exists; build/PostgreSQL acceptance evidence is pending.
 
 **Local source checkpoint:** `cb7bfaf`, followed by the documentation continuity checkpoint described in the handoff. No push or external deployment occurred.
 
@@ -15,11 +15,13 @@ The owner approved P0.1 and resumed it after a pause. Four independent Spring Bo
 
 Four service-owned PostgreSQL configurations and a digest-pinned Compose definition exist. Compose configuration validation passed, but the Docker engine was unavailable: the optional PostgreSQL integration test was **skipped**, not passed. No database or business workflow has been demonstrated. See [test evidence](evidence/TEST_RESULTS.md), [the codebase guide](learning/CODEBASE_GUIDE.md), and [ADR 0007](adr/0007-foundation-profiles-and-stage-boundaries.md).
 
-## Now — stop at P0.1 and prepare the P0.2 gate
+## Now — finish verification of the existing P0.2 checkpoint
 
-Do not start P0.2 without new owner approval. The highest-priority preparation is a working local Docker engine, then rerunning the PostgreSQL test so the persistence milestone starts from real infrastructure evidence. Use Java 21 via `JAVA_HOME`; the host's Java 26 is outside this repository's enforced baseline. No additional Maven installation is needed because the wrapper pins Maven.
+The owner approved P0.2 and allowed stopping at a meaningful checkpoint. Code now includes four V1 histories, separate migration/runtime roles, and minimal internal simulator state/replay/outbox operations. Continue from these actual paths rather than repeating the design review or implementation. The highest-priority task is the Java 21 clean reactor plus real PostgreSQL migration/atomicity/replay/concurrency/privilege gate with zero skips. This session's sandbox blocked global Maven-cache writes, Maven Central DNS, and the Docker engine pipe; successful host Docker use does not prove sandbox access. See evidence/handoff for exact attempts and commands.
 
-P0.2 must design separate migration/runtime database roles before business persistence uses the current local bootstrap owners. Core must receive only its own database credentials. Local credentials belong in ignored environment files and must never be sent in chat or committed.
+The role design is implemented in bootstrap SQL/Compose/profile configuration and must be privilege-tested against PostgreSQL. Core receives only its own runtime/Flyway credentials. Local credentials remain ignored environment configuration. P0.2 is not complete until its gate passes; P0.3 remains unapproved.
+
+The current focused evidence is 21 pure unit passes and 4 Core architecture passes; 4 Core PostgreSQL ITs skipped. Compose parsing and script syntax passed. The full reactor failed on sandbox loopback access, and simulator compilation/dependency resolution remains blocked. Finish the normal local gate and inspect actual errors before adding new code.
 
 ## Next — P0 functional detection slice
 
@@ -27,8 +29,8 @@ The single highest-value outcome is one reproducible flow from a simulator's com
 
 Priority order:
 
-1. Obtain P0.2 approval and prove PostgreSQL connectivity with Docker available.
-2. Design restricted database roles, then add service-owned Flyway migrations and one transactional state/outbox path.
+1. Verify the existing P0.2 source on Java 21 and real PostgreSQL; correct any actual migration/transaction defects.
+2. Review the recorded gate/evidence and obtain P0.3 approval.
 3. Kafka event contract fixtures and publisher recovery.
 4. Control-plane inbox uniqueness, tenant correlation, projection, and schema quarantine.
 5. One clock-driven invariant and durable incident/evidence timeline.

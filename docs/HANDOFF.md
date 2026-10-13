@@ -1,4 +1,102 @@
-# Handoff — P0.1 foundation
+# Handoff — P0.2 local source checkpoint, verification pending
+
+**Closing snapshot:** 2026-10-13T03:58:40Z, Codex resumed P0.2 checkpoint (2026-10-13 IST).
+**Authorized scope:** P0.2 only. Owner requested a meaningful, tested where available, understandable local checkpoint and exact local follow-up actions. P0.3 is unapproved and unstarted.
+**Branch/repository:** `main`, original `C:\Users\User\Documents\Codex\2026-10-11\referenced-chatgpt-conversation-this-is-an\outputs\aegisflow`.
+**Commit convention:** this source/test/documentation checkpoint will be a new local commit following entry `c2c93e3`; its actual hash is recorded in the following continuity update. Resolve state with `git rev-parse HEAD`, `git status --short --branch`, and `git log -3 --oneline`. Generated cache/work/target and private values are excluded. No push, deployment, remote change or history rewrite occurred.
+
+## Implemented source and exact entry points
+
+Four independently managed V1/Flyway histories and separate bootstrap/migration/runtime roles exist. Core has its own schema boundary and no simulator credentials/business tables. Simulators have initial local state/replay/outbox primitives, composite tenant keys/FKs, optimistic counters, request-key/event/version uniqueness, immutable pending envelopes, canonical hashes, and restricted grants.
+
+Actual flow: internal typed command → validated material digest → PostgreSQL unique replay claim → owned JPA state/lines → immutable outbox append → one Spring transaction commit. Same material request returns stored resource/event IDs; changed material conflicts; append failure must roll everything back. No business HTTP ingress, Kafka consumer/relay, recovery, AI, Keycloak or UI exists.
+
+| Owner | Actual entry and important tests |
+|---|---|
+| Order | `simulators/order-service/src/main/java/com/aegisflow/simulator/order/persistence/OrderPersistenceService.java#create`; `OrderPersistenceTests` (6), `OrderPersistenceIT` (8), OrderCreated fixture |
+| Payment | `PaymentCreation.recordInitialOutcome` interface; `simulators/payment-service/src/main/java/com/aegisflow/simulator/payment/persistence/internal/TransactionalPaymentCreationService.java`; validator/hash tests (9), `PaymentPersistenceIT` (9) |
+| Warehouse | `simulators/warehouse-service/src/main/java/com/aegisflow/simulator/warehouse/reservation/ReservationApplicationService.java#createReservation`; command/event tests (6), `WarehousePersistenceIT` (8) |
+| Core/roles | `control-plane/src/main/resources/db/migration/V1__core_database_boundary.sql`; `PostgresInfrastructureIT` (4); `scripts/db/bootstrap-roles.sql`, `bootstrap-databases.ps1`, `verify-persistence.ps1` |
+
+Surviving work was reused. Payment schema/profile/hash review fixes were completed, including JPA-compatible VARCHAR columns. Warehouse's explicit Flyway URL now targets its Testcontainer. Documentation includes actual classes/flow, JPA/Hibernate/transaction explanations, debugging exercise, Q16–Q20, ADR 0008, accurate evidence/limitations and roadmap.
+
+## Actually verified versus pending
+
+- **21 pure unit tests passed**, zero failures/errors/skips, from actual source/test files via an ignored cached-library diagnostic using unchanged Boot 4.1.1/Java 21. Covers input/money, canonical digests/material request rules and producer envelope/hash fixtures. This is not JPA/database/full-reactor evidence.
+- **4 Core architecture tests passed** in a focused module run. Its **4 PostgreSQL ITs skipped** due denied Docker pipe; exit 0 did not satisfy the persistence gate.
+- Compose configuration passed quietly with temporary private values. Three PowerShell scripts parsed with zero errors. Documentation checker: 29 Markdown, 20 required docs, 108 local links, 7 Mermaid, 1 JSON, 16 scenarios, 20 Q&As, 8 ADRs, zero issues. Whitespace checks passed. No Mermaid rendering/security scan/load/Kafka fault result is claimed.
+- Full offline reactor **failed** at 00:39:17 IST: Core 4 pass/1 HTTP error/0 assertion failures/0 skips, because Tomcat's loopback connection was denied. Simulators were not reached.
+- Later test-compile **failed** on uncached JPA starter 4.1.1; online retry **failed** Maven Central DNS at 09:21:36 IST. Core new test sources compiled. Full simulator/JPA/IT compilation is not proven.
+- Real migrations, state/outbox atomicity, rollback/replay/races, constraints/locking/privileges, PostgreSQL startups and current four-JAR startup regression remain **unverified here**. P0.1 is the last completed milestone.
+
+Exact commands/timestamps/failures/counts and user-observed P0.1 build remain in `docs/evidence/TEST_RESULTS.md` and the journal. No test was disabled, faked or relabeled. The 25 simulator ITs have not run.
+
+## Single highest-priority next task: normal host verification gate
+
+Use this existing repository in ordinary PowerShell, with Java 21, Maven Central/container-registry access and Docker Desktop's Linux engine available. The sandbox's engine/network/loopback failures do not establish a fault in the owner's Docker installation.
+
+```powershell
+Set-Location 'C:\Users\User\Documents\Codex\2026-10-11\referenced-chatgpt-conversation-this-is-an\outputs\aegisflow'
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+.\scripts\verify-persistence.ps1
+.\scripts\verify-startup.ps1
+.\scripts\verify-docs.ps1
+```
+
+The persistence script runs the **normal clean reactor plus real PostgreSQL tests** and rejects all IT skips. It uses temporary containers; no .env/shared passwords/persistent Compose bootstrap is needed. On failure, preserve the final reactor/test summary and first underlying error; fix that exact issue within P0.2. Do not recreate these paths. Share no private .env/tokens/passwords.
+
+Acceptance: full reactor/unit/HTTP/module checks; all owners' real migrations/validation and commit/rollback/replay/concurrency/tenant/version/immutable-payload/privilege assertions; zero IT skips; startup/docs checks; accurate follow-up evidence. Only then mark P0.2 complete and request P0.3 approval.
+
+**Safe recovery/hazards:** no reset/checkout overwrite/volume deletion. Bootstrap explicitly preserves existing identities/volumes. Runtime has limited grants; startup Flyway credentials remain in its own process (not a security sandbox). Initial V1 files are unexecuted here; do not edit an applied migration after deployment. Internal methods require later trusted authenticated ingress; no complete public tenant/authentication proof exists.
+
+---
+
+## Archived interrupted-entry snapshot (current closing record above supersedes it)
+
+**Current snapshot:** 2026-10-13T03:46:50Z, Codex resumed continuation (2026-10-13 IST).
+**Authorization:** P0.2 persistence, independent Flyway migrations, and atomic state/outbox writes. Owner resumed after “stop for today,” with instructions to preserve progress and stop at a meaningful documented checkpoint. P0.3 is not authorized.
+**Existing repository:** `C:\Users\User\Documents\Codex\2026-10-11\referenced-chatgpt-conversation-this-is-an\outputs\aegisflow`, branch `main`.
+**Current HEAD:** `c2c93e3028be6929bd7894864bcd6bc3f8d1be3b`. P0.2 changes survived as modified/untracked files and are not committed yet. No push/deployment or destructive history change occurred.
+
+## Surviving implementation — do not recreate
+
+- Database roles/bootstrap: root Compose/.env example; `scripts/db/bootstrap-roles.sql`, `bootstrap-databases.ps1`, `verify-persistence.ps1`; root inherited infrastructure-tests/Failsafe profile.
+- All four postgres profiles separate runtime/Flyway credentials. Core V1 establishes its independent schema/history boundary; Core `PostgresInfrastructureIT` tests migration, health and privileges, with no Core business tables.
+- Order `persistence/OrderPersistenceService.java`, typed command, JPA entity/repository, canonical JSON, outbox appender, V1 orders/lines/replay/outbox schema, frozen OrderCreated fixture, six new unit tests and eight PostgreSQL IT tests.
+- Payment `PaymentCreation` interface and `persistence/internal/TransactionalPaymentCreationService.java`, command/entities/repositories/hash/outbox code, V1 migration, unit tests and `persistence/internal/PaymentPersistenceIT.java`. Final schema review fixes were unfinished at interruption (tenant length consistency, fail-closed JSON/reason checks, same-version outbox uniqueness).
+- Warehouse `reservation/ReservationApplicationService.java`, typed command/entity/repository/hash/outbox code, V1 migration, six unit tests and eight `WarehousePersistenceIT` tests. Deferred tenant aggregate/outbox FK, same-version uniqueness and fail-closed envelope/reason checks were applied before interruption.
+- ADR 0008 and current-source/authorization updates in AGENTS, README, roadmap, implementation plan, data model, event contracts, and system architecture.
+
+No business HTTP API, Kafka relay/consumer, recovery, AI, Keycloak or frontend was introduced. Source exists; PostgreSQL results remain unproven. P0.1 is the last completed milestone.
+
+## Last observed tests and blockers
+
+Java 21/Maven were already confirmed: Temurin 21.0.12.1 at `C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot`, wrapper Maven 3.10.0. Earlier approved Docker info reported engine 29.8.2; the subsequent sandbox denied its engine pipe. Do not confuse host Docker availability with coding-session access.
+
+Global `.m2` writes failed at Maven lock files; automatic escalation was rejected by the granular policy. Existing artifacts were copied read-only into ignored `.cache/maven-repository`. An early build before that copy finished failed to resolve the parent/Maven Central DNS. The completed-copy offline root run was:
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+$env:TEMP = Join-Path (Get-Location) '.cache\tmp'
+$env:TMP = $env:TEMP
+.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -l .cache/p0.2-clean-verify-offline.log clean verify
+```
+
+It exited **1** at **2026-10-13 00:39:17 IST**, 24.594 seconds. Core compiled and executed five default tests: **4 passed, 0 assertion failures, 1 error, 0 skips**. All four architecture tests passed. Core health startup failed with `Unable to establish loopback connection` caused by `java.net.SocketException: Permission denied: connect`. Simulator reactor modules were not reached. New simulator compilation, unit tests, real PostgreSQL IT, Compose runtime and startup regressions remain unverified.
+
+The previous handoff update failed atomically because an evidence-file heading did not match; this current snapshot repairs that missing continuity record before further work.
+
+## Exact next task
+
+Finish the existing Payment schema review fixes; review only new Warehouse configuration/test issues as needed. Resolve compilation, then run available unit/architecture checks and the full Java 21 reactor. Run real PostgreSQL via `.\scripts\verify-persistence.ps1` only with accessible Docker; the script rejects skipped ITs. Record actual counts/errors and preserve failures. Complete the guide (JPA/Hibernate/transactions/Flyway/outbox, actual paths, debugging, five answered Q&As), limitations, evidence, journal, roadmap and handoff, then make a coherent local checkpoint. Stop before P0.3.
+
+For normal local verification: `.\mvnw.cmd -B -ntp clean verify`, `.\scripts\verify-persistence.ps1`, `.\scripts\verify-startup.ps1`, `.\scripts\verify-docs.ps1`. For persistent local DBs fill ignored .env privately, validate Compose quietly, start the four databases, then run the repeatable bootstrap. Never delete existing volumes or pass simulator credentials to Core.
+
+Preserve the working tree; no reset/checkout/volume deletion. Ignored cache/logs are diagnostics. Resolve current state with `git status --short --branch` and `git rev-parse HEAD`.
+
+---
+
+## Historical P0.1 handoff (preserved; superseded by current snapshot above)
 
 **Snapshot:** 2026-10-12T04:57:16Z (10:27:16 IST), implementation completion session.
 **Authorization:** Phase 1 milestone P0.1 only. Owner approved it, paused, then requested continuation. **Stop here: P0.2 is not approved.**

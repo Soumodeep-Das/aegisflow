@@ -2,8 +2,25 @@
 spring:
   datasource:
     url: ${ORDER_DB_URL:jdbc:postgresql://127.0.0.1:5434/aegisflow_order}
-    username: ${ORDER_DB_USER:aegisflow_order}
-    password: ${ORDER_DB_PASSWORD}
+    username: ${ORDER_DB_RUNTIME_USER:aegisflow_order_runtime}
+    password: ${ORDER_DB_RUNTIME_PASSWORD}
+    hikari:
+      connection-timeout: 5000
   flyway:
+    user: ${ORDER_DB_MIGRATION_USER:aegisflow_order_migrator}
+    password: ${ORDER_DB_MIGRATION_PASSWORD}
+    schemas: aegisflow
+    default-schema: aegisflow
+    create-schemas: false
     locations: classpath:db/migration
-    fail-on-missing-locations: false
+    fail-on-missing-locations: true
+    clean-disabled: true
+    placeholders:
+      runtimeRole: ${ORDER_DB_RUNTIME_USER:aegisflow_order_runtime}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: aegisflow

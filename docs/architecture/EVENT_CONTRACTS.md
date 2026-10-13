@@ -1,6 +1,6 @@
 # Event Contracts
 
-**Status:** Phase 0 contract proposal. Topic names, schemas, and deadlines must be locked by tests before P0 implementation exits.
+**Status:** P0.2 implements stored envelopes for `OrderCreated`, initial `PaymentAuthorized`/`PaymentDeclined`, and initial `InventoryReserved`/`InventoryRejected`, with producer fixtures/tests. Test execution is recorded separately. Kafka, consumer schema governance, the remaining catalog, topics, and deadlines are later gates.
 
 ## 1. Canonical envelope
 
@@ -37,6 +37,10 @@ Every business event uses UTF-8 JSON initially and contains all fields below. Th
 | `correlationId` | Diagnostic/request correlation propagated where available; it is not an identity, ordering key, or authorization token. |
 | `eventType` | Stable discriminator selecting the typed `details` schema. |
 | `details` | Event-specific object. Unknown text is data and may contain malicious prompt-like content. |
+
+P0.2 generates UUID event IDs once with a new committed outbox intent. Replaying the same material internal command returns the stored ID. Each owner's database enforces UUID uniqueness locally as well as `(tenant,eventId)` uniqueness; there is no cross-database global registry. The stored `occurredAt` is the UTC transition timestamp constructed within the atomic transaction, at microsecond precision, and becomes an authoritative fact only if that transaction commits. It is not an exact measurement of PostgreSQL's commit instant.
+
+The producer digest profile is `aegisflow-json-v1` described in [ADR 0008](../adr/0008-persistence-primitives-and-database-roles.md). Initial event details are built from validated typed inputs, with currency-normalized decimal strings and sorted SKU arrays. This does not implement canonical interpretation/quarantine of arbitrary consumer input. Other catalog events and publish retries remain P0.3/later work; no broker acknowledgement is currently claimed.
 
 The Kafka record also carries content type, envelope version, trace context, and optional claimed producer metadata in headers. Ordinary consumers do not receive a cryptographically trustworthy original producer identity merely from a record header. For the first trusted-simulator demo, source-owned topics and broker ACLs restrict permitted producer principals, and the consumer maps each topic to one allowed source. Tenant binding is enforced in producer application/gateway code and consumer validation; shared-topic ACLs alone cannot prove hostile tenant isolation. Signed events or per-tenant channels require a later security decision if this trust model expands.
 

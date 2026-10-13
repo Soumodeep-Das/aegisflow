@@ -4,7 +4,7 @@ This file is mandatory guidance for any human, Codex session, or other coding ag
 
 ## Mission and current boundary
 
-AegisFlow is a production-minded student portfolio project, not a production safety claim. It will detect and investigate inconsistent simulated business transactions and, in later milestones, orchestrate constrained recovery through service-owned APIs. The owner approved Phase 1, milestone P0.1: Java 21/Maven foundation, four runnable Spring Boot applications, Core Modulith boundaries, health/startup tests, and minimal database/infrastructure configuration. Stop after P0.1; P0.2 business persistence/outbox implementation still requires approval.
+AegisFlow is a production-minded student portfolio project, not a production safety claim. It will detect and investigate inconsistent simulated business transactions and, in later milestones, orchestrate constrained recovery through service-owned APIs. P0.1 is the completed foundation. The owner explicitly approved Phase 1 milestone P0.2: service-owned persistence, Flyway migrations, and atomic state/transactional-outbox writes. On 2026-10-13 the owner allowed stopping at a meaningful documented P0.2 checkpoint. Complete its verification gate before calling P0.2 complete. Stop before P0.3; Kafka relays/consumers, recovery, AI, identity infrastructure, and unrelated features require further approval.
 
 ## Start-of-session checklist
 

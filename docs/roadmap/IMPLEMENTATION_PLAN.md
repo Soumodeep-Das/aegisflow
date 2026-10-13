@@ -1,8 +1,8 @@
 # Implementation plan
 
 **Planning horizon:** preserve a useful, teachable repository even if assisted coding stops after 6–7 days.
-**Current authorization:** P0.1 foundation explicitly approved and implemented; stop after its checkpoint.
-**Next approval gate:** explicit authorization is required for P0.2 service-owned persistence/outbox. Product P1 recovery is not authorized.
+**Current authorization:** P0.2 service-owned persistence/outbox explicitly approved; owner permits stopping at a meaningful documented checkpoint. P0.1 remains the last fully verified milestone.
+**Next approval gate:** P0.3 requires explicit authorization after the P0.2 gate. Product P1 recovery is not authorized.
 
 ## Delivery principles
 
@@ -86,14 +86,14 @@ P0.1 acceptance evidence:
 
 ### P0.2 Service-owned persistence and outbox
 
-**Next milestone; not authorized or started.** First make Docker available and rerun `mvnw.cmd -pl control-plane -Pinfrastructure-tests verify` with no PostgreSQL skip. Design and test separate migration/runtime roles before applications use database persistence; the P0.1 Compose owners are local bootstrap administrators only.
+**Approved source checkpoint; verification gate pending.** Four independent V1 migrations, role bootstrap/profile separation, and internal Order-create/initial Payment-outcome/initial Warehouse-outcome transactions are now present. [ADR 0008](../adr/0008-persistence-primitives-and-database-roles.md) freezes the minimal schema, identifiers, money, version, and digest choices. Run the root Java 21 build and `scripts/verify-persistence.ps1` with a working engine; that script rejects skips. Preserve the current code instead of recreating it. The current handoff names exact paths and blocked checks.
 
 Implement the smallest state transitions needed for the event choreography in SYSTEM_ARCHITECTURE.md. Each simulator gets its own Flyway history and PostgreSQL database/schema ownership. Business-state mutation and resulting outbox row commit together; consumed-event inbox joins this transaction when consumers arrive in P0.3. Publication will be asynchronous and replayable; actual Kafka processing remains P0.3, not P0.2.
 
 Acceptance:
 
 - a PostgreSQL integration test proves rollback leaves neither state nor outbox row;
-- a committed-outbox/retry test preserves stable IDs and pending publication after a simulated publisher failure; the real Kafka commit-then-publisher-failure scenario (`FM-004`) is completed with P0.3;
+- a committed-outbox/repeated-command test preserves stable IDs and pending publication intent without another state effect; no fake publisher is added; the real Kafka commit-then-publisher-failure scenario (`FM-004`) is completed with P0.3;
 - event IDs and aggregate/business IDs remain stable across publish retries;
 - runtime AegisFlow receives no simulator DB credentials or privileges; test-harness DB inspection identities are isolated and never passed to the application;
 - event JSON matches `EVENT_CONTRACTS.md` fixtures.

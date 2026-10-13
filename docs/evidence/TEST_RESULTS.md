@@ -1,4 +1,60 @@
-# P0.1 test evidence
+# Test evidence — current P0.2 checkpoint and preserved P0.1
+
+## P0.2 interruption evidence — 2026-10-13
+
+This source checkpoint is incomplete and uncommitted at resumed entry. No PostgreSQL assertion has run yet. Prior P0.1 evidence below is historical.
+
+- User-observed baseline: `./mvnw.cmd clean verify` on Java 21/Temurin 21.0.12.1, five reactor modules SUCCESS, 53.197 seconds, finished 2026-10-12 12:29:48 IST. The supplied reactor summary did not state test counts.
+- `mvnw.cmd --version`: Maven 3.10.0, Java 21.0.12.1. The user JDK path exists.
+- `docker info --format '{{.ServerVersion}}'`: initial sandbox attempt denied named-pipe access; the approved earlier-turn check returned 29.8.2. After permissions changed, sandbox engine access was denied again. No container result is inferred from the engine version.
+- Initial targeted Maven compile: exit 1, protected global Maven-cache lock-file access failure. Automatic escalation was rejected by the granular approval policy.
+- Existing Maven artifacts copied into ignored workspace `.cache/maven-repository`; no protected global cache mutation. Premature workspace compile while copy was incomplete: exit 1, unresolved Boot parent and Maven Central DNS. No compilation result.
+- Exact completed-copy command: `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -l .cache/p0.2-clean-verify-offline.log clean verify`, with Java 21 and workspace TEMP/TMP.
+- Result: **exit 1**, 24.594 seconds, finished **2026-10-13 00:39:17 IST**. Core main/test sources compiled. Five default tests executed: **4 pass, 0 failures, 1 error, 0 skips**. The four architecture tests passed. Health-context startup failed because Tomcat could not establish its internal loopback connection: `java.net.SocketException: Permission denied: connect`. Simulator modules were not reached.
+- New simulator compile/unit/IT results, real PostgreSQL migrations/atomicity/constraints, Compose validation/runtime, and P0.2 packaged startup are **not executed/verified** at this checkpoint. P0.2 cannot be marked complete. No test was disabled or faked.
+
+## Resumed P0.2 verification
+
+### Resumed P0.2 checks — 2026-10-13 (Java 21)
+
+All commands ran in the existing repository. `JAVA_HOME` selected the installed Temurin 21 path above; TEMP/TMP used `.cache/tmp`. Existing cached dependencies were copied into the writable ignored `.cache/maven-repository`; versions and the normal reactor were unchanged.
+
+| Exact command/check | Observed result |
+|---|---|
+| `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -l .cache/p0.2-test-compile.log test-compile` | exit 1, 09:17:53 IST, 6.559 s; Core compilation succeeded/up-to-date; Order blocked by absent `spring-boot-starter-data-jpa:4.1.1` in the offline cache; remaining simulators not reached |
+| `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane -Pinfrastructure-tests -Dtest=ControlPlaneArchitectureTests -l .cache/p0.2-core-available-checks.log verify` | exit 0, 09:19:44 IST, 31.152 s; **4 architecture tests passed**; **4 PostgreSQL ITs skipped**, zero failures/errors; Docker named-pipe access denied. This focused exit 0 is not the P0.2 gate |
+| `.\mvnw.cmd -B -ntp '-Dmaven.repo.local=.cache/maven-repository' -pl simulators/order-service -am -l .cache/p0.2-online-test-compile.log test-compile` | exit 1, 09:21:36 IST, 3.917 s; dependency descriptor download blocked by `No such host is known (repo.maven.apache.org)`; no simulator compilation claimed |
+| `docker info --format '{{.ServerVersion}}'` | exit 1, current engine pipe permission denied |
+| `docker compose --profile postgres config --quiet` | exit 0; twelve temporary process-only password values, existing process values restored; no expanded secrets or persistent containers |
+| PowerShell Parser.ParseFile over `bootstrap-databases.ps1`, `verify-persistence.ps1`, `verify-startup.ps1` | 0 syntax errors; static parse only, not database/runtime execution |
+| `git diff --check` | exit 0; LF/CRLF conversion notices only |
+
+An ignored diagnostic Maven harness at `work/persistence-unit-check/pom.xml` compiled the **actual existing pure source/test files** using the same Boot 4.1.1 parent, Java 21, and cached managed MVC/JDBC/test libraries. It did not replace the reactor, use substitute implementations, modify POM baselines, or exercise JPA/HTTP/database behavior. Initial harness compilation failed because its selected-source list omitted `IdempotencyRecordStore`; adding that existing source fixed the harness selection. No production test was disabled.
+
+Successful diagnostic command (repository root; `$repoCache` is the absolute workspace cache path):
+
+```powershell
+$repoCache = Join-Path (Get-Location) '.cache\maven-repository'
+.\mvnw.cmd -B -ntp -o "-Dmaven.repo.local=$repoCache" -f work/persistence-unit-check/pom.xml -l .cache/p0.2-isolated-pure-unit-rerun.log clean test
+```
+
+Exit **0**, **09:21:09 IST**, **11.055 s**, **21 tests, 0 failures/errors/skips**:
+
+| Actual test class | Pass count |
+|---|---:|
+| `OrderPersistenceTests` | 6 |
+| Payment `CanonicalJsonTest` | 3 |
+| `PaymentCommandValidatorTest` | 6 |
+| `CreateReservationCommandTests` | 3 |
+| `WarehouseEventContractTests` | 3 |
+
+The harness and raw logs are ignored local diagnostics; the original test classes are committed source and run in the normal reactor on a host with dependencies. The canonical producer fixtures/hash vectors, exact money/input validation and request material-change rules passed. These 21 unit passes do not prove transaction atomicity, persisted constraints, JPA wiring, or event delivery.
+
+The resumed code review corrected Payment tenant-length/profile/fail-closed-check gaps and Warehouse's explicit Flyway Testcontainer URL override. All simulator PostgreSQL integration tests are written but **not executed** here. The full reactor, foundation/postgres startups, real migrations, rollback/commit/replay/concurrency/locking/privileges remain the next local gate. `scripts/verify-persistence.ps1` runs the normal clean reactor plus all Testcontainers tests and rejects any skipped IT; it must pass before marking P0.2 complete.
+
+Pre-checkpoint documentation validation passed: **Markdown=29 Required=20 LocalLinks=108 Mermaid=7 JSON=1 Scenarios=16 InterviewQA=20 ADRs=8 Issues=0**. Working/staged whitespace checks passed and no private/generated/cache/work paths were staged. One initial checkpoint shell wrapper exited 1 after mistakenly reading unset native `$LASTEXITCODE` for a successful PowerShell documentation script; it stopped before staging. The corrected wrapper used terminating PowerShell errors and native status checks only for native commands, and passed. This was a wrapper guard error, not a documentation-check failure.
+
+## Historical P0.1 results (unchanged)
 
 **Observed:** 2026-10-12, Windows / PowerShell 7.6.5. This is foundation evidence, not production certification or product evaluation. Source milestone: `cb7bfafed49a58f08cba2352aafb8d7ecf8f6e33`; tests ran against its exact source before committing. [HANDOFF.md](../HANDOFF.md) records continuation status. Phase 0 history remains at `2bae1f3` and `6f6daaf`.
 

@@ -169,3 +169,42 @@ Stop after P0.1. The next task is **P0.2 approval plus working Docker/PostgreSQL
 At 2026-10-12T04:57:16Z (10:27:16 IST), `git commit -m "feat(foundation): establish verified P0.1 application skeletons"` succeeded (exit 0) as `cb7bfafed49a58f08cba2352aafb8d7ecf8f6e33`, 73 files, 2,545 insertions and 163 deletions. Final XML totals were independently summed as 14 tests with zero failures/errors/skips; staged whitespace verification passed and the wrapper's executable mode is `100755`. Git status then showed clean `main`. No generated/private paths were staged and no remote exists.
 
 The following documentation-only continuity checkpoint records this actual source hash in the handoff, evidence and roadmap. It changes no application source. After it commits, rerun the current documentation check and inspect clean Git status; source tests remain those of `cb7bfaf`. Stop before P0.2 and request new milestone approval. Owner preparation is recorded in the handoff (Docker engine, Java 21 selection, optional local rehearsal; no AI keys needed).
+
+## 2026-10-13 — approved P0.2 persistence checkpoint, interrupted and resumed
+
+The owner approved P0.2 only, requested exact continuation without repeating work, allowed a meaningful checkpoint, stopped work for the day, then resumed it. Original repository/history at `c2c93e3` and `cb7bfaf` were preserved. Entry inspection confirmed surviving modified/untracked source; the interrupted handoff had not saved because a patch's evidence heading mismatched. A current handoff was written before continuing. No P0.3 work, push, deployment, history rewrite or volume deletion occurred.
+
+### Source changes and decisions
+
+- Kept four separately owned PostgreSQL instances/databases/networks/volumes. Added explicit bootstrap/migration/runtime role variables, repeatable non-destructive role SQL/script, and separate runtime/Flyway connections. Core V1 establishes only its own schema/history; no speculative Core business tables.
+- Implemented initial internal Order creation, synthetic Payment outcome and Warehouse reservation outcome services. Each local Spring transaction joins owned JPA state/lines, JDBC durable request replay claim, and complete immutable outbox intent. No HTTP business ingress, consumer/relay, financial provider/recovery, AI, Keycloak or frontend was added.
+- Added composite tenant keys/FKs, request-key constraints, pending indexes, optimistic counters, stable UUID results, exact currency amounts, sorted/versioned SHA-256 producer/request JSON, outbox identity/payload protection and restricted table/column grants. ADR 0008 records the minimal scope and tradeoffs; planned inbox/decisions/cancellation/recovery tables remain deferred.
+- Wrote PostgreSQL tests for migrations, commit/rollback after actual append, replay/conflict/concurrent keys, tenant/event/version constraints, locking, privileges and postgres health. Warehouse Testcontainers now overrides its explicit Flyway URL. Payment's profile gating, tenant lengths and fail-closed nullable/JSON checks were corrected during resumed review.
+- Updated current architecture/contracts/decisions, README/roadmap/limitations, actual learning paths and flow, rollback debugging exercise and Q16–Q20 with answers. Prior history/evidence and Q1–Q15 remain preserved.
+
+### Actual checks and limits
+
+Java 21/Temurin 21.0.12.1 and Maven 3.10.0 were confirmed earlier. Global `.m2` writes and subsequent Docker pipe access were denied by the sandbox; automatic escalation was rejected by its granular policy. Existing Maven artifacts were copied into ignored workspace cache. Host Docker Desktop working is distinct from sandbox engine access.
+
+| Exact command/check | Result |
+|---|---|
+| `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -l .cache/p0.2-clean-verify-offline.log clean verify` | exit 1, 00:39:17 IST, 24.594 s; Core 4 architecture passes/1 health error/0 assertion failures/0 skips; Tomcat loopback permission denied; simulators not reached |
+| `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -l .cache/p0.2-test-compile.log test-compile` | exit 1, 09:17:53 IST, 6.559 s; Core compiles; Order lacks cached JPA starter 4.1.1; remaining modules not reached |
+| `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane -Pinfrastructure-tests -Dtest=ControlPlaneArchitectureTests -l .cache/p0.2-core-available-checks.log verify` | exit 0, 09:19:44 IST, 31.152 s; **4 architecture passes**, **4 PostgreSQL skips**, 0 failures/errors; engine pipe denied |
+| `.\mvnw.cmd -B -ntp '-Dmaven.repo.local=.cache/maven-repository' -pl simulators/order-service -am -l .cache/p0.2-online-test-compile.log test-compile` | exit 1, 09:21:36 IST, 3.917 s; uncached JPA descriptor download blocked by Maven Central DNS |
+| `mvnw.cmd -B -ntp -o "-Dmaven.repo.local=$repoCache" -f work/persistence-unit-check/pom.xml -l .cache/p0.2-isolated-pure-unit-rerun.log clean test` | exit 0, 09:21:09 IST, 11.055 s; **21 pure source unit tests passed**, 0 failures/errors/skips |
+| `docker compose --profile postgres config --quiet` | exit 0 with twelve temporary secret process values, restored after check; no expanded configuration output |
+| PowerShell Parser.ParseFile of three operational scripts | 0 syntax errors; static only |
+| `git diff --check` | exit 0, line-ending notices only |
+
+The isolated ignored diagnostic POM compiled the actual pure source/test files with unchanged Boot 4.1.1/Java 21 cached libraries. First harness compile failed on an omitted existing source (`IdempotencyRecordStore`); the source-selection list was repaired and its rerun passed. This is validation/fingerprint/fixture evidence only, not JPA, HTTP, transaction, database or reactor acceptance. The normal committed tests remain enabled; the full local gate still needs to run. The original failed runs are retained in evidence.
+
+The user also supplied a later P0.1 local reactor success at 2026-10-12 12:29:48 IST, 53.197 seconds, all five modules successful, Temurin 21.0.12.1. That report's excerpt did not supply counts and is distinguished from these session checks.
+
+### Meaningful checkpoint and exact next step
+
+Checkpoint the current coherent source/tests/docs locally, with full P0.2 completion explicitly pending. The next task is a normal host PowerShell Java 21 run of `scripts/verify-persistence.ps1`, which runs the clean full reactor and real PostgreSQL ITs and rejects skips; then `verify-startup.ps1` and `verify-docs.ps1`. It uses temporary test containers and needs no shared credentials or persistent Compose bootstrap. Preserve the reports and fix actual failures within P0.2. Do not repeat the design review or recreate the source. Request approval before P0.3.
+
+Real PostgreSQL constraints/atomicity/concurrency/privileges, all simulator/JPA compilation, both startup profiles and packaged regression remain unverified here. Documentation check/commit identifiers and final working-tree state are recorded in the closing handoff checkpoint.
+
+Pre-checkpoint documentation checker passed with Markdown=29 Required=20 LocalLinks=108 Mermaid=7 JSON=1 Scenarios=16 InterviewQA=20 ADRs=8 Issues=0. Working/staged whitespace checks passed. The first shell checkpoint wrapper stopped before staging because it wrongly checked unset native LASTEXITCODE after a PowerShell script; its corrected guard passed. Staging contains 101 scoped source/configuration/document files and excludes cache/work/target/private .env. No full P0.2 completion is claimed by the local checkpoint.

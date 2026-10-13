@@ -1,6 +1,18 @@
 # Data Model
 
-**Status:** Phase 0 logical design. Names and columns are implementation contracts to validate in migrations; no schema currently exists.
+**Status:** P0.2 persistence source checkpoint; PostgreSQL execution gate pending. The logical future model below is preserved. Only the implemented subset in section 0 currently has migrations/code.
+
+## 0. Implemented P0.2 subset
+
+Each deployable owns one `aegisflow` schema in its separate PostgreSQL database and its own V1/Flyway history. Core V1 establishes the schema/role boundary only. Order V1 creates `orders`, `order_lines`, `idempotency_record`, `outbox_event`; Payment V1 creates `payments`, `idempotency_record`, `outbox_event`; Warehouse V1 creates `reservations`, `reservation_lines`, `idempotency_record`, `outbox_event`. Exact files are each deployable's `src/main/resources/db/migration/V1__*.sql`.
+
+Composite tenant/resource primary keys and same-tenant foreign keys constrain local references. Cross-service IDs are opaque references with no shared table or cross-database FK. Order now has its own durable create-request replay record, closing the previously unspecified duplicate-submission storage gap. Replay records bind resource/event IDs and a versioned material-request digest; their deferred FKs are validated at commit.
+
+Aggregate UUIDs are assigned explicitly by the caller; event/outbox UUIDs are generated once for a committed operation. Every outbox has tenant/event uniqueness and additional UUID uniqueness within that owner's database. A global cross-database constraint does not exist. `lock_version` is Hibernate's nonnegative optimistic counter; exposed business/event version is counter + 1. Money is exact `numeric(19,4)` plus application-validated ISO currency precision; timestamps are UTC instants in `timestamptz`. [ADR 0008](../adr/0008-persistence-primitives-and-database-roles.md) records tradeoffs and digest rules.
+
+State, line rows where needed, replay result, and complete immutable outbox intent share one local Spring transaction. A constraint/append exception rolls it back. Outbox status/attempt/timing/lease/fencing columns exist for later publication; no worker changes them now. Payload/identity updates and deletion are blocked by runtime privileges and a trigger. Bootstrap administrators, migrators, and runtime users are separate; Flyway never uses the normal runtime DataSource credentials.
+
+Initial internal operations create Order `CREATED`, synthetic Payment `AUTHORIZED`/`DECLINED`, and Warehouse `RESERVED`/`REJECTED` states. Core business tables, all consumer inboxes, Order decisions, Warehouse cancellation markers, incident/recovery/audit behavior, and subsequent state transitions below remain planned. Real PostgreSQL constraint/atomicity/role evidence must pass before declaring this checkpoint complete.
 
 ## 1. Ownership and database boundaries
 

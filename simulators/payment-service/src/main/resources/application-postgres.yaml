@@ -2,8 +2,25 @@
 spring:
   datasource:
     url: ${PAYMENT_DB_URL:jdbc:postgresql://127.0.0.1:5435/aegisflow_payment}
-    username: ${PAYMENT_DB_USER:aegisflow_payment}
-    password: ${PAYMENT_DB_PASSWORD}
+    username: ${PAYMENT_DB_RUNTIME_USER:aegisflow_payment_runtime}
+    password: ${PAYMENT_DB_RUNTIME_PASSWORD}
   flyway:
+    url: ${PAYMENT_DB_MIGRATION_URL:${PAYMENT_DB_URL:jdbc:postgresql://127.0.0.1:5435/aegisflow_payment}}
+    user: ${PAYMENT_DB_MIGRATION_USER:aegisflow_payment_migrator}
+    password: ${PAYMENT_DB_MIGRATION_PASSWORD}
     locations: classpath:db/migration
-    fail-on-missing-locations: false
+    schemas: aegisflow
+    default-schema: aegisflow
+    create-schemas: false
+    fail-on-missing-locations: true
+    placeholders:
+      runtimeRole: ${PAYMENT_DB_RUNTIME_USER:aegisflow_payment_runtime}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: aegisflow
+        jdbc:
+          time_zone: UTC

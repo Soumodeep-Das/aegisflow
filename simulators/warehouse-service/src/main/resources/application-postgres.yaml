@@ -2,8 +2,25 @@
 spring:
   datasource:
     url: ${WAREHOUSE_DB_URL:jdbc:postgresql://127.0.0.1:5436/aegisflow_warehouse}
-    username: ${WAREHOUSE_DB_USER:aegisflow_warehouse}
-    password: ${WAREHOUSE_DB_PASSWORD}
+    username: ${WAREHOUSE_DB_RUNTIME_USER:aegisflow_warehouse_runtime}
+    password: ${WAREHOUSE_DB_RUNTIME_PASSWORD}
   flyway:
+    url: ${WAREHOUSE_DB_URL:jdbc:postgresql://127.0.0.1:5436/aegisflow_warehouse}
+    user: ${WAREHOUSE_DB_MIGRATION_USER:aegisflow_warehouse_migrator}
+    password: ${WAREHOUSE_DB_MIGRATION_PASSWORD}
     locations: classpath:db/migration
-    fail-on-missing-locations: false
+    default-schema: aegisflow
+    schemas: aegisflow
+    create-schemas: false
+    fail-on-missing-locations: true
+    placeholders:
+      runtimeRole: ${WAREHOUSE_DB_RUNTIME_USER:aegisflow_warehouse_runtime}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: aegisflow
+        jdbc:
+          time_zone: UTC

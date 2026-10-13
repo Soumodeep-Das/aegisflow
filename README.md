@@ -1,6 +1,6 @@
 # AegisFlow
 
-> **Status:** P0.1 foundation implemented and verified: four runnable Spring Boot applications, HTTP health checks, and Core module-boundary tests. Business processing, database migrations, Kafka, security, AI, and recovery are not implemented. Stop before P0.2 unless the owner approves it.
+> **Status:** Approved P0.2 persistence checkpoint is implemented in source: four independent Flyway baselines, restricted database roles, and internal simulator state/replay/outbox transactions. The Java 21 and real PostgreSQL verification gate is pending; see the current handoff/evidence. P0.1's verified history is preserved. Stop before P0.3; Kafka, security infrastructure, AI, and recovery require approval.
 
 AegisFlow is a learning-oriented, production-minded portfolio project for detecting and safely recovering inconsistent distributed business transactions. The first scenario uses independently persisted Order, Payment, and Warehouse simulators. A control plane will correlate their events, detect breached business invariants, assemble attributable evidence, propose a constrained recovery, require deterministic policy and human approval where appropriate, invoke only versioned service APIs, and verify the result against authoritative service state.
 
@@ -42,7 +42,7 @@ flowchart LR
   AI[Optional AI provider] -. evidence-bounded advice .-> A
 ```
 
-This diagram is the intended product design, not today's runtime. P0.1 implements the four application shells and Core package boundaries. The control plane is one modular Spring Boot deployment; the simulators are separate deployables. Separate PostgreSQL instances are configured but were not started in the milestone environment. See [System Architecture](docs/architecture/SYSTEM_ARCHITECTURE.md) for implemented versus planned behavior.
+This diagram is the intended product design. The current code adds internal `create` persistence operations and stored outbox envelopes to P0.1's four application shells. Core remains a modular deployment with its own database; simulators stay separate deployables/databases. Real PostgreSQL execution of this checkpoint remains unverified. See [System Architecture](docs/architecture/SYSTEM_ARCHITECTURE.md) and [the handoff](docs/HANDOFF.md).
 
 ## Build and run the foundation
 
@@ -58,7 +58,7 @@ $env:JAVA_HOME = 'C:\path\to\your\jdk-21'
 .\scripts\verify-docs.ps1
 ```
 
-The last command requires PowerShell 7 on Windows. It starts all four packaged JARs on temporary ports, checks HTTP health, writes ignored reports under `.cache/startup/`, and stops only the processes it created. It does not leave services running.
+The scripts require PowerShell 7 on Windows. `verify-startup.ps1` starts all four packaged JARs on temporary ports, checks HTTP health, writes ignored reports under `.cache/startup/`, and stops only its own processes. `verify-docs.ps1` checks documentation consistency.
 
 On POSIX:
 
@@ -84,19 +84,23 @@ To keep an application running, invoke its JAR in a separate terminal using Java
 
 The default `foundation` profile needs no Docker or database. Health `UP` means the process started, **not** that commerce, authentication, or database behavior works. HTTP binds to loopback and exposes only Actuator health without internal details. Do not expose this unauthenticated foundation publicly.
 
-### Optional PostgreSQL configuration
+### PostgreSQL persistence verification
 
-`compose.yaml` defines four separately owned PostgreSQL instances on loopback ports 5433–5436. Copy `.env.example` to an ignored local `.env` and choose four separate local passwords; never commit or share that file. Docker Compose reads `.env`, but Java does **not** automatically read it: a manually started application's matching `CORE_DB_*`, `ORDER_DB_*`, `PAYMENT_DB_*`, or `WAREHOUSE_DB_*` variables must also be set in its environment before using `--spring.profiles.active=postgres`.
+`compose.yaml` preserves four separately owned PostgreSQL instances, networks, and volumes on loopback ports 5433–5436. Copy `.env.example` to ignored `.env` and privately fill twelve distinct bootstrap/migration/runtime passwords. Existing `*_DB_USER`/`*_DB_PASSWORD` remain administration-only to preserve existing volumes. Normal application connections use `*_DB_RUNTIME_USER`/`*_DB_RUNTIME_PASSWORD`; Flyway uses `*_DB_MIGRATION_USER`/`*_DB_MIGRATION_PASSWORD`. Docker Compose reads `.env`; manually launched Java processes need only their own matching variables explicitly supplied. Never give Core simulator credentials.
 
 ```powershell
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
-# Fill the four password values privately, then validate/start local databases:
+# Fill password values privately, then validate/start local databases:
 docker compose --profile postgres config --quiet
 docker compose --profile postgres up -d
-.\mvnw.cmd -B -ntp -pl control-plane -Pinfrastructure-tests verify
+.\scripts\bootstrap-databases.ps1
+# Independent test containers; this script rejects any skipped integration test:
+.\scripts\verify-persistence.ps1
+.\scripts\verify-startup.ps1
+.\scripts\verify-docs.ps1
 ```
 
-These are opt-in instructions, not a claim that databases ran during P0.1. The infrastructure test skips explicitly when Docker is unavailable. Bootstrap DB owners are local administrators; restricted runtime/migration roles and business schemas remain P0.2 work. No simulator credentials belong in Core's environment. See [ADR 0007](docs/adr/0007-foundation-profiles-and-stage-boundaries.md).
+The bootstrap script is repeatable after containers start and does not erase volumes. Flyway requires the pre-provisioned `aegisflow` schema and validates migrations; Hibernate validates rather than creates tables. The default `foundation` profile still starts without infrastructure and registers no persistence services. `postgres` fails if required credentials/database/migrations are unavailable. The direct Maven infrastructure profile explicitly reports unavailable Docker as skipped; the verification script turns any skip into a failed milestone gate. Commands above are reproducible instructions, not an assertion that they passed here. See [ADR 0008](docs/adr/0008-persistence-primitives-and-database-roles.md).
 
 ## Documentation map
 
@@ -130,17 +134,17 @@ P0.1 builds on Java 21, Maven Wrapper 3.3.4 selecting Maven 3.10.0, Spring Boot 
 
 Kafka, Spring Security/Keycloak, Spring AI 2.0.1, and full OpenTelemetry/Prometheus/Grafana integration remain future phases; they are not dependencies or functioning integrations today. [ADR 0006](docs/adr/0006-technology-baseline-and-version-pinning.md) preserves official compatibility references and the BOM strategy; [test evidence](docs/evidence/TEST_RESULTS.md) records what was actually resolved and executed.
 
-## Current verification
+## Verified P0.1 baseline and current P0.2 gate
 
 On 2026-10-12, root `clean verify` passed with **14 tests, zero failures/errors/skips**. A later `verify` also passed all 14 tests with a caller environment selecting `postgres`; test contexts explicitly select `foundation`. Core's four architecture tests verify the ten documented modules, zero allowed cross-module dependencies, and no Core-to-simulator imports. The four independently packaged JARs each returned HTTP 200 and health `UP` in the startup check.
 
-Compose configuration validation passed. The optional PostgreSQL integration test was **skipped (1)** because Docker's engine was unavailable; database and PostgreSQL-profile startup are therefore unverified. Exact commands, initial failed attempts, environment, and limitations are in [TEST_RESULTS.md](docs/evidence/TEST_RESULTS.md). Product evaluation numbers remain future targets, not observations.
+Those results describe the committed P0.1 source, not the new P0.2 source. The owner also reported a Java 21 reactor `clean verify` success on 2026-10-12 at 12:29:48 IST (53.197 seconds). P0.2 has dedicated tests for commit/rollback, unchanged/changed/concurrent requests, tenant foreign keys, optimistic locking, immutable outbox intent, privileges, and PostgreSQL startup. Current commands, observed results, failures, and unexecuted checks are recorded in [TEST_RESULTS.md](docs/evidence/TEST_RESULTS.md). No Kafka fault result or universal exactly-once claim is made.
 
 ## Continue the project
 
 1. Read [the handoff](docs/HANDOFF.md), then [the implementation plan](docs/roadmap/IMPLEMENTATION_PLAN.md).
 2. Inspect `git status` and the latest local commit before editing.
-3. P0.1 is the approved completed foundation. Obtain explicit approval before P0.2 persistence/outbox work; do not start Kafka or later features early.
+3. P0.2 is approved but gate-pending. Continue from its existing source/tests and complete the recorded checks; do not recreate it. Obtain approval before P0.3.
 4. Preserve the milestone protocol in [AGENTS.md](AGENTS.md): tested code, updated explanations, reproducible commands with factual outcomes, devlog/roadmap updates, and a fresh handoff.
 
 All checkpoints are local. No remote push, external deployment, or publication is authorized.

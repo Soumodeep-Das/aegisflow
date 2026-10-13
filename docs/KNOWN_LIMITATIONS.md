@@ -1,18 +1,21 @@
 # Known Limitations
 
-**Status:** P0.1 foundation; business runtime remains planned
+**Status:** P0.2 implementation checkpoint; PostgreSQL verification gate incomplete
 
-**Last reviewed:** 2026-10-12
+**Last reviewed:** 2026-10-13
 
 This project is intentionally a production-oriented **student portfolio project**, not an enterprise-ready transaction-recovery product. This list separates designed intent from demonstrated capability and must be updated at every significant milestone.
 
-## 1. Current P0.1 reality
+## 1. Current P0.2 reality
 
-- Four application shells, Maven Wrapper, Java 21 enforcement, health endpoints, ten Core module declarations, and architectural boundary tests exist. The latest root build ran 14 tests with zero failures, errors, or skips; four packaged JARs returned HTTP 200 and health `UP`. See [test evidence](evidence/TEST_RESULTS.md) for dates, commands, counts, and earlier failures.
-- Boot 4.1.1 and Modulith 2.1.1 dependency resolution, compilation, testing, and foundation-profile startup were verified. Spring AI is deliberately absent; its Phase 0 candidate remains deferred until P2.
-- Default `foundation` startup excludes JDBC/Flyway configuration. Its health `UP` proves process readiness only, not database connectivity, business correctness, authentication, or event durability.
-- Four PostgreSQL configurations and Compose services exist, but no Docker engine was available. Compose syntax validation passed; the PostgreSQL Testcontainers test was skipped. PostgreSQL-profile application startup and real database connectivity remain unverified.
-- No business tables/migrations, business APIs, event producer/consumer, UI, recovery workflow, model integration, or external deployment exist. No business fault scenario, security scan, benchmark, or AI evaluation has run.
+- P0.1's four application shells, Maven Wrapper, Java 21 enforcement, health endpoints, ten Core module declarations, and architectural tests are preserved. Its historical successful build ran 14 tests and its four packaged JARs answered health `UP`; those results do not validate the new persistence changes. See [test evidence](evidence/TEST_RESULTS.md) for each dated run.
+- Order, Payment, and Warehouse now have source for local transactional business-state, durable idempotency, and immutable outbox publication-intent writes. Core has its own independent V1 schema-boundary migration, without future inbox/projection/incident tables. Application entry points and actual classes are explained in [the codebase guide](learning/CODEBASE_GUIDE.md).
+- The current dependency baseline remains Boot 4.1.1/Modulith 2.1.1, with JPA/Hibernate in the simulators and Boot's Flyway starter/PostgreSQL module. Compatibility and behavior claims depend on the latest build/test record. Spring AI remains absent and deferred until P2.
+- The first resumed offline reactor run on 2026-10-13 ended at 00:39:17 IST: Core's four architecture tests passed, and its HTTP smoke test errored with sandbox loopback `connect: Permission denied`. The reactor stopped before simulator compilation/tests. Subsequent focused results, if any, are recorded separately in the evidence document; this failed run remains a failure.
+- Later focused checks passed 21 actual pure validation/fingerprint/event-fixture tests and 4 Core architecture tests. Four Core PostgreSQL ITs reported skipped because the Docker pipe was denied. Compose configuration and PowerShell script syntax passed. Full simulator compilation remains blocked by the uncached JPA 4.1.1 starter and Maven Central DNS; these focused results do not prove JPA wiring, state/outbox transactions, database constraints or startup.
+- Default `foundation` startup suppresses database/JPA auto-configuration and selects no persistence components. Its health `UP` proves process readiness only. `postgres` selects real owning-database connections, migrations, and Hibernate schema validation. Successful startup on both profiles still needs current P0.2 verification evidence.
+- Four PostgreSQL Compose services, role bootstrap, independent Flyway histories, and database assertion tests are implemented in source. Actual PostgreSQL migration, runtime grants, transaction rollback/commit, concurrency, constraints, and PostgreSQL-profile startup remain unverified until Docker access permits an executed suite. Do not infer this session's Docker availability from Docker Desktop working in the user's PowerShell.
+- No business HTTP endpoints, event publisher/consumer, UI, recovery workflow, model integration, or external deployment exists. Database-focused failure tests are written; they have not yet demonstrated the broader business failure matrix. No security scan, benchmark, or AI evaluation has run.
 - POSIX wrapper execution was not tested on this Windows host; it requires `unzip` for the checksum-pinned Maven ZIP. Windows wrapper execution was verified. The packaged-startup helper currently targets Windows/PowerShell.
 - Business architecture controls, state transitions, metrics, and thresholds remain specifications or future targets, not observed product results.
 - Documentation may still contain open design decisions; see [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md).
@@ -23,11 +26,11 @@ This project is intentionally a production-oriented **student portfolio project*
 - The first vertical slice should implement one narrow business invariant and one safe, non-financial recovery action. It will not prove a general recovery platform.
 - No automatic refund, charge, transfer or other financial compensation is allowed in the MVP.
 - A sophisticated Next.js UI, Kubernetes, multi-region operation, Redis, Temporal, pgvector and additional microservices are deferred until justified by a measured requirement.
-- Local Docker Compose and Testcontainers configuration exists, but successful container execution remains an outstanding check. It will demonstrate reproducibility on declared hardware, not production scalability or availability.
+- Local Docker Compose, database bootstrap, and Testcontainers configuration exist, but successful container execution remains an outstanding gate. `scripts/verify-persistence.ps1` rejects unavailable Docker and skipped/failed/error ITs. A successful local run will demonstrate only the recorded environment and scenarios, not production scalability or availability.
 
 ## 3. Distributed-systems limitations
 
-- Kafka delivery and internal processing are designed for at-least-once behavior. Duplicates remain possible and must be made harmless with database uniqueness and idempotency.
+- Kafka delivery and internal processing are designed for at-least-once behavior; no Kafka runtime is implemented. The local idempotency/outbox code and PostgreSQL uniqueness tests exist, but duplicates across later message and external-effect boundaries still need their own handling and verification.
 - AegisFlow cannot guarantee universal exactly-once external business effects. That property requires cooperating APIs with durable idempotency and authoritative status/state queries.
 - Network timeouts cannot distinguish “request never arrived” from “effect committed but response was lost.” Such outcomes require VERIFYING and may end in NEEDS_REVIEW.
 - Event absence is not proof that a business event did not happen. Kafka outage, publication delay, schema rejection or producer failure can leave evidence incomplete.
@@ -39,7 +42,7 @@ This project is intentionally a production-oriented **student portfolio project*
 
 ## 4. Recovery limitations
 
-- The AegisFlow runtime will have no simulator-database credentials or privileges, including read-only access; all state reads and recovery writes use versioned owning-service APIs. A separately scoped test-harness identity may inspect databases only for assertions, and this separation is not yet implemented or verified.
+- The application configurations provide each deployable only its owning database's runtime/migration connection. AegisFlow Core has no simulator-database credentials or direct persistence path. Bootstrap owners and IT connections inspect databases for administration/assertions. Role SQL and privilege assertions are written, but runtime isolation is not yet demonstrated by real PostgreSQL tests; future state reads/recovery writes must use authenticated owning-service APIs.
 - Integrations that lack stable idempotency keys, optimistic preconditions and authoritative queries cannot safely support automatic recovery.
 - RESOLVED means the configured invariant was confirmed by an authoritative read; it does not prove every downstream consequence or business obligation is correct.
 - Human approval reduces but does not eliminate error. An authorized human can approve a poor plan; approval must therefore remain bound to evidence, policy, parameters and resource version.
@@ -48,11 +51,11 @@ This project is intentionally a production-oriented **student portfolio project*
 
 ## 5. Security and tenancy limitations
 
-- The threat model is a design document; Keycloak, RBAC, tenant filters, Kafka ACLs, TLS, least-privilege database roles, redaction, and business audit controls are not implemented yet. P0.1 exposes only loopback-bound health; do not expose the foundation publicly.
-- Compose requires local passwords and assigns a separate bootstrap owner per database. These privileged local owners are not a finished runtime-role design; restricted migration/runtime roles and privilege assertions are required in P0.2 before business persistence.
-- Application-layer tenant authorization and tenant-aware database constraints are mandatory but unimplemented. PostgreSQL row-level security is an optional defense-in-depth decision, not a current requirement or capability; a single local deployment cannot establish strong hostile multi-tenancy.
+- Keycloak, RBAC, authenticated tenant ingress, Kafka ACLs, TLS, redaction, and business audit controls remain unimplemented. The only HTTP route is loopback-bound health; the new persistence methods are trusted Java-call boundaries, not authenticated business APIs. Do not expose the foundation publicly.
+- Compose now requires twelve private owner/migrator/runtime passwords across four databases. `scripts/db/bootstrap-roles.sql` and per-service migrations define restricted runtime grants, separate migration ownership, and immutable outbox intent. Privilege assertions are written but not executed successfully against real PostgreSQL here. Applications still receive their own migration credentials for startup; separating those into a deployment migration job is future operational work.
+- Tenant-keyed entities, lookups, unique keys, and foreign keys are implemented in source. They prevent some accidental cross-tenant persistence links; they do not authenticate caller-supplied tenant values. Application-layer tenant authorization remains future work. PostgreSQL row-level security is an optional defense-in-depth decision, not a current capability; this local deployment does not establish strong hostile multi-tenancy.
 - Malformed records may lack a validated tenant or event ID. The broker-coordinate/digest-based technical quarantine, protected payload handling, replay authorization, and distinction between security signals and business incidents remain unimplemented.
-- Canonicalization profiles and shared test vectors for event, request, and approval digests remain open. Until they are implemented, byte-format differences or inconsistent normalization could break deduplication or approval binding.
+- Simulator request/event canonicalization now uses the explicit `aegisflow-json-v1` profile with module-local unit vectors. These implementations need ongoing cross-service compatibility checks; a changed profile requires deliberate migration/replay behavior. Future approval digests, adversarial input coverage, and external integration normalization remain unimplemented.
 - The project does not protect against a fully compromised host, identity-provider administrator, database administrator, authoritative service, build pipeline or dependency.
 - Local developer secrets and sample credentials will not be appropriate for shared or public deployment.
 - Audit logs are not inherently immutable against privileged infrastructure administrators. Tamper-evident or external archival is out of MVP scope unless later justified.

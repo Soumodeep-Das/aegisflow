@@ -2,6 +2,8 @@
 
 **Status:** Phase 0 design; no controls are implemented or verified yet
 
+Current P0.2 source implements separate owner/migration/runtime database configuration, tenant composite storage keys, versioned request fingerprints, and immutable outbox intent. Their database/privilege tests are written but not executed in this restricted session; pure producer validation/hash tests passed. Authentication, Kafka tenant/source provenance, recovery policy and AI controls below remain planned. This narrower snapshot supersedes the historical status line without implying complete security verification.
+
 **Last reviewed:** 2026-10-12
 
 **Scope:** AegisFlow control plane and the simulated Order, Payment, and Warehouse services
