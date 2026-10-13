@@ -3,7 +3,7 @@
 **Closing snapshot:** 2026-10-13T03:58:40Z, Codex resumed P0.2 checkpoint (2026-10-13 IST).
 **Authorized scope:** P0.2 only. Owner requested a meaningful, tested where available, understandable local checkpoint and exact local follow-up actions. P0.3 is unapproved and unstarted.
 **Branch/repository:** `main`, original `C:\Users\User\Documents\Codex\2026-10-11\referenced-chatgpt-conversation-this-is-an\outputs\aegisflow`.
-**Commit convention:** this source/test/documentation checkpoint will be a new local commit following entry `c2c93e3`; its actual hash is recorded in the following continuity update. Resolve state with `git rev-parse HEAD`, `git status --short --branch`, and `git log -3 --oneline`. Generated cache/work/target and private values are excluded. No push, deployment, remote change or history rewrite occurred.
+**Source checkpoint:** `14e04f6d0cb96520ae5ba1451c10890860df3379`, `feat(persistence): checkpoint P0.2 state and transactional outbox`, committed locally; Git immediately reported clean `main`. This following documentation-only continuity commit records the source hash without changing application code. Resolve its current HEAD/status with `git rev-parse HEAD`, `git status --short --branch`, and `git log -3 --oneline`. Generated cache/work/target and private values are excluded. No push, deployment, remote change or history rewrite occurred.
 
 ## Implemented source and exact entry points
 

@@ -208,3 +208,7 @@ Checkpoint the current coherent source/tests/docs locally, with full P0.2 comple
 Real PostgreSQL constraints/atomicity/concurrency/privileges, all simulator/JPA compilation, both startup profiles and packaged regression remain unverified here. Documentation check/commit identifiers and final working-tree state are recorded in the closing handoff checkpoint.
 
 Pre-checkpoint documentation checker passed with Markdown=29 Required=20 LocalLinks=108 Mermaid=7 JSON=1 Scenarios=16 InterviewQA=20 ADRs=8 Issues=0. Working/staged whitespace checks passed. The first shell checkpoint wrapper stopped before staging because it wrongly checked unset native LASTEXITCODE after a PowerShell script; its corrected guard passed. Staging contains 101 scoped source/configuration/document files and excludes cache/work/target/private .env. No full P0.2 completion is claimed by the local checkpoint.
+
+### Local checkpoint created
+
+`git commit -m 'feat(persistence): checkpoint P0.2 state and transactional outbox'` exited 0 as `14e04f6d0cb96520ae5ba1451c10890860df3379` (101 files, 4,778 insertions/135 deletions). Status immediately afterward was clean `main`. The following docs-only continuity commit records this source identifier; no application changes follow the checkpoint. All commits stay local, with no remote/push/deployment. P0.2 gate remains pending; normal host Java 21/Docker verification is the next task, with P0.3 unapproved.

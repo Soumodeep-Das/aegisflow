@@ -3,7 +3,7 @@
 **Last reviewed:** 2026-10-13
 **Observed product state:** P0.1 remains the last fully verified milestone. Approved P0.2 persistence source checkpoint exists; build/PostgreSQL acceptance evidence is pending.
 
-**Local source checkpoint:** `cb7bfaf`, followed by the documentation continuity checkpoint described in the handoff. No push or external deployment occurred.
+**Local checkpoints:** verified P0.1 source `cb7bfaf` and continuity `c2c93e3` preserved; P0.2 source checkpoint `14e04f6`, followed by the handoff documentation continuity commit. P0.2's full gate is pending. No push or external deployment occurred.
 
 ## Completed — Phase 0
 

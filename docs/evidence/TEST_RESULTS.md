@@ -54,6 +54,8 @@ The resumed code review corrected Payment tenant-length/profile/fail-closed-chec
 
 Pre-checkpoint documentation validation passed: **Markdown=29 Required=20 LocalLinks=108 Mermaid=7 JSON=1 Scenarios=16 InterviewQA=20 ADRs=8 Issues=0**. Working/staged whitespace checks passed and no private/generated/cache/work paths were staged. One initial checkpoint shell wrapper exited 1 after mistakenly reading unset native `$LASTEXITCODE` for a successful PowerShell documentation script; it stopped before staging. The corrected wrapper used terminating PowerShell errors and native status checks only for native commands, and passed. This was a wrapper guard error, not a documentation-check failure.
 
+`git commit -m 'feat(persistence): checkpoint P0.2 state and transactional outbox'` exited 0 as **`14e04f6d0cb96520ae5ba1451c10890860df3379`**, 101 scoped files, 4,778 insertions and 135 deletions. `git status --short --branch` then reported clean `main`. No private/generated diagnostic files were committed; no remote is configured and no push/deployment occurred. The following docs-only continuity commit records the source identifier and changes no tested source. This is a recoverable checkpoint with explicit failed/skipped/unverified gates, not a completed P0.2 milestone.
+
 ## Historical P0.1 results (unchanged)
 
 **Observed:** 2026-10-12, Windows / PowerShell 7.6.5. This is foundation evidence, not production certification or product evaluation. Source milestone: `cb7bfafed49a58f08cba2352aafb8d7ecf8f6e33`; tests ran against its exact source before committing. [HANDOFF.md](../HANDOFF.md) records continuation status. Phase 0 history remains at `2bae1f3` and `6f6daaf`.
