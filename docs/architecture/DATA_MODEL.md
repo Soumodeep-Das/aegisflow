@@ -4,6 +4,8 @@
 
 ## 0. Implemented P0.2 subset
 
+P0.3-A does not modify these migrations or add business/inbox tables. Its isolated Compose-only `scripts/db/persistence-rehearsal.sql` creates a test-harness `p03_rehearsal` schema/sentinel in fresh verification databases; it is not applied to the normal development project. The script compares this committed sentinel and the actual Flyway history after stopping/recreating containers with the same volumes. Actual execution is pending normal host access; static/helper passes do not establish persistence.
+
 Each deployable owns one `aegisflow` schema in its separate PostgreSQL database and its own V1/Flyway history. Core V1 establishes the schema/role boundary only. Order V1 creates `orders`, `order_lines`, `idempotency_record`, `outbox_event`; Payment V1 creates `payments`, `idempotency_record`, `outbox_event`; Warehouse V1 creates `reservations`, `reservation_lines`, `idempotency_record`, `outbox_event`. Exact files are each deployable's `src/main/resources/db/migration/V1__*.sql`.
 
 Composite tenant/resource primary keys and same-tenant foreign keys constrain local references. Cross-service IDs are opaque references with no shared table or cross-database FK. Order now has its own durable create-request replay record, closing the previously unspecified duplicate-submission storage gap. Replay records bind resource/event IDs and a versioned material-request digest; their deferred FKs are validated at commit.

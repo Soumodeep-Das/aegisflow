@@ -1,8 +1,8 @@
 # Implementation plan
 
 **Planning horizon:** preserve a useful, teachable repository even if assisted coding stops after 6–7 days.
-**Current authorization:** P0.2 service-owned persistence/outbox explicitly approved and now verified at the final 2026-10-16 host gate. Stop here; P0.3 remains unapproved/unstarted.
-**Next approval gate:** P0.3 requires explicit authorization after the P0.2 gate. Product P1 recovery is not authorized.
+**Current authorization:** P0.2 verified; P0.3 explicitly approved on 2026-10-16, in progress at isolated Compose persistence rehearsal (A), then Kafka, source-owned relay (B), Core inbox (C), and real failure/end-to-end verification (D).
+**Next approval gate:** stop after P0.3; P0.4 and product P1 recovery are not authorized. New remote pushes/deployments are not authorized.
 
 ## Delivery principles
 
@@ -100,7 +100,11 @@ Acceptance:
 
 ### P0.3 Kafka delivery and control-plane inbox
 
-Use `(tenantId, businessTransactionId)` as the Kafka key for per-transaction partition ordering, while remaining correct when producers or topics create reordering. Persist inbox receipt plus projection update in one database transaction. A database unique key, not an in-memory cache, makes duplicates harmless.
+**Approved; incomplete.** Begin with the existing persistent-Compose bootstrap rehearsal, then provision the minimum Kafka infrastructure. The current coding session cannot access the Docker engine; host-only results must be reported separately from static/helper checks. Preserve the existing P0.2 migrations and application code.
+
+Use `(tenantId, businessTransactionId)` as the Kafka key for per-transaction partition ordering, while remaining correct when producers or topics create reordering. Reuse the ten-module Core's existing `eventing` package. Persist validated accepted inbox receipt in one Core transaction, deduplicated by `(tenantId, sourceSystem, eventId)` and canonical content. The owner's explicit P0.3 request supersedes the older projection wording here: correlation/projection/detection stays P0.4. When those consumers arrive, their derived effects must join the relevant local inbox transaction, not a best-effort later dual write.
+
+P0.3 must enforce a trusted source/tenant mapping or block untrusted input; a payload tenant is not authenticated by topic ACL alone. Relay claims need short local transactions, expiry/fencing, bounded batches/backoff and post-Kafka-ack status updates. A broker acknowledgement followed by a relay crash can produce a duplicate with the same event ID. No cross-PostgreSQL/Kafka exactly-once guarantee is promised.
 
 Acceptance:
 

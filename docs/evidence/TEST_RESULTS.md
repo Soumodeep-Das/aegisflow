@@ -1,4 +1,24 @@
-# Test evidence — current P0.2 checkpoint and preserved P0.1
+# Test evidence — P0.3 checkpoint and preserved completed milestones
+
+## 2026-10-16 — P0.3-A tooling/static checkpoint; real Compose rehearsal blocked
+
+Entry `86452ef`, clean `main` tracking `origin/main`; no Java/POM/business migration changes. The owner approved P0.3 and requested persistent-Compose validation before adding Kafka. Baseline P0.2 results below remain historical and valid. Compose CLI **5.5.1** is available. Direct `docker info --format '{{.ServerVersion}}'` **exit 1**, permission denied on `npipe:////./pipe/dockerDesktopLinuxEngine`, including a retry after the owner reported a version from their normal PowerShell. Host availability is not sandbox authorization.
+
+| New exact command/check | Actual result |
+|---|---|
+| `& $ps7 -NoProfile -File .\scripts\test-compose-persistence.ps1` | 14 helper/safety tests passed; 0 failures; no Docker engine/PostgreSQL used |
+| `& $ps7 -NoProfile -File .\scripts\verify-compose-persistence.ps1 -StaticOnly` | exit 0; actual Compose config merge validated 4 unique project volumes/networks and ephemeral loopback ports; explicitly no bootstrap/Java/migration/restart execution |
+| `& $ps7 -NoProfile -File .\scripts\verify-compose-persistence.ps1` | exit 1 at Docker info after static config PASS; no Java/bootstrap/container/volume operation reached |
+| In-process snapshot of all 24 owner env settings, `& .\scripts\verify-compose-persistence.ps1 -StaticOnly`, then equality assertions; repeat around caught real-mode engine failure | exit 0 after fix at 2026-10-16T15:20:31Z; exact original absence/empty/value states restored in both paths; no credential values printed |
+| PowerShell `Parser.ParseFile` across all `scripts/**/*.ps1` | 0 parse errors; this is not PostgreSQL SQL validation |
+| `& $ps7 -NoProfile -File .\scripts\verify-docs.ps1` | exit 0: Markdown=29 Required=20 LocalLinks=111 Mermaid=7 JSON=1 Scenarios=16 InterviewQA=25 ADRs=8 Issues=0 |
+| `git diff --check` | passed; only Windows LF-to-CRLF notices |
+
+`$ps7` is the existing bundled PowerShell 7 path documented in README/handoff. The 14 named regression groups check fresh project uniqueness, forbidden development/path targets, explicit Compose inputs, loopback endpoint acceptance/rejection, all four owner-only child environments, missing/foreign connection rejection, and exact absent/empty/existing credential cleanup. They test real helper functions with synthetic unit values, not substitutes for database/transport tests.
+
+**Observed development failure preserved:** the first same-process restoration assertion exited 1 after static success: 24 originally absent environment keys were restored as present empty strings by the .NET/PowerShell string binding. No secrets were printed; this was inside a disposable tool process. `Restore-RehearsalEnvironment` now explicitly removes originally absent owned keys and restores strings otherwise. Three new regression groups and the successful whole-run equality assertions cover the correction. Static review also corrected SQL CASE syntax and used the harness administrator for fixture setup/history snapshots: a restricted migrator correctly cannot create another schema. Those SQL/runtime paths remain unexecuted, not passed by review.
+
+The harness retains all verification volumes and emits only an informational explicit later cleanup command; no volume deletion was performed or authorized. Fresh bootstrap, actual role/grant SQL, eight postgres JAR startups, data/history comparison and foreign-credential denial are **written but unverified** pending the owner's normal host run. No Maven/build regression was rerun because Java/POMs are unchanged. No Kafka infrastructure, relay, inbox, metrics, broker outages, duplicate/crash/quarantine or end-to-end P0.3 scenario has been implemented/tested. **P0.3 incomplete; stop at this recoverable checkpoint and execute the first host gate before Kafka.**
 
 ## 2026-10-16 — final P0.2 integrated gate passed
 

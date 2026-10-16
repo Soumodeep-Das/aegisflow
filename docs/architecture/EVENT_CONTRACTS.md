@@ -2,6 +2,8 @@
 
 **Status:** P0.2 implements stored envelopes for `OrderCreated`, initial `PaymentAuthorized`/`PaymentDeclined`, and initial `InventoryReserved`/`InventoryRejected`, with producer fixtures/tests. Test execution is recorded separately. Kafka, consumer schema governance, the remaining catalog, topics, and deadlines are later gates.
 
+**P0.3 approval, 2026-10-16:** reliable relay/Kafka/durable Core inbox is approved, but the current first checkpoint is the persistent-Compose rehearsal only. No new envelope fields, broker, consumer, or relay exists yet. The existing Core `eventing` module owns later ingestion; correlation/projection/detection stays P0.4 per the owner's explicit boundary. The publication/consumption description below is the eventual design, not an implemented pipeline. Tenant/source provenance must be enforced or untrusted input blocked before acceptance; a payload tenant ID is not authorization.
+
 ## 1. Canonical envelope
 
 Every business event uses UTF-8 JSON initially and contains all fields below. The seven fields required by the project brief appear unchanged; `eventType` is additionally required so a consumer can select the detail schema without topic-name coupling.

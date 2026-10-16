@@ -1,12 +1,14 @@
 # Known Limitations
 
-**Status:** P0.2 implemented and host-verified; operational limitations remain, P0.3 unapproved
+**Status:** P0.2 host-verified; P0.3 approved/incomplete at infrastructure rehearsal checkpoint
 
 **Last reviewed:** 2026-10-16
 
 This project is intentionally a production-oriented **student portfolio project**, not an enterprise-ready transaction-recovery product. This list separates designed intent from demonstrated capability and must be updated at every significant milestone.
 
 ## 1. Current P0.2 reality
+
+- **Current P0.3-A limit:** this coding session cannot access Docker's engine pipe. A safe isolated Compose rehearsal is prepared with helper/static checks; real fresh-volume bootstrap, restricted-runtime assertions, eight postgres-profile JAR startups and same-volume restart/history/data comparison still require a normal host run. Kafka infrastructure/relay/inbox and all P0.3 Kafka failure cases remain unimplemented/unverified. No new Java/SQL business migration or Maven dependency is introduced; P0.2's recorded 38+29 successes remain historical, not a new P0.3 Maven run. Verification volumes are retained, not automatically deleted. The helper's filtered child environment is tested, not a security sandbox against a compromised JVM/administrator.
 
 - Final host evidence: full clean reactor **BUILD SUCCESS at 2026-10-16 19:45:47 IST**, **2:17**, entry `66282a9`/application source `7a90c57`; **38 default + 29 real PostgreSQL tests**, zero failures/errors/skips. All four V1 migrations and the recorded atomicity/replay/constraint/privilege assertions passed. All four packaged foundation JARs returned HTTP 200/UP and docs had zero issues. The report helper's incomplete `tests=4` summary is corrected against actual XML; the outer cross-PowerShell command emitted an initial quoting error, but independent checks all passed. No host rerun is needed for closing records. Persistent Compose bootstrap remains unexecuted.
 

@@ -1,5 +1,7 @@
 # Codebase guide
 
+**Current P0.3-A checkpoint:** P0.3 is approved, but the first unfinished gate is the existing Compose persistence rehearsal. `scripts/verify-compose-persistence.ps1` and its pure helpers are new; existing application Java, migrations and Maven dependencies are unchanged. Real Docker bootstrap/restart execution is pending host access. The prior P0.2 results below remain valid history, not proof of new P0.3 behavior. No Kafka broker, relay, inbox, correlation or recovery is implemented here.
+
 **P0.2 verification passed (2026-10-16):** the final clean full reactor reported `BUILD SUCCESS` at **19:45:47 IST**, **2 min 17 s**, at entry HEAD `66282a9` with implementation source `7a90c57`. **38 default tests and 29 real PostgreSQL ITs passed**, zero failures/errors/skips: Core 7/4, Order 9/8, Payment 12/9, Warehouse 10/8. All four packaged foundation JARs returned HTTP 200 / `UP`; the documentation checker reported **Issues 0** (29/20/109/7/1/16/20/8 checks). Persistent Compose bootstrap and manual postgres-profile rehearsal remain unexecuted operational checks, not P0.2 blockers. P0.3 is unapproved and unstarted.
 
 **Verification-wrapper caveats:** the successful host run's helper summary counted only 4 PostgreSQL tests because its report glob missed simulator reports. The reporting fix independently aggregates the actual XML as 29; no business-source change or host test rerun is needed. An outer Windows PowerShell 5.1 `-Command` invocation also lost the quotes around `Stop` and emitted `Stop not recognized`. Actual checks passed, but that wrapper's fail-fast setup was not demonstrated. For future runs, enter PowerShell 7 using `& $ps7 -NoProfile` (`$ps7` is the installed `pwsh.exe` path), then execute the `.ps1` files directly inside it; avoid the old nested native-command quoting example.
@@ -339,6 +341,49 @@ Each service owns one database, including its schema evolution. Separate histori
 
 It makes the local business change and immutable publication intent durable together, or rolls them back together. It does not prove Kafka received anything, authenticate the tenant, or prevent every external duplicate effect. A later relay must preserve event identity across retries, and consumers/recovery APIs need their own durable idempotency and authoritative verification.
 
+## P0.3-A: a safe persistence-infrastructure rehearsal
+
+Actual new paths:
+
+```text
+compose.persistence-test.yaml              # replace static ports, mount test-only SQL
+scripts/verify-compose-persistence.ps1       # real two-pass host rehearsal; -StaticOnly separately
+scripts/bootstrap-databases.ps1             # existing helper; optional explicit Compose inputs
+scripts/lib/compose-persistence.ps1          # pure project/port/environment guards
+scripts/test-compose-persistence.ps1        # no-Docker safety regression tests
+scripts/db/persistence-rehearsal.sql         # test-only schema/sentinel and role assertions
+```
+
+The runner selects a random `aegisflow-p03-verify-<guid>` project, explicitly uses `.env.example`, and generates twelve independent test credentials without overwriting private `.env`. `Get-RehearsalComposeArguments` rejects the normal development project. `Get-RehearsalPublishedPort` accepts only one IPv4 loopback endpoint. `New-RehearsalChildEnvironment` removes inherited database/Spring/JVM overrides and supplies only one owner's five runtime/migration connection values. Core must never inherit simulator database credentials.
+
+Actual rehearsal flow: existing four Compose PostgreSQL definitions + isolated port override → existing `bootstrap-databases.ps1`/role SQL → each existing Java 21 JAR with `postgres` and UTC → real Flyway/Hibernate startup/HTTP health → test-only SQL grants/committed sentinel/history snapshot → stop containers without deleting volumes → repeat bootstrap/JAR startup against retained volumes → compare sentinel and complete history snapshots. `AegisFlowCoreApplication` and the simulator main classes are unchanged. Fixture administration is test-harness activity, not a Core runtime cross-service write. A sentinel proves only its recorded persistence case, not all production recovery behavior. Ignored redacted logs/results live under `.cache/compose-persistence/<project>/`.
+
+`-StaticOnly` parses/merges Compose and checks project/port/volume/network isolation; it starts no containers or Java processes. `test-compose-persistence.ps1` checks pure safety decisions, not database privileges. Real execution fails if Docker is unavailable. The script retains disposable volumes; its printed exact cleanup command is informational and must not be executed without explicit deletion approval. No ordinary development volumes are addressed.
+
+### Practical debugging exercise: distinguish static configuration from real persistence
+
+In PowerShell 7 from the existing repository, run `scripts/test-compose-persistence.ps1`, then `scripts/verify-compose-persistence.ps1 -StaticOnly`. Inspect the explicit static-only output and ignored `results.json`; do not call this a database pass. With Docker Desktop's Linux engine accessible and existing Java 21 JARs built, run `scripts/verify-compose-persistence.ps1`. Expected observations (not yet observed here): two healthy postgres-profile startups per owner, restricted runtime SQL assertions, denied sibling credentials, and unchanged sentinel/Flyway snapshots after retained-volume restart. If the second pass fails, compare its owner's redacted log/history rather than delete volumes, rerun `clean`, or edit V1. The script filters inherited `SPRING_APPLICATION_JSON`/JDBC overrides so a caller profile cannot accidentally satisfy this check with the foundation profile.
+
+### Q21. Why not use the normal Compose project to test first initialization?
+
+An existing PostgreSQL volume skips fresh initialization and may contain valuable data or old credentials. A unique guarded Compose project plus ephemeral ports creates an independent storage/network namespace; restarting the same verification project tests persistence without deleting development data. Project/port/environment guards are pure helper tests; only executing the real bootstrap and JARs can prove their operational interaction.
+
+### Q22. Why is Kafka still needed if the database already stores an outbox?
+
+The outbox durably couples one owner's state and publication intent. Kafka will transport that committed event to independently restarting consumers and retain records for replay. `OrderPersistenceService.create` already commits state/outbox; the relay and transport are not implemented at this checkpoint. Broker outage must leave the committed row pending with bounded retry/backoff, not make the business transaction disappear.
+
+### Q23. What does a producer acknowledgement prove, and why can an event repeat?
+
+It proves the configured Kafka acknowledgement condition, not that PostgreSQL recorded relay completion. A crash between broker acknowledgement and the local published-status commit can resend the stable event ID. Producer idempotence does not make independent PostgreSQL/Kafka transactions atomic. The planned consumer must enforce `(tenant, source, eventId)` uniqueness and quarantine changed-content duplicates. These are future P0.3 tests, not current results. See [Kafka delivery semantics](https://kafka.apache.org/41/design/design/#message-delivery-semantics).
+
+### Q24. When may a consumer acknowledge an offset relative to its inbox commit?
+
+Only after durable accepted-inbox or technical-quarantine commit. A crash before database commit should roll back; a crash after commit but before offset acknowledgement can redeliver, so the unique inbox must prevent a second logical observation. Kafka offset state and an independent PostgreSQL transaction are not one atomic resource. P0.3 must implement this in existing Core `eventing`; no consumer currently exists. Later reconciliation must use durable identities/provenance, never infer business success from an offset alone.
+
+### Q25. Does a transaction key make events globally ordered or trusted?
+
+No. Kafka orders records within a topic partition; different topics/partitions do not share one total order. The existing key is `tenantId:businessTransactionId`; that workflow identifier differs from the immutable event ID. Out-of-order source versions must remain attributable evidence, not overwrite newer state blindly. A tenant inside payload bytes is still a claim: ingestion needs an enforced trusted source/tenant binding or must block it. Future correlation/recovery cannot authorize actions from unvalidated payload identity. See [Kafka design](https://kafka.apache.org/41/design/design/).
+
 ## Historical Phase 0 design concepts
 
 The following material is retained from the documentation-only phase. The local simulator state/outbox write is now implemented in source; the remaining distributed flow is still planned and unverified.
@@ -449,4 +494,4 @@ It uses several independent layers: Maven modules avoid compile-time implementat
 
 ## Honest next step
 
-P0.2 is complete; stop here and preserve the tested checkpoint. Persistent Compose bootstrap and manual postgres-profile startup can be rehearsed separately using synthetic data and private credentials. For a future regression run, enter PowerShell 7 first, then run `scripts/verify-persistence.ps1`, `scripts/verify-startup.ps1`, and `scripts/verify-docs.ps1` directly. Follow the handoff's exact next task. P0.3, including Kafka transport, requires new owner approval and has not started.
+P0.2 is complete. P0.3 is approved and incomplete: run the isolated `scripts/verify-compose-persistence.ps1` rehearsal on the normal host, record the actual result, and only then continue minimum Kafka infrastructure/relay/inbox. Do not repeat P0.2 audits or successful Maven tests merely to resume. P0.4 remains unapproved. The handoff names the exact current script/command, checks and limitations.

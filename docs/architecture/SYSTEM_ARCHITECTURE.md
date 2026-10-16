@@ -1,9 +1,11 @@
 # AegisFlow System Architecture
 
-**Status:** Phase 0 design and verified P0.1 history preserved. P0.2 persistence implemented and verified at the 2026-10-16 host build/PostgreSQL/startup gate. P0.3 remains unapproved/unstarted.
+**Status:** Phase 0/P0.1 history preserved; P0.2 verified. P0.3 is explicitly approved and in progress at its isolated persistent-Compose rehearsal. Kafka/relay/Core inbox remain unimplemented at this checkpoint; P0.4 is not approved.
 **Audience:** implementers, reviewers, and students continuing without the original conversation.
 
 ## 1. Purpose and scope
+
+The first P0.3-A implementation is operational verification, not new business behavior: `scripts/verify-compose-persistence.ps1` composes the unchanged four PostgreSQL services with `compose.persistence-test.yaml`, reuses the actual bootstrap, then starts each existing postgres-profile JAR with only that owner's credentials. A test-only `p03_rehearsal` sentinel and the real Flyway history are compared across retained-volume restart/repeated bootstrap. The schema fixture is not an application migration. Helper/static checks cannot prove the actual Docker path; current session engine access is denied. Reports and exact next host command are in the handoff.
 
 AegisFlow is a control plane for detecting and safely repairing inconsistent *business transactions*. The first demonstrator models an order that crosses independently persisted Order, Payment, and Warehouse simulators. Each simulator remains the authority for its own state. AegisFlow consumes facts, evaluates explicit invariants, gathers evidence, proposes a bounded recovery, applies deterministic policy and human approval, invokes a versioned service API, and verifies the result from an authoritative read.
 

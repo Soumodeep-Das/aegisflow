@@ -63,7 +63,7 @@ foreach ($label in @('Fault mechanism', 'Expected state/incident', 'Prohibited a
 }
 $guide = Get-Content -Raw -LiteralPath (Join-Path $repositoryRoot 'docs/learning/CODEBASE_GUIDE.md')
 $questions = ([regex]::Matches($guide, '(?m)^### Q\d+\.')).Count
-if ($questions -lt 20) { $issues.Add('Expected historical fifteen plus five P0.2 interview Q&As') }
+if ($questions -lt 25) { $issues.Add('Expected historical twenty plus five P0.3 checkpoint interview Q&As') }
 $adrCount = @(Get-ChildItem -LiteralPath (Join-Path $repositoryRoot 'docs/adr') -File -Filter '*.md').Count
 if ($adrCount -lt 7) { $issues.Add('Expected at least seven ADRs') }
 Write-Output "Markdown=$($files.Count) Required=$($required.Count) LocalLinks=$links Mermaid=$diagrams JSON=$jsonExamples Scenarios=$scenarios InterviewQA=$questions ADRs=$adrCount Issues=$($issues.Count)"

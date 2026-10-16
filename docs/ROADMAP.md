@@ -1,7 +1,7 @@
 # Prioritized roadmap
 
 **Last reviewed:** 2026-10-16
-**Observed product state:** P0.2 is implemented and exit-gated on the owner's Windows/Java 21 host. P0.3 remains unapproved and unstarted.
+**Observed product state:** P0.2 is complete. P0.3 is approved and in progress at P0.3-A, the isolated persistent-Compose rehearsal. Kafka/relay/inbox are not implemented yet; P0.4 remains unapproved.
 
 **Final P0.2 result:** the full clean reactor succeeded at 19:45:47 IST (2:17), 38 default + 29 real PostgreSQL tests with zero failures/errors/skips, followed by four packaged foundation JARs returning HTTP 200/UP and a zero-issue documentation check. The report counter's incomplete glob is corrected using all four real XML reports; no business code changed after verification. Persistent Compose bootstrap remains a separate unexecuted rehearsal. Earlier dated results below are historical.
 
@@ -35,13 +35,13 @@ The single highest-value outcome is one reproducible flow from a simulator's com
 
 Priority order:
 
-1. Owner reviews the completed P0.2 checkpoint; no further host rerun is required for its recorded gate.
-2. Obtain explicit P0.3 approval before any implementation; optional persistent Compose rehearsal remains documented separately.
-3. Kafka event contract fixtures and publisher recovery.
-4. Control-plane inbox uniqueness, tenant correlation, projection, and schema quarantine.
-5. One clock-driven invariant and durable incident/evidence timeline.
-6. Duplicate, reorder, Kafka outage, commit-before-publish, and incompatible-schema tests.
-7. Compose rehearsal, observability minimum, learning guide, journal, and handoff.
+1. **P0.3-A now:** run the isolated fresh/restarted-volume Compose bootstrap rehearsal on the normal host. Sandbox Docker pipe is denied; static/helper checks must not be called a database pass.
+2. After persistence rehearsal passes, introduce minimal single-broker Kafka/topic provisioning with source/tenant trust explicitly enforced or untrusted input blocked.
+3. **P0.3-B:** bounded claim/lease/fencing outbox relay, broker acknowledgement then fenced status update, stable IDs and bounded retries.
+4. **P0.3-C:** existing Core `eventing` validation, durable inbox uniqueness and technical quarantine; offset acknowledgement after committed acceptance/quarantine only. No projection/invariant engine yet.
+5. **P0.3-D:** real end-to-end/failure tests, metrics where feasible, learning/evidence/handoff and final local commit; then stop for P0.4 approval.
+6. **Unapproved P0.4:** correlation/projection, one clock-driven invariant and durable incident/evidence timeline.
+7. Broader packaging/observability and recovery remain later work; preserve working thin slices rather than expand scope.
 
 P0 is not complete with compilation alone; its exit gate is in `docs/roadmap/IMPLEMENTATION_PLAN.md`.
 

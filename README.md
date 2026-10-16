@@ -1,8 +1,8 @@
 # AegisFlow
 
-> **Status:** P0.2 persistence is implemented and verified on the owner's Windows/Java 21 host: four independent Flyway baselines, restricted database roles, and internal simulator state/replay/outbox transactions. P0.1's history is preserved. Stopped before P0.3; Kafka, security infrastructure, AI, and recovery require approval.
+> **Status:** P0.2 persistence is complete and verified. P0.3 is now approved and in progress, starting with the isolated persistent-Compose bootstrap rehearsal. Kafka relay/consumer/inbox are not implemented yet. No P0.4, recovery, AI or remote push is authorized.
 
-Final host evidence (2026-10-16, source `7a90c57`, entry checkpoint `66282a9`): **full clean reactor BUILD SUCCESS, 38 default tests + 29 real PostgreSQL ITs**, zero failures/errors/skips. All four packaged foundation JARs returned HTTP 200/UP; documentation checks passed. All four V1 migrations applied. The report counter initially printed only Core's four tests; the reporting correction is verified separately against all four actual XML reports. Persistent Compose bootstrap remains an unexecuted rehearsal, not a claim of production readiness. See [current handoff](docs/HANDOFF.md) and [test evidence](docs/evidence/TEST_RESULTS.md). No implementation or host test rerun is needed.
+Final P0.2 host evidence (2026-10-16, source `7a90c57`, completed checkpoint `86452ef`): **full clean reactor BUILD SUCCESS, 38 default tests + 29 real PostgreSQL ITs**, zero failures/errors/skips. All four packaged foundation JARs returned HTTP 200/UP; documentation checks passed. These remain preserved results, not a substitute for P0.3 verification. The current coding session cannot access Docker's engine pipe. See [current handoff](docs/HANDOFF.md) and [test evidence](docs/evidence/TEST_RESULTS.md).
 
 AegisFlow is a learning-oriented, production-minded portfolio project for detecting and safely recovering inconsistent distributed business transactions. The first scenario uses independently persisted Order, Payment, and Warehouse simulators. A control plane will correlate their events, detect breached business invariants, assemble attributable evidence, propose a constrained recovery, require deterministic policy and human approval where appropriate, invoke only versioned service APIs, and verify the result against authoritative service state.
 
@@ -88,6 +88,20 @@ The default `foundation` profile needs no Docker or database. Health `UP` means 
 
 ### PostgreSQL persistence verification
 
+For the approved P0.3-A rehearsal, use `scripts/verify-compose-persistence.ps1` instead of starting the ordinary development project. It reuses this repository's Compose/bootstrap and existing Java 21 JARs, with an isolated `aegisflow-p03-verify-<guid>` project, fresh synthetic credentials and ephemeral loopback ports. It checks two startups against the same retained volumes. No existing development volume or private `.env` is changed and no volume is deleted; synthetic verification volumes remain for explicit later cleanup. Its ignored reports are under `.cache/compose-persistence/<project>/`.
+
+From ordinary Windows PowerShell 5.1, enter the existing bundled PowerShell 7 first (avoid nested `-Command` quoting):
+
+```powershell
+$ps7 = 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe'
+& $ps7 -NoProfile
+# Run the following INSIDE the new PowerShell 7 prompt, from this repository:
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+.\scripts\verify-compose-persistence.ps1
+```
+
+This is a real Docker/PostgreSQL rehearsal and fails when engine access is unavailable. For infrastructure-free checks use `scripts/test-compose-persistence.ps1` and `scripts/verify-compose-persistence.ps1 -StaticOnly`; neither proves a database startup. The override uses Docker Compose 2.24.4+ [replacement semantics](https://docs.docker.com/reference/compose-file/merge/#replace-value), so ordinary development ports are replaced, not appended. The existing CLI is 5.5.1. No Kafka broker, relay or inbox is introduced until the requested persistence gate is executed and its outcome reviewed.
+
 `compose.yaml` preserves four separately owned PostgreSQL instances, networks, and volumes on loopback ports 5433–5436. Copy `.env.example` to ignored `.env` and privately fill twelve distinct bootstrap/migration/runtime passwords. Existing `*_DB_USER`/`*_DB_PASSWORD` remain administration-only to preserve existing volumes. Normal application connections use `*_DB_RUNTIME_USER`/`*_DB_RUNTIME_PASSWORD`; Flyway uses `*_DB_MIGRATION_USER`/`*_DB_MIGRATION_PASSWORD`. Docker Compose reads `.env`; manually launched Java processes need only their own matching variables explicitly supplied. Never give Core simulator credentials.
 
 ```powershell
@@ -148,7 +162,7 @@ Those results describe the committed P0.1 source, not the new P0.2 source. The o
 
 1. Read [the handoff](docs/HANDOFF.md), then [the implementation plan](docs/roadmap/IMPLEMENTATION_PLAN.md).
 2. Inspect `git status` and the latest local commit before editing.
-3. P0.2 is approved but gate-pending. Continue from its existing source/tests and complete the recorded checks; do not recreate it. Obtain approval before P0.3.
+3. P0.2 is complete. Continue the approved P0.3 checkpoint named in the handoff, beginning with the real isolated Compose rehearsal; do not recreate or rerun P0.2 merely to resume. Kafka comes after this gate, then the existing Core `eventing` inbox. P0.4 remains unapproved.
 4. Preserve the milestone protocol in [AGENTS.md](AGENTS.md): tested code, updated explanations, reproducible commands with factual outcomes, devlog/roadmap updates, and a fresh handoff.
 
-All checkpoints are local. No remote push, external deployment, or publication is authorized.
+The owner reports pushing the completed P0.2 baseline; local `main` now tracks `origin/main` at `86452ef`. New P0.3 commits remain local only. No new push, external deployment, or publication is authorized.
