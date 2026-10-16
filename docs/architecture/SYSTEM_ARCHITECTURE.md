@@ -1,6 +1,6 @@
 # AegisFlow System Architecture
 
-**Status:** Phase 0 design and verified P0.1 history preserved. P0.2 persistence source checkpoint implemented; its real PostgreSQL/build verification gate remains pending.
+**Status:** Phase 0 design and verified P0.1 history preserved. P0.2 persistence implemented and verified at the 2026-10-16 host build/PostgreSQL/startup gate. P0.3 remains unapproved/unstarted.
 **Audience:** implementers, reviewers, and students continuing without the original conversation.
 
 ## 1. Purpose and scope
@@ -202,7 +202,7 @@ Audit entries record actor/service identity, tenant, command, prior and next sta
 - **P2 intelligence/operations:** evidence-backed AI comparison against deterministic baseline, dashboard, and complete observability.
 - **P3 optional expansion:** more integrations or orchestration infrastructure only after measured need.
 
-The P0.1 build-proven foundation is Java 21, Maven 3.10.0, Spring Boot 4.1.1, and Spring Modulith 2.1.1. Actual Maven dependency resolution, compilation, tests, and standalone Spring application startup have run. PostgreSQL integration remains unverified because its Docker-dependent test skipped; Kafka is not introduced until P0.3. Spring AI 2.0.1 is a documentation-verified P2 candidate only, not a present dependency or proven integration. [ADR 0006](../adr/0006-technology-baseline-and-version-pinning.md) preserves official baseline references; [ADR 0007](../adr/0007-foundation-profiles-and-stage-boundaries.md) makes the staged integration gates explicit.
+The build-proven foundation is Java 21, Maven 3.10.0, Spring Boot 4.1.1, and Spring Modulith 2.1.1. Actual Maven dependency resolution, compilation, tests, and standalone Spring application startup have run. P0.2's final 2026-10-16 host gate passed 38 default tests and 29 real PostgreSQL ITs with zero skips, then all four packaged foundation startup checks. Earlier skipped PostgreSQL results are preserved as historical evidence; persistent Compose bootstrap is still unexecuted. Kafka is not introduced until approved P0.3. Spring AI 2.0.1 is a documentation-verified P2 candidate only, not a present dependency or proven integration. [ADR 0006](../adr/0006-technology-baseline-and-version-pinning.md) preserves official baseline references; [ADR 0007](../adr/0007-foundation-profiles-and-stage-boundaries.md) makes the staged integration gates explicit.
 
 ## 10. Traceability map
 

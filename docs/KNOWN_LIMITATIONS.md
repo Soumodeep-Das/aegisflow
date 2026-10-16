@@ -1,6 +1,6 @@
 # Known Limitations
 
-**Status:** P0.2 implementation checkpoint; final combined verification gate incomplete
+**Status:** P0.2 implemented and host-verified; operational limitations remain, P0.3 unapproved
 
 **Last reviewed:** 2026-10-16
 
@@ -8,7 +8,7 @@ This project is intentionally a production-oriented **student portfolio project*
 
 ## 1. Current P0.2 reality
 
-- Latest host evidence: the Warehouse-only command `.\mvnw.cmd -B -ntp -pl simulators/warehouse-service -Pinfrastructure-tests clean verify` passed at **2026-10-16 19:39:12 IST**, **45.668 s**, source **`7a90c57`**, with **10 default tests and 8 PostgreSQL ITs**, zero failures/errors/skips. Separate successful host runs now cover **29 PostgreSQL tests: Core 4, Order 8, Payment 9, Warehouse 8**. All four V1 migrations and the recorded atomicity/replay/constraint/privilege assertions passed. This does not establish one successful clean full-reactor run. The final root persistence script with zero skips, current packaged four-JAR foundation startup, and persistent Compose bootstrap remain outstanding.
+- Final host evidence: full clean reactor **BUILD SUCCESS at 2026-10-16 19:45:47 IST**, **2:17**, entry `66282a9`/application source `7a90c57`; **38 default + 29 real PostgreSQL tests**, zero failures/errors/skips. All four V1 migrations and the recorded atomicity/replay/constraint/privilege assertions passed. All four packaged foundation JARs returned HTTP 200/UP and docs had zero issues. The report helper's incomplete `tests=4` summary is corrected against actual XML; the outer cross-PowerShell command emitted an initial quoting error, but independent checks all passed. No host rerun is needed for closing records. Persistent Compose bootstrap remains unexecuted.
 
 - Historical host failures (resolved by later runs): a run passed 37 default tests and 21 Core/Order/Payment PostgreSQL ITs but Warehouse context startup failed because its Repository adapters were final. Making them subclassable and adding a focused proxy regression enabled the successful Warehouse run above. An earlier run started PostgreSQL and passed six Core default tests, then JDBC rejected the host JVM timezone alias. Test forks now use UTC and two configuration regressions passed. Manual postgres-profile launches still require the documented JVM UTC option; test settings do not change production JVM defaults.
 
@@ -19,8 +19,8 @@ This project is intentionally a production-oriented **student portfolio project*
 - The current dependency baseline remains Boot 4.1.1/Modulith 2.1.1, with JPA/Hibernate in the simulators and Boot's Flyway starter/PostgreSQL module. Compatibility and behavior claims depend on the latest build/test record. Spring AI remains absent and deferred until P2.
 - The first resumed offline reactor run on 2026-10-13 ended at 00:39:17 IST: Core's four architecture tests passed, and its HTTP smoke test errored with sandbox loopback `connect: Permission denied`. The reactor stopped before simulator compilation/tests. Later successful runs are recorded separately in the evidence document; this failed run remains a failure.
 - Historical focused checks on 2026-10-13 passed 21 actual pure validation/fingerprint/event-fixture tests and 4 Core architecture tests. Four Core PostgreSQL ITs skipped because the Docker pipe was denied; uncached JPA dependencies and Maven Central DNS blocked simulator compilation. Compose configuration and script syntax passed. Later host execution compiled the modules and passed real PostgreSQL suites, resolving those earlier execution blockers; session Docker access must still be assessed independently from the user's PowerShell.
-- Default `foundation` startup suppresses database/JPA auto-configuration and selects no persistence components. Its health `UP` proves process readiness only. `postgres` selects real owning-database connections, migrations, and Hibernate schema validation. Host test contexts have now started successfully; current packaged four-JAR foundation startup and persistent Compose/manual postgres-profile verification remain separate outstanding checks.
-- The four databases' independent Flyway migrations, runtime grants, transaction rollback/commit, concurrency, and constraints have passed the recorded Testcontainers assertions in separate host runs. Persistent Compose role bootstrap has not been executed; those ephemeral test results do not validate existing local volumes, password rotation, or persistent deployment operations.
+- Default `foundation` startup suppresses database/JPA auto-configuration and selects no persistence components. Its health `UP` proves process readiness only. `postgres` selects real owning-database connections, migrations, and Hibernate schema validation. Host test contexts and all four packaged foundation JARs started successfully. Persistent Compose/manual postgres-profile rehearsal remains separate and unexecuted.
+- The four databases' independent Flyway migrations, runtime grants, transaction rollback/commit, concurrency, and constraints passed the final full host Testcontainers run. Persistent Compose role bootstrap has not been executed; those ephemeral test results do not validate existing local volumes, password rotation, or persistent deployment operations.
 - No business HTTP endpoints, event publisher/consumer, UI, recovery workflow, model integration, or external deployment exists. Database-focused failure tests are written; they have not yet demonstrated the broader business failure matrix. No security scan, benchmark, or AI evaluation has run.
 - POSIX wrapper execution was not tested on this Windows host; it requires `unzip` for the checksum-pinned Maven ZIP. Windows wrapper execution was verified. The packaged-startup helper currently targets Windows/PowerShell.
 - Business architecture controls, state transitions, metrics, and thresholds remain specifications or future targets, not observed product results.
@@ -32,7 +32,7 @@ This project is intentionally a production-oriented **student portfolio project*
 - The first vertical slice should implement one narrow business invariant and one safe, non-financial recovery action. It will not prove a general recovery platform.
 - No automatic refund, charge, transfer or other financial compensation is allowed in the MVP.
 - A sophisticated Next.js UI, Kubernetes, multi-region operation, Redis, Temporal, pgvector and additional microservices are deferred until justified by a measured requirement.
-- Testcontainers has executed successfully on the host across all four deployables. The final root `scripts/verify-persistence.ps1` run remains outstanding; it rejects unavailable Docker and skipped/failed/error ITs. Persistent Compose bootstrap is also unexecuted. Successful recorded local runs demonstrate only their environment and scenarios, not production scalability or availability.
+- The final root Testcontainers build executed successfully on the host across all four deployables. Its report helper now checks all four explicit report directories and rejects missing/empty/error/failed/skipped suites. Persistent Compose bootstrap remains unexecuted. Recorded local results demonstrate only their environment and scenarios, not production scalability or availability.
 
 ## 3. Distributed-systems limitations
 

@@ -1,15 +1,15 @@
 # Prioritized roadmap
 
 **Last reviewed:** 2026-10-16
-**Observed product state:** P0.1 remains the last fully verified milestone. Each owner's P0.2 PostgreSQL suite now passes on the host; final integrated reactor and packaged-startup acceptance remain pending.
+**Observed product state:** P0.2 is implemented and exit-gated on the owner's Windows/Java 21 host. P0.3 remains unapproved and unstarted.
 
-**Latest progress:** source `7a90c57` passed the Warehouse-only host build at 19:39:12 IST: 10 default + 8 PostgreSQL tests, no failures/errors/skips. Core/Order/Payment previously passed 21 PostgreSQL tests, so all 29 now pass across separate runs; all four V1 migrations applied. The Warehouse proxy defect is verified fixed. Next is one final integrated persistence run and packaged startup, without repeating implementation. Earlier dated results below remain historical.
+**Final P0.2 result:** the full clean reactor succeeded at 19:45:47 IST (2:17), 38 default + 29 real PostgreSQL tests with zero failures/errors/skips, followed by four packaged foundation JARs returning HTTP 200/UP and a zero-issue documentation check. The report counter's incomplete glob is corrected using all four real XML reports; no business code changed after verification. Persistent Compose bootstrap remains a separate unexecuted rehearsal. Earlier dated results below are historical.
 
 **Latest 2026-10-16 result:** six Core default tests passed and PostgreSQL started; JDBC bootstrap then failed on the host legacy timezone alias. Both Maven test JVMs now explicitly use UTC, and two image/timezone regression tests passed. Rerun the same host persistence gate; real migrations/atomicity remain pending.
 
 **2026-10-16 host update:** Docker and five Core default tests now passed on the owner's host. The persistence run then failed before PostgreSQL startup at Testcontainers' digest-image compatibility guard. All four image declarations were fixed without changing the pin, and one Core initialization regression passed locally. The single next task is rerunning the same host persistence script, rather than reinstalling Docker or repeating implementation.
 
-**Local checkpoints:** verified P0.1 source `cb7bfaf` and continuity `c2c93e3` preserved; P0.2 source checkpoint `14e04f6`, followed by the handoff documentation continuity commit. P0.2's full gate is pending. No push or external deployment occurred.
+**Local checkpoints:** verified P0.1 source `cb7bfaf` and continuity `c2c93e3` preserved; P0.2 source checkpoint `14e04f6`, fixes through `7a90c57`, evidence checkpoint `66282a9`, followed by this local closing commit. Resolve current HEAD in Git. No push or external deployment occurred.
 
 ## Completed — Phase 0
 
@@ -21,13 +21,13 @@ The owner approved P0.1 and resumed it after a pause. Four independent Spring Bo
 
 Four service-owned PostgreSQL configurations and a digest-pinned Compose definition exist. Compose configuration validation passed, but the Docker engine was unavailable: the optional PostgreSQL integration test was **skipped**, not passed. No database or business workflow has been demonstrated. See [test evidence](evidence/TEST_RESULTS.md), [the codebase guide](learning/CODEBASE_GUIDE.md), and [ADR 0007](adr/0007-foundation-profiles-and-stage-boundaries.md).
 
-## Now — finish verification of the existing P0.2 checkpoint
+## Completed — P0.2 service-owned persistence and outbox
 
-The owner approved P0.2 and allowed stopping at a meaningful checkpoint. Code now includes four V1 histories, separate migration/runtime roles, and minimal internal simulator state/replay/outbox operations. Continue from these actual paths rather than repeating the design review or implementation. The highest-priority task is the Java 21 clean reactor plus real PostgreSQL migration/atomicity/replay/concurrency/privilege gate with zero skips. This session's sandbox blocked global Maven-cache writes, Maven Central DNS, and the Docker engine pipe; successful host Docker use does not prove sandbox access. See evidence/handoff for exact attempts and commands.
+Four V1 histories, separate migration/runtime roles, and minimal internal simulator state/replay/outbox operations are implemented. The Java 21 full clean reactor and real PostgreSQL migration/atomicity/replay/concurrency/constraint/locking/privilege suites passed with zero skips. Packaged foundation startup and documentation checks passed. Do not repeat completed implementation or architectural review. Earlier sandbox failures remain recorded separately from host successes.
 
-The role design is implemented in bootstrap SQL/Compose/profile configuration; the real PostgreSQL suites now exercise privileges. Core receives only its own runtime/Flyway credentials. Local credentials remain ignored environment configuration. Persistent Compose bootstrap remains unexecuted. P0.2 is not complete until its final gate passes; P0.3 remains unapproved.
+The role design is implemented in bootstrap SQL/Compose/profile configuration; the real PostgreSQL suites exercise privileges. Core receives only its own runtime/Flyway credentials. Local credentials remain ignored environment configuration. Persistent Compose bootstrap remains unexecuted; its helper/existing-volume behavior is not inferred from Testcontainers. All outbox events remain durable pending publication intents; no Kafka delivery is claimed.
 
-Latest per-module host evidence totals 38 default tests and 29 PostgreSQL tests across separate runs, all passing with zero skips. These are not one successful integrated root invocation. Compose parsing and script syntax passed locally. Earlier sandbox loopback/cache/Docker failures remain in the evidence history; they do not invalidate the new host results. Finish the final normal host gate before adding new code.
+The final integrated root invocation passed 38 default and 29 PostgreSQL tests. Compose parsing and script syntax also passed locally. The outer cross-PowerShell quoted command emitted an initial `Stop` error; the actual build/startup/docs checks nevertheless completed successfully. Future instructions avoid nested command quoting. See evidence/handoff for the exact distinction and reporting correction.
 
 ## Next — P0 functional detection slice
 
@@ -35,8 +35,8 @@ The single highest-value outcome is one reproducible flow from a simulator's com
 
 Priority order:
 
-1. Verify the existing P0.2 source on Java 21 and real PostgreSQL; correct any actual migration/transaction defects.
-2. Review the recorded gate/evidence and obtain P0.3 approval.
+1. Owner reviews the completed P0.2 checkpoint; no further host rerun is required for its recorded gate.
+2. Obtain explicit P0.3 approval before any implementation; optional persistent Compose rehearsal remains documented separately.
 3. Kafka event contract fixtures and publisher recovery.
 4. Control-plane inbox uniqueness, tenant correlation, projection, and schema quarantine.
 5. One clock-driven invariant and durable incident/evidence timeline.

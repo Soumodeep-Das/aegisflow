@@ -1,4 +1,22 @@
-# Handoff — P0.2 database suites passed; final combined gate pending
+# Handoff — P0.2 implemented and verified; stopped before P0.3
+
+**Closing snapshot:** 2026-10-16T14:17:37Z, Codex final host-evidence continuation. Original repository on `main`, entry HEAD `66282a9`, clean on entry; application implementation remains `7a90c57` (earlier source checkpoint `14e04f6` preserved). This following local closing commit updates continuity and fixes report aggregation, without changing Java/SQL/domain behavior. Resolve its hash/status with `git rev-parse HEAD`, `git status --short --branch`, `git log -3 --oneline`. All commits remain local; no push, deployment, history rewrite or volume deletion.
+
+**Last completed milestone: P0.2.** The owner's final Java 21/Maven 3.10.0 clean reactor with `-Pinfrastructure-tests` succeeded at **2026-10-16T19:45:47+05:30**, **2 min 17 s**: **38 default tests + 29 real PostgreSQL ITs**, zero failures/errors/skips. Core 7/4, Order 9/8, Payment 12/9, Warehouse 10/8. All four migrations, schema validation and recorded commit/rollback/replay/concurrency/tenant/locking/immutability/privilege assertions passed on Docker Desktop 29.8.2/PostgreSQL 18.6. All four packaged foundation JARs then returned HTTP 200/UP; docs reported zero issues. See the latest evidence and guide for commands/actual entry points; the implementation paths below remain valid.
+
+**Reporting corrections, not another business defect:** the host helper printed `tests=4` because its glob missed simulator reports. It now reads all four explicit owner report directories and rejects missing/empty suites or any failure/error/skip. The corrected function is checked against existing real XML, without rerunning Docker/Maven. The outer Windows PowerShell 5.1 command also stripped the quotes around `Stop`, causing an initial command error; actual tests/startup/docs nevertheless all passed. Do not reuse the historical nested `-Command` example. For future verification, enter the bundled PowerShell 7 using `& $ps7 -NoProfile`, then run each `.ps1` directly inside it. No rerun is required now.
+
+**Closing local validation:** the actual reporting function returned 29/0/0/0 from all four real Failsafe XML reports; independent Surefire totals were 38/0/0/0. Missing-report and skipped-report negative fixtures were rejected. Script parsing and whitespace checks passed. Documentation checker exited 0: 29 Markdown / 20 required / 111 local links / 7 Mermaid / 1 JSON / 16 scenarios / 20 Q&As / 8 ADRs / zero issues. Only verification tooling and documentation changed after the host build.
+
+**Implemented:** independently owned databases/Flyway histories and least-privilege runtime roles; Core schema boundary without simulator credentials; internal initial Order/Payment/Warehouse state + durable idempotency + immutable pending outbox in one local transaction. No business HTTP ingress, Kafka relay/consumer, detection/recovery, Keycloak, AI or frontend. A durable outbox is not broker delivery or universal exactly-once effects.
+
+**Remaining limitations:** persistent Compose role bootstrap/existing-volume/manual postgres-profile rehearsal remains unexecuted (Compose configuration was validated). Temporary PostgreSQL tests do not validate that operational helper or production deployment. POSIX execution, security/load/AI evaluation and future Kafka fault scenarios remain unverified. No secrets are committed. Do not delete existing volumes, overwrite user work, edit applied V1 migrations, or pass simulator credentials to Core. Earlier sandbox engine/network/loopback failures remain preserved and distinct from host successes.
+
+**Single next task:** owner reviews this completed local milestone and explicitly approves or defers P0.3. **Stop here; P0.3 is unapproved and unstarted.** No additional local execution is needed for P0.2's recorded gate. After approval only, follow the existing P0.3 acceptance in `docs/roadmap/IMPLEMENTATION_PLAN.md` (durable delivery/inbox/idempotency and fault cases); do not repeat completed inspections, implementation, or successful verification merely to resume. Rollback/recovery means inspect history/diff first and preserve the checkpoint, not reset/volume deletion.
+
+---
+
+## Historical snapshots — superseded; commands below are not current next actions
 
 **Latest snapshot:** 2026-10-16T14:10:12Z, Codex host-evidence continuation. Existing repository/branch `main`, entry/source HEAD `7a90c57`, clean on entry. This following documentation-only local commit records the user's successful rerun; resolve its hash/status with `git rev-parse HEAD` and `git status --short --branch`. No source changes, push, deployment, history rewrite or volume deletion.
 

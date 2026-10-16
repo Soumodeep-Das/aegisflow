@@ -1,7 +1,7 @@
 # Implementation plan
 
 **Planning horizon:** preserve a useful, teachable repository even if assisted coding stops after 6–7 days.
-**Current authorization:** P0.2 service-owned persistence/outbox explicitly approved; owner permits stopping at a meaningful documented checkpoint. P0.1 remains the last fully verified milestone.
+**Current authorization:** P0.2 service-owned persistence/outbox explicitly approved and now verified at the final 2026-10-16 host gate. Stop here; P0.3 remains unapproved/unstarted.
 **Next approval gate:** P0.3 requires explicit authorization after the P0.2 gate. Product P1 recovery is not authorized.
 
 ## Delivery principles
@@ -86,7 +86,7 @@ P0.1 acceptance evidence:
 
 ### P0.2 Service-owned persistence and outbox
 
-**Approved source checkpoint; final integrated gate pending.** Four independent V1 migrations, role bootstrap/profile separation, and internal Order-create/initial Payment-outcome/initial Warehouse-outcome transactions are now present. On 2026-10-16 each owner's real PostgreSQL suite passed: 29 ITs total across separate host runs, zero failures/errors/skips. The final clean root persistence run and current packaged startup remain pending. [ADR 0008](../adr/0008-persistence-primitives-and-database-roles.md) freezes the minimal schema, identifiers, money, version, and digest choices. Run `scripts/verify-persistence.ps1` with Java 21 and a working engine; that script rejects skips. Preserve the current code instead of recreating it. The current handoff names the exact remaining command and acceptance criteria.
+**Implemented and verified, 2026-10-16.** Four independent V1 migrations, role bootstrap/profile separation, and internal Order-create/initial Payment-outcome/initial Warehouse-outcome transactions are present. The final clean root host reactor passed 38 default tests and 29 PostgreSQL ITs with zero failures/errors/skips, followed by four packaged foundation health checks and zero-issue docs validation. The report aggregation correction is checked independently against all four actual XML reports. [ADR 0008](../adr/0008-persistence-primitives-and-database-roles.md) freezes the minimal schema, identifiers, money, version, and digest choices. Persistent Compose bootstrap remains an unexecuted rehearsal limitation. Preserve the implementation; no repeat build is required just to record completion. Stop before P0.3 approval.
 
 Implement the smallest state transitions needed for the event choreography in SYSTEM_ARCHITECTURE.md. Each simulator gets its own Flyway history and PostgreSQL database/schema ownership. Business-state mutation and resulting outbox row commit together; consumed-event inbox joins this transaction when consumers arrive in P0.3. Publication will be asynchronous and replayable; actual Kafka processing remains P0.3, not P0.2.
 

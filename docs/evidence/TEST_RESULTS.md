@@ -1,5 +1,32 @@
 # Test evidence — current P0.2 checkpoint and preserved P0.1
 
+## 2026-10-16 — final P0.2 integrated gate passed
+
+Owner-supplied full host transcript, entry HEAD `66282a9`, application source `7a90c57`: Temurin Java 21.0.12.1, Maven wrapper 3.10.0, Docker Desktop 29.8.2, digest-pinned PostgreSQL 18.6. `verify-persistence.ps1` ran the exact root command `.\mvnw.cmd -B -ntp -Pinfrastructure-tests clean verify`. **All five reactor projects SUCCESS; BUILD SUCCESS / Maven exit 0**, finished **2026-10-16T19:45:47+05:30**, **02:17 min**.
+
+| Owner | Default tests | PostgreSQL ITs | Failures / errors / skips |
+|---|---:|---:|---|
+| Core | 7 | 4 | 0 / 0 / 0 |
+| Order | 9 | 8 | 0 / 0 / 0 |
+| Payment | 12 | 9 | 0 / 0 / 0 |
+| Warehouse | 10 | 8 | 0 / 0 / 0 |
+| Integrated total | 38 | 29 | 0 / 0 / 0 |
+
+All four independently managed V1 migrations, Hibernate validation where applicable, postgres contexts and the recorded database atomicity/rollback/replay/concurrency/constraint/optimistic-lock/privilege/immutable-outbox cases executed successfully. This is the final integrated invocation, not the earlier sum of separate runs. No Kafka delivery or universal exactly-once effect is claimed.
+
+The same host transcript next records `verify-startup.ps1`: Core, Order, Payment and Warehouse executable JARs each returned **HTTP 200 / health UP**, respectively on temporary ports 55079/55083/55086/55088. The helper stops only its child processes. `verify-docs.ps1` passed: **Markdown=29 Required=20 LocalLinks=109 Mermaid=7 JSON=1 Scenarios=16 InterviewQA=20 ADRs=8 Issues=0**. No business HTTP functionality is inferred from health.
+
+Two verification-wrapper issues are recorded rather than hidden:
+
+- The exact outer host command was `& $ps7 -NoProfile -Command '$ErrorActionPreference = "Stop"; & .\scripts\verify-persistence.ps1; & .\scripts\verify-startup.ps1; & .\scripts\verify-docs.ps1'`. Windows PowerShell 5.1 native argument handling removed the nested quotes; the child emitted `Stop: The term 'Stop' is not recognized`. Therefore the claimed outer fail-fast setup did not work. The subsequent actual build/startup/docs all passed independently. The transcript did not separately print the outer process exit code. Future instructions use `& $ps7 -NoProfile` to enter PowerShell 7, then direct script invocations, avoiding this nested-quote boundary.
+- The persistence helper printed **tests=4**, despite successful per-owner Maven results of 4/8/9/8. Its wildcard-with-filter report enumeration omitted simulator directories. The helper now enumerates four explicit owner directories, requires each nonempty suite, validates count fields, and rejects failures/errors/skips per owner. Its reporting function is verified against the four existing actual host XML reports as 29, without rerunning the database tests. No test is skipped/disabled/faked and no Java or migration was changed after this successful host build.
+
+Local reporting verification: PowerShell parsed `scripts/verify-persistence.ps1`, extracted its actual `Get-PersistenceReportSummary` function via `FunctionDefinitionAst`, and invoked `Get-PersistenceReportSummary -RepositoryRoot (Get-Location).Path`. **Exit 0: Tests=29, Failures=0, Errors=0, Skipped=0** from the existing four real Failsafe XML files. Independent enumeration of all four Surefire XML directories gave **38/0/0/0**. No Java test rerun or substitute database was involved.
+
+Negative reporting checks loaded the same actual function: a nonexistent report root was correctly rejected as missing Core reports; an isolated four-owner XML fixture with Warehouse `skipped=1` was correctly rejected. Temporary fixtures were removed without touching real reports. The initial function draft's live ordered-dictionary key iteration error was corrected to a fixed field-name list before these successful checks. Script parsing and `git diff --check` passed. Closing `& $ps7 -NoProfile -File .\scripts\verify-docs.ps1` **exited 0**: Markdown=29 Required=20 LocalLinks=111 Mermaid=7 JSON=1 Scenarios=16 InterviewQA=20 ADRs=8 Issues=0 (two new links since the host check).
+
+**Milestone outcome:** P0.2 implementation and recorded build/PostgreSQL/startup gate complete; stop before unapproved P0.3. Persistent Compose bootstrap/manual operational rehearsal remains unexecuted; Compose parsing passed earlier but is not bootstrap execution. Prior failures and skips below remain historical evidence, not current blockers. No further owner-side rerun is needed merely for closing documentation/reporting.
+
 ## 2026-10-16 — Warehouse PostgreSQL rerun succeeds
 
 Owner-supplied host output at source `7a90c57`, Java 21.0.12.1, Maven wrapper 3.10.0, Docker Desktop 29.8.2, digest-pinned PostgreSQL 18.6. Exact command from the existing repository:

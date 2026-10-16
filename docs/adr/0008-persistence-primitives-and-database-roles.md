@@ -1,6 +1,6 @@
 # ADR 0008: P0.2 persistence primitives and database roles
 
-- **Status:** Accepted implementation choices within approved P0.2; verification gate pending
+- **Status:** Accepted implementation choices within approved P0.2; host verification gate passed 2026-10-16 (see evidence; persistent Compose rehearsal remains separate)
 - **Date:** 2026-10-13
 - **Complements:** ADRs 0001, 0002, 0003, 0004, and 0007; historical decisions are preserved
 
