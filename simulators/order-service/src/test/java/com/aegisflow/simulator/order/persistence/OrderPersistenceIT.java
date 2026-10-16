@@ -33,6 +33,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 import tools.jackson.databind.json.JsonMapper;
 
 @Testcontainers(disabledWithoutDocker = true)
@@ -42,8 +43,9 @@ class OrderPersistenceIT {
     private static final String RUNTIME = "aegisflow_order_runtime";
     private static final String MIGRATOR = "aegisflow_order_migrator";
     private static final String PASSWORD = "synthetic-test-only";
-    @Container static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer(
+    @Container static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer(DockerImageName.parse(
             "postgres:18.6@sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336")
+            .asCompatibleSubstituteFor("postgres"))
             .withDatabaseName("aegisflow_order").withUsername("inspection_admin").withPassword(PASSWORD);
     @DynamicPropertySource static void configure(DynamicPropertyRegistry properties) throws SQLException {
         try (var connection = DriverManager.getConnection(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), PASSWORD);

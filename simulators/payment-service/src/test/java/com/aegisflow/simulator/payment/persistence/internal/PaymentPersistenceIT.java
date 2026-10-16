@@ -42,6 +42,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers(disabledWithoutDocker = true)
 @ActiveProfiles("postgres")
@@ -53,8 +54,9 @@ class PaymentPersistenceIT {
     private static final String PASSWORD = "synthetic-test-only";
 
     @Container
-    private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer(
+    private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer(DockerImageName.parse(
             "postgres:18.6@sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336")
+            .asCompatibleSubstituteFor("postgres"))
             .withDatabaseName("aegisflow_payment")
             .withUsername("payment_inspection_admin")
             .withPassword(PASSWORD);

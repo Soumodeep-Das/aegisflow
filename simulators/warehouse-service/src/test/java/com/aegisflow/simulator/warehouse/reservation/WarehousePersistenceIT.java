@@ -36,6 +36,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.LockModeType;
@@ -58,7 +59,8 @@ class WarehousePersistenceIT {
             UUID.fromString("30000000-0000-0000-0000-000000000003");
 
     @Container
-    private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer(POSTGRES_IMAGE)
+    private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer(
+            DockerImageName.parse(POSTGRES_IMAGE).asCompatibleSubstituteFor("postgres"))
             .withDatabaseName("warehouse_p02")
             .withUsername("warehouse_test_admin")
             .withPassword("synthetic-admin-test-only")

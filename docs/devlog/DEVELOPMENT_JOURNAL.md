@@ -1,5 +1,15 @@
 # Development journal
 
+## 2026-10-16 — fix Testcontainers digest image declaration after host run
+
+The owner's first host persistence run used bundled PowerShell 7.6.5 and Java 21.0.12.1. Docker 29.8.2 and Ryuk worked; five Core default tests passed. Core's PostgreSQL IT then failed during static initialization because Testcontainers did not accept the tag-plus-digest image reference as its postgres family. Failsafe recorded one initialization error (zero assertion failures/skips), root exit 1 at 19:10:03 IST after 47.696 seconds; simulators and PostgreSQL migrations were not reached.
+
+Reused the clean existing repository at `98a670d`; no repeated architecture review or business implementation. Fixed all four IT constructors with explicit `DockerImageName.parse(pin).asCompatibleSubstituteFor("postgres")`, preserving the existing immutable pin. Added a no-Docker regression test that initializes Core's actual IT container declaration and verifies the unchanged canonical image name/compatibility.
+
+`mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane -Dtest=PostgresImageConfigurationTests -l .cache/p0.2-image-configuration-regression.log test` on Java 21 exited 0 at 19:13:57 IST, 13.184 seconds, 1 pass/0 failures/errors/skips. Core test sources compiled. Docker info still fails in the coding sandbox; this is distinct from the successful host engine connection. The remaining gate is the same host persistence script, followed only on success by packaged startup/docs checks. No real PostgreSQL result or P0.2 completion is claimed.
+
+Updated evidence, handoff, roadmap, guide and limitations with this failure/fix and exact next step. No migration, application behavior, dependency version, secret, Kafka or P0.3 change was made. Commit details are recorded in the following continuity note.
+
 Chronological factual record. Commands and results belong here; aspirations belong in the roadmap. Timestamps use UTC, with local context noted when useful.
 
 ## 2026-10-11 — Phase 0 kickoff

@@ -1,5 +1,7 @@
 # Codebase guide
 
+**2026-10-16 verification update:** the host passed five Core default tests and connected Testcontainers to Docker. A PostgreSQL image declaration then failed before database startup. All four ITs now explicitly declare the unchanged digest pin compatible with `postgres`. The new `control-plane/src/test/java/com/aegisflow/core/PostgresImageConfigurationTests.java` initializes the actual Core IT's container without Docker and passed its canonical-reference/compatibility assertion. It cannot prove database startup or transactions; the next step is the normal host persistence script.
+
 ## Read this first: the P0.2 checkpoint
 
 P0.1's four application foundations and ten control-plane module boundaries are preserved. P0.2 now has source for independent Flyway migrations, database role bootstrap, and local transactional state/idempotency/outbox paths in Order, Payment, and Warehouse. These application methods are Java boundaries for later HTTP workflows; no business HTTP controller, authentication, Kafka publisher/consumer, incident detection, recovery, or AI behavior exists.

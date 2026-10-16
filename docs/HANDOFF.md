@@ -1,5 +1,21 @@
 # Handoff — P0.2 local source checkpoint, verification pending
 
+**Latest update:** 2026-10-16T13:46:12Z (2026-10-16 IST), targeted host-test failure fix.
+**Entry HEAD:** `98a670d`, clean before this fix; prior source checkpoint `14e04f6` preserved. This next local fix commit changes only the four IT image declarations, one Core regression test and continuity documents. Resolve current HEAD/status with the commands below; no push/deployment is authorized.
+
+Owner's host Docker 29.8.2 works and all 5 Core default tests passed. The full persistence run failed at 19:10:03 IST (47.696 seconds) on the Core PostgreSQLContainer's static image compatibility guard, before PostgreSQL startup. One Failsafe initialization error, zero failures/skips; simulators not reached. All four declarations now use `DockerImageName.parse(existingTagAndDigest).asCompatibleSubstituteFor("postgres")`; no pin/version/test was weakened. `PostgresImageConfigurationTests` initializes the actual Core container declaration without Docker and verifies the exact reference/compatibility: **1 passed, 0 failures/errors/skips**, Java 21, 19:13:57 IST, 13.184 seconds. Core's test sources compiled. Real migrations/state-outbox assertions remain unverified; sandbox engine access remains denied.
+
+**Exact next task:** run the same host command in the existing repository:
+
+```powershell
+$ps7 = 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe'
+& $ps7 -NoProfile -File .\scripts\verify-persistence.ps1
+```
+
+Keep Java21 selected. On success, run `verify-startup.ps1` and `verify-docs.ps1` through the same executable. On failure, preserve the first underlying error and final reactor/test summary; fix that exact issue within P0.2. Do not repeat completed inspection or recreate code. P0.3 remains unapproved.
+
+The previous checkpoint below is historical context; this latest result supersedes its host-environment assumptions. Detailed new evidence is first in `docs/evidence/TEST_RESULTS.md`.
+
 **Closing snapshot:** 2026-10-13T03:58:40Z, Codex resumed P0.2 checkpoint (2026-10-13 IST).
 **Authorized scope:** P0.2 only. Owner requested a meaningful, tested where available, understandable local checkpoint and exact local follow-up actions. P0.3 is unapproved and unstarted.
 **Branch/repository:** `main`, original `C:\Users\User\Documents\Codex\2026-10-11\referenced-chatgpt-conversation-this-is-an\outputs\aegisflow`.

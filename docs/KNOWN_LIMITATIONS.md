@@ -2,11 +2,13 @@
 
 **Status:** P0.2 implementation checkpoint; PostgreSQL verification gate incomplete
 
-**Last reviewed:** 2026-10-13
+**Last reviewed:** 2026-10-16
 
 This project is intentionally a production-oriented **student portfolio project**, not an enterprise-ready transaction-recovery product. This list separates designed intent from demonstrated capability and must be updated at every significant milestone.
 
 ## 1. Current P0.2 reality
+
+- Latest host evidence (2026-10-16): Docker/Ryuk and five Core default tests passed; PostgreSQL IT failed at static image compatibility validation before database startup. Four IT declarations now explicitly mark the unchanged digest reference compatible with postgres, and one no-Docker initialization regression passed. This fixes the reported setup defect but leaves real migrations/atomicity and all simulator runs pending.
 
 - P0.1's four application shells, Maven Wrapper, Java 21 enforcement, health endpoints, ten Core module declarations, and architectural tests are preserved. Its historical successful build ran 14 tests and its four packaged JARs answered health `UP`; those results do not validate the new persistence changes. See [test evidence](evidence/TEST_RESULTS.md) for each dated run.
 - Order, Payment, and Warehouse now have source for local transactional business-state, durable idempotency, and immutable outbox publication-intent writes. Core has its own independent V1 schema-boundary migration, without future inbox/projection/incident tables. Application entry points and actual classes are explained in [the codebase guide](learning/CODEBASE_GUIDE.md).

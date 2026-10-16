@@ -1,5 +1,24 @@
 # Test evidence — current P0.2 checkpoint and preserved P0.1
 
+## 2026-10-16 — host Docker run and pinned-image initialization fix
+
+User ran the existing `scripts/verify-persistence.ps1` through bundled PowerShell 7.6.5 on the host, with Java 21.0.12.1. This is new host evidence, not a rerun inside the restricted coding session:
+
+- Docker engine **29.8.2** was reachable through Testcontainers' local named pipe; Ryuk 0.14.0 pulled and started. The earlier sandbox Docker denial did not describe the host installation.
+- Core main/test compilation and its **five default tests passed**, zero failures/errors/skips: HTTP health (1), architecture (4). Core packaged successfully.
+- Failsafe then failed at class initialization: **1 error, 0 failures/skips**, before PostgreSQL startup/migrations or any database assertion. `PostgreSQLContainer(String)` rejected the exact `postgres:18.6@sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336` reference as not compatible with its `postgres` family.
+- Root verification **exit 1**, **47.696 seconds**, finished **2026-10-16 19:10:03 IST**. Simulator reactor modules were not reached. The optional repository-prefix HTTP 401 warnings were not the failing operation.
+
+Corrected all four IT declarations to pass `DockerImageName.parse(existingPin).asCompatibleSubstituteFor("postgres")` into the container constructor. The exact tag/digest, server version, test enablement and assertions are unchanged. This is an explicit image-family declaration, not a mutable-tag fallback or disabled compatibility test.
+
+Added `control-plane/src/test/java/com/aegisflow/core/PostgresImageConfigurationTests.java`. Accessing the real IT's image field also executes its static PostgreSQLContainer constructor without starting Docker; the test checks successful initialization, exact canonical reference and compatibility. Exact local command:
+
+```powershell
+.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane -Dtest=PostgresImageConfigurationTests -l .cache/p0.2-image-configuration-regression.log test
+```
+
+With the existing Java 21/workspace TEMP setup: **exit 0**, **1 test passed**, zero failures/errors/skips, **13.184 seconds**, finished **2026-10-16 19:13:57 IST**. Core's four test sources compiled. This proves the initialization fix in Core; it does not prove PostgreSQL startup/migration or simulator/JPA execution. Coding-session `docker info` still reports pipe permission denied, so no full integration rerun is claimed here. The next command is the same host `verify-persistence.ps1`; P0.2 remains gate-pending.
+
 ## P0.2 interruption evidence — 2026-10-13
 
 This source checkpoint is incomplete and uncommitted at resumed entry. No PostgreSQL assertion has run yet. Prior P0.1 evidence below is historical.
