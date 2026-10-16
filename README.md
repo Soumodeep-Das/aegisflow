@@ -2,6 +2,8 @@
 
 > **Status:** Approved P0.2 persistence checkpoint is implemented in source: four independent Flyway baselines, restricted database roles, and internal simulator state/replay/outbox transactions. The Java 21 and real PostgreSQL verification gate is pending; see the current handoff/evidence. P0.1's verified history is preserved. Stop before P0.3; Kafka, security infrastructure, AI, and recovery require approval.
 
+Latest host evidence: **37 default tests and 21 PostgreSQL ITs passed** for Core/Order/Payment; all four V1 migrations applied. Warehouse's startup proxy defect is fixed with a passing focused regression, and its real database rerun/final gate remain pending. See [current handoff](docs/HANDOFF.md) for the Warehouse-only command.
+
 AegisFlow is a learning-oriented, production-minded portfolio project for detecting and safely recovering inconsistent distributed business transactions. The first scenario uses independently persisted Order, Payment, and Warehouse simulators. A control plane will correlate their events, detect breached business invariants, assemble attributable evidence, propose a constrained recovery, require deterministic policy and human approval where appropriate, invoke only versioned service APIs, and verify the result against authoritative service state.
 
 AegisFlow is **not** represented as enterprise-ready software. It is a deliberately bounded system in which failure semantics, security boundaries, tests, and resumable documentation are treated as first-class deliverables.

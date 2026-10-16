@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @Profile("postgres")
-final class OutboxEventRepository {
+class OutboxEventRepository {
 
     private final JdbcTemplate jdbcTemplate;
 

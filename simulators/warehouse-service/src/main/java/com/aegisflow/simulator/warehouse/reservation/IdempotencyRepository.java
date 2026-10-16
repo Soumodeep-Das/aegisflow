@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @Profile("postgres")
-final class IdempotencyRepository {
+class IdempotencyRepository {
 
     private static final String OPERATION = "CREATE_RESERVATION";
 

@@ -1,5 +1,19 @@
 # Handoff — P0.2 local source checkpoint, verification pending
 
+**Latest Warehouse update:** 2026-10-16T14:06:48Z (2026-10-16 IST). Entry HEAD `bd3a1be` was clean; this scoped follow-up fixes Warehouse proxyability and records new host evidence. Resolve this following local commit with `git rev-parse HEAD`.
+
+**Now proven on host:** all 37 default tests passed; real PostgreSQL Core 4 + Order 8 + Payment 9 ITs passed (21 total), no skips. All four V1 migrations applied. Host root run still exited 1 at 19:31:15 IST after 2:48 because Warehouse's 8 ITs could not create their common Spring context: final IdempotencyRepository blocked CGLIB exception translation. No Warehouse behavioral assertion passed.
+
+Removed final from exactly Warehouse's four `@Repository` adapters, keeping package visibility, tenant guards, SQL and methods intact. New `WarehouseRepositoryProxyTests` creates a real Spring context and verifies all four CGLIB proxies without a database. Focused Java 21 module run compiled all Warehouse source/tests and passed 8 proxy/validation/contract/architecture tests, zero failures/errors/skips, at 19:35:28 IST (18.406 seconds).
+
+**Single next diagnostic task (ordinary host PowerShell, existing repository, Java 21):**
+
+```powershell
+.\mvnw.cmd -B -ntp -pl simulators/warehouse-service -Pinfrastructure-tests clean verify
+```
+
+Require all 8 Warehouse ITs to run with zero failures/errors/skips. Preserve the first underlying error if any. Do not repeat the already successful Core/Order/Payment suites while diagnosing Warehouse. Once Warehouse passes, run the full persistence script once and packaged startup/docs checks to close the final gate. Persistent Compose bootstrap remains unexecuted; no volume deletion. P0.3 remains unapproved. Earlier snapshots below are historical and superseded by this latest evidence.
+
 **Latest timezone fix:** 2026-10-16T13:57:47Z (2026-10-16 IST). Entry HEAD `79f46a5` was clean. The following local fix commit adds UTC to both Maven test fork arguments and a regression; resolve current HEAD with `git rev-parse HEAD`.
 
 Host rerun: 6 Core default tests passed and pinned PostgreSQL started. The first JDBC admin/bootstrap connection failed because PgJDBC sent the host JVM alias `Asia/Calcutta`, rejected by this PostgreSQL image. Root exit 1 at 19:24:20 IST, 35.342 seconds; 4 Core IT errors, 0 failures/skips; migrations/simulators not reached. Surefire and Failsafe now start with `-Duser.timezone=UTC` (Mockito retained). This does not change Windows or production timezone settings. The image/UTC regression ran on Java 21: **2 passed, 0 failures/errors/skips**, exit 0 at 19:26:26 IST, 10.720 seconds. PostgreSQL assertions still require the normal host rerun.

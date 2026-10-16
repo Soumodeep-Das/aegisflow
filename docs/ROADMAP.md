@@ -3,6 +3,8 @@
 **Last reviewed:** 2026-10-16
 **Observed product state:** P0.1 remains the last fully verified milestone. Approved P0.2 persistence source checkpoint exists; build/PostgreSQL acceptance evidence is pending.
 
+**Latest progress:** host passed all 37 default tests and 21 PostgreSQL ITs for Core/Order/Payment; all four migrations applied. Warehouse's context failed on final Repository adapters. Those four adapters are now proxyable and 8 focused Warehouse tests passed locally. Diagnose with Warehouse-only host verify next; then one final full gate, without reimplementing successful work.
+
 **Latest 2026-10-16 result:** six Core default tests passed and PostgreSQL started; JDBC bootstrap then failed on the host legacy timezone alias. Both Maven test JVMs now explicitly use UTC, and two image/timezone regression tests passed. Rerun the same host persistence gate; real migrations/atomicity remain pending.
 
 **2026-10-16 host update:** Docker and five Core default tests now passed on the owner's host. The persistence run then failed before PostgreSQL startup at Testcontainers' digest-image compatibility guard. All four image declarations were fixed without changing the pin, and one Core initialization regression passed locally. The single next task is rerunning the same host persistence script, rather than reinstalling Docker or repeating implementation.

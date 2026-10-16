@@ -1,5 +1,15 @@
 # Development journal
 
+## 2026-10-16 — Warehouse repository proxy fix after three persistence suites pass
+
+Host root run after UTC fix ended at 19:31:15 IST, 2:48, exit 1. All 37 default tests passed. Real PostgreSQL ITs passed for Core (4), Order (8), Payment (9), with zero skips; all four V1 migrations applied. Warehouse's 8 ITs errored during shared context startup, before behavioral assertions, because its final IdempotencyRepository could not be subclassed for Spring exception translation.
+
+From clean `bd3a1be`, removed final from exactly the four Warehouse Repository adapters; no methods, access scopes, tenant guards, SQL or transaction boundaries changed. Added a small Spring-context regression creating all four exception-translation proxies with mock persistence dependencies. A focused read-only review confirmed the three final utility components have no advisor and need no change.
+
+Reused the existing writable Maven cache, adding only newly available managed artifacts from the owner's successful host build. `mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl simulators/warehouse-service '-Dtest=WarehouseRepositoryProxyTests,CreateReservationCommandTests,WarehouseEventContractTests,WarehouseSimulatorArchitectureTest' -l .cache/p0.2-warehouse-proxy-regression.log test` exited 0 at 19:35:28 IST, 18.406 seconds: **8 passed/0 failures/errors/skips**. All Warehouse main/test sources compiled. Real Warehouse database tests after the proxy fix still require host Docker; the new context test is not a database pass.
+
+Updated current evidence/handoff/guide/limitations/roadmap and preserved failures. Next: Warehouse-only host verify; when that passes, one final full persistence/startup/docs gate. P0.2 remains incomplete, P0.3 unapproved, all commits local. No history rewrite, credential exposure or database volume operation.
+
 ## 2026-10-16 — normalize test JVM timezone before JDBC startup
 
 The owner's rerun passed 6 Core default tests and started the pinned PostgreSQL container, confirming the previous image fix. It then failed on the first JDBC bootstrap connection: PostgreSQL rejected the startup TimeZone value Asia/Calcutta. Four IT errors were reported (0 failures/skips), reactor exit 1 at 19:24:20 IST after 35.342 seconds; migrations and simulators were not reached.

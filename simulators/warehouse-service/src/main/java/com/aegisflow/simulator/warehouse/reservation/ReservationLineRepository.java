@@ -11,7 +11,7 @@ import jakarta.persistence.EntityManager;
 
 @Repository
 @Profile("postgres")
-final class ReservationLineRepository {
+class ReservationLineRepository {
 
     private final EntityManager entityManager;
 

@@ -8,6 +8,8 @@ This project is intentionally a production-oriented **student portfolio project*
 
 ## 1. Current P0.2 reality
 
+- Latest host evidence supersedes earlier broad unverified claims below: all 37 default tests and 21 PostgreSQL ITs passed for Core/Order/Payment; all four V1 migrations applied. Warehouse's 8 ITs failed context startup due final Repository adapters. The proxy fix and 8 focused module tests passed locally, but real Warehouse assertions, final full gate, packaged startup and persistent Compose bootstrap remain pending.
+
 - Latest host rerun: pinned PostgreSQL started and six Core default tests passed, then JDBC rejected the host JVM timezone alias before migrations. Maven test forks now use UTC and two configuration regressions passed. Actual PostgreSQL assertions and simulator execution remain pending the rerun. Manual postgres-profile launches must also use the documented JVM UTC option; the test setting does not change production JVM defaults.
 
 - Latest host evidence (2026-10-16): Docker/Ryuk and five Core default tests passed; PostgreSQL IT failed at static image compatibility validation before database startup. Four IT declarations now explicitly mark the unchanged digest reference compatible with postgres, and one no-Docker initialization regression passed. This fixes the reported setup defect but leaves real migrations/atomicity and all simulator runs pending.

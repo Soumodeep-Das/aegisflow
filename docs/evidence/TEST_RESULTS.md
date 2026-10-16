@@ -1,5 +1,32 @@
 # Test evidence — current P0.2 checkpoint and preserved P0.1
 
+## 2026-10-16 — real persistence passes for three owners; Warehouse proxy fix
+
+Host `verify-persistence.ps1` rerun after UTC fix, ending **19:31:15 IST**, **2 minutes 48 seconds**, root **exit 1**:
+
+| Owner | Default tests | PostgreSQL ITs | Result |
+|---|---:|---:|---|
+| Core | 7 passed | 4 passed | SUCCESS |
+| Order | 9 passed | 8 passed | SUCCESS |
+| Payment | 12 passed | 9 passed | SUCCESS |
+| Warehouse | 9 passed | 8 errors | context startup failed |
+
+All **37 default tests passed**, zero failures/errors/skips. **21 real PostgreSQL ITs passed**, zero skips; the **8 Warehouse ITs errored** because their common application context could not start. All four deployables compiled and packaged; all four V1 migrations were applied to real PostgreSQL. Warehouse's migration completed, but its behavioral assertions did not run.
+
+The first Warehouse cause was `Cannot subclass final class ...IdempotencyRepository`. All four Warehouse adapters use `@Repository` without a proxy interface, so Spring's persistence exception translation requires a subclass. Removed `final` from `IdempotencyRepository`, `OutboxEventRepository`, `ReservationRepository`, and `ReservationLineRepository`; methods/visibility/tenant checks/transactions/SQL are unchanged. Utility components remain final.
+
+Added `WarehouseRepositoryProxyTests`: a small real Spring context with the four actual repositories, exception-translation postprocessor and mocked JDBC/EntityManager dependencies asserts all four beans are CGLIB proxies. It exercises bean startup without claiming database execution.
+
+Incrementally copied only newly cached managed artifacts from the read-only global cache into the existing ignored workspace cache; no dependency version change. Exact Java 21 local command:
+
+```powershell
+.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl simulators/warehouse-service '-Dtest=WarehouseRepositoryProxyTests,CreateReservationCommandTests,WarehouseEventContractTests,WarehouseSimulatorArchitectureTest' -l .cache/p0.2-warehouse-proxy-regression.log test
+```
+
+**Exit 0**, finished **19:35:28 IST**, **18.406 seconds**, **8 passed/0 failures/errors/skips**: proxy context (1), command (3), event contract (3), architecture (1). Warehouse's 22 production and 6 test source files compiled with the actual managed JPA dependencies. Existing HTTP tests had already passed on the host; they were not selected in this focused sandbox run. No database was substituted in the integration tests or disabled.
+
+Next diagnostic host command is Warehouse-only `mvnw.cmd -B -ntp -pl simulators/warehouse-service -Pinfrastructure-tests clean verify`, requiring its 8 ITs to execute without skips. After correction is proven, run the full persistence/startup/docs gate once to close P0.2. Prior Core/Order/Payment successes are retained; no need to repeat them while diagnosing Warehouse. Production Compose role-bootstrap execution and the new packaged startup rehearsal remain unverified.
+
 ## 2026-10-16 — PostgreSQL startup succeeds; JDBC timezone failure fixed
 
 The next user host run confirmed the image-declaration fix: the pinned PostgreSQL container **started successfully**. Core's **6 default tests passed**, zero failures/errors/skips. The first administrative JDBC connection in `PostgresInfrastructureIT.configure` then failed with `FATAL: invalid value for parameter "TimeZone": "Asia/Calcutta"`. The other context errors were consequences of that first failure. Failsafe reported **4 errors, 0 failures/skips**; no migration or business database assertion passed. Root **exit 1**, **35.342 seconds**, finished **2026-10-16 19:24:20 IST**; simulators were not reached.
