@@ -3,6 +3,8 @@
 **Last reviewed:** 2026-10-16
 **Observed product state:** P0.1 remains the last fully verified milestone. Approved P0.2 persistence source checkpoint exists; build/PostgreSQL acceptance evidence is pending.
 
+**Latest 2026-10-16 result:** six Core default tests passed and PostgreSQL started; JDBC bootstrap then failed on the host legacy timezone alias. Both Maven test JVMs now explicitly use UTC, and two image/timezone regression tests passed. Rerun the same host persistence gate; real migrations/atomicity remain pending.
+
 **2026-10-16 host update:** Docker and five Core default tests now passed on the owner's host. The persistence run then failed before PostgreSQL startup at Testcontainers' digest-image compatibility guard. All four image declarations were fixed without changing the pin, and one Core initialization regression passed locally. The single next task is rerunning the same host persistence script, rather than reinstalling Docker or repeating implementation.
 
 **Local checkpoints:** verified P0.1 source `cb7bfaf` and continuity `c2c93e3` preserved; P0.2 source checkpoint `14e04f6`, followed by the handoff documentation continuity commit. P0.2's full gate is pending. No push or external deployment occurred.

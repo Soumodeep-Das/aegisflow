@@ -1,5 +1,19 @@
 # Test evidence — current P0.2 checkpoint and preserved P0.1
 
+## 2026-10-16 — PostgreSQL startup succeeds; JDBC timezone failure fixed
+
+The next user host run confirmed the image-declaration fix: the pinned PostgreSQL container **started successfully**. Core's **6 default tests passed**, zero failures/errors/skips. The first administrative JDBC connection in `PostgresInfrastructureIT.configure` then failed with `FATAL: invalid value for parameter "TimeZone": "Asia/Calcutta"`. The other context errors were consequences of that first failure. Failsafe reported **4 errors, 0 failures/skips**; no migration or business database assertion passed. Root **exit 1**, **35.342 seconds**, finished **2026-10-16 19:24:20 IST**; simulators were not reached.
+
+PgJDBC 42.7.13 sends `TimeZone.getDefault().getID()` in its connection-startup packet. Added `-Duser.timezone=UTC` to **both root Surefire and Failsafe fork arguments**, preserving Mockito instrumentation and every test. This changes only the Maven test JVMs, not Windows timezone, the Maven parent process or production launches. A new assertion in `PostgresImageConfigurationTests` verifies the actual fork default is UTC.
+
+Exact coding-session regression command on Java 21:
+
+```powershell
+.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane -Dtest=PostgresImageConfigurationTests -l .cache/p0.2-utc-handshake-regression.log test
+```
+
+**Exit 0**, **2 tests passed**, 0 failures/errors/skips, **10.720 seconds**, finished **2026-10-16 19:26:26 IST**. Core test sources compiled. The test fork log uses UTC (13:56:25), while Maven's final timestamp remains IST. Whitespace checks passed. Real PostgreSQL assertions after this fix still require the same host persistence-script rerun; no integration pass is inferred from the no-Docker regression.
+
 ## 2026-10-16 — host Docker run and pinned-image initialization fix
 
 User ran the existing `scripts/verify-persistence.ps1` through bundled PowerShell 7.6.5 on the host, with Java 21.0.12.1. This is new host evidence, not a rerun inside the restricted coding session:

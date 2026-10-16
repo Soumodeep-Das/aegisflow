@@ -45,7 +45,8 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <!-- Load test instrumentation at startup; runtime self-attach fails in restricted hosts. -->
-          <argLine>-javaagent:"${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar"</argLine>
+          <!-- PgJDBC sends the JVM zone during startup; UTC avoids host-specific legacy aliases. -->
+          <argLine>-Duser.timezone=UTC -javaagent:"${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar"</argLine>
           <forkedProcessTimeoutInSeconds>120</forkedProcessTimeoutInSeconds>
         </configuration>
       </plugin>
@@ -101,7 +102,7 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
             <configuration>
-              <argLine>-javaagent:"${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar"</argLine>
+              <argLine>-Duser.timezone=UTC -javaagent:"${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar"</argLine>
               <forkedProcessTimeoutInSeconds>240</forkedProcessTimeoutInSeconds>
             </configuration>
             <executions>

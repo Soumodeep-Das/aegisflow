@@ -8,6 +8,8 @@ This project is intentionally a production-oriented **student portfolio project*
 
 ## 1. Current P0.2 reality
 
+- Latest host rerun: pinned PostgreSQL started and six Core default tests passed, then JDBC rejected the host JVM timezone alias before migrations. Maven test forks now use UTC and two configuration regressions passed. Actual PostgreSQL assertions and simulator execution remain pending the rerun. Manual postgres-profile launches must also use the documented JVM UTC option; the test setting does not change production JVM defaults.
+
 - Latest host evidence (2026-10-16): Docker/Ryuk and five Core default tests passed; PostgreSQL IT failed at static image compatibility validation before database startup. Four IT declarations now explicitly mark the unchanged digest reference compatible with postgres, and one no-Docker initialization regression passed. This fixes the reported setup defect but leaves real migrations/atomicity and all simulator runs pending.
 
 - P0.1's four application shells, Maven Wrapper, Java 21 enforcement, health endpoints, ten Core module declarations, and architectural tests are preserved. Its historical successful build ran 14 tests and its four packaged JARs answered health `UP`; those results do not validate the new persistence changes. See [test evidence](evidence/TEST_RESULTS.md) for each dated run.

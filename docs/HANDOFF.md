@@ -1,5 +1,11 @@
 # Handoff — P0.2 local source checkpoint, verification pending
 
+**Latest timezone fix:** 2026-10-16T13:57:47Z (2026-10-16 IST). Entry HEAD `79f46a5` was clean. The following local fix commit adds UTC to both Maven test fork arguments and a regression; resolve current HEAD with `git rev-parse HEAD`.
+
+Host rerun: 6 Core default tests passed and pinned PostgreSQL started. The first JDBC admin/bootstrap connection failed because PgJDBC sent the host JVM alias `Asia/Calcutta`, rejected by this PostgreSQL image. Root exit 1 at 19:24:20 IST, 35.342 seconds; 4 Core IT errors, 0 failures/skips; migrations/simulators not reached. Surefire and Failsafe now start with `-Duser.timezone=UTC` (Mockito retained). This does not change Windows or production timezone settings. The image/UTC regression ran on Java 21: **2 passed, 0 failures/errors/skips**, exit 0 at 19:26:26 IST, 10.720 seconds. PostgreSQL assertions still require the normal host rerun.
+
+**Continue now:** from the existing repository/Java 21 host terminal, run `& $ps7 -NoProfile -File .\scripts\verify-persistence.ps1` again. The earlier image failure is resolved. Preserve any new first underlying error; do not repeat implementation. For later manual postgres-profile Java launches use `-Duser.timezone=UTC` before `-jar`, as documented in README. P0.2 remains gate-pending; P0.3 stays unapproved. No pushes/deployment or history rewrite.
+
 **Latest update:** 2026-10-16T13:46:12Z (2026-10-16 IST), targeted host-test failure fix.
 **Entry HEAD:** `98a670d`, clean before this fix; prior source checkpoint `14e04f6` preserved. This next local fix commit changes only the four IT image declarations, one Core regression test and continuity documents. Resolve current HEAD/status with the commands below; no push/deployment is authorized.
 

@@ -1,5 +1,7 @@
 # Codebase guide
 
+**Latest JDBC startup lesson (2026-10-16):** the pinned database now starts on the host, but PgJDBC sent the default Java timezone `Asia/Calcutta` before authentication and the server rejected it. Root Surefire/Failsafe now fork with `-Duser.timezone=UTC`, retaining Mockito. `PostgresImageConfigurationTests` checks the actual default timezone and unchanged image reference: two tests passed. Windows timezone is unchanged. A manual postgres-profile Java launch should include that JVM option before `-jar`; changing Hibernate's SQL timezone after connection startup is too late.
+
 **2026-10-16 verification update:** the host passed five Core default tests and connected Testcontainers to Docker. A PostgreSQL image declaration then failed before database startup. All four ITs now explicitly declare the unchanged digest pin compatible with `postgres`. The new `control-plane/src/test/java/com/aegisflow/core/PostgresImageConfigurationTests.java` initializes the actual Core IT's container without Docker and passed its canonical-reference/compatibility assertion. It cannot prove database startup or transactions; the next step is the normal host persistence script.
 
 ## Read this first: the P0.2 checkpoint

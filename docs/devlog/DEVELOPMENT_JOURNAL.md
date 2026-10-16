@@ -1,5 +1,13 @@
 # Development journal
 
+## 2026-10-16 — normalize test JVM timezone before JDBC startup
+
+The owner's rerun passed 6 Core default tests and started the pinned PostgreSQL container, confirming the previous image fix. It then failed on the first JDBC bootstrap connection: PostgreSQL rejected the startup TimeZone value Asia/Calcutta. Four IT errors were reported (0 failures/skips), reactor exit 1 at 19:24:20 IST after 35.342 seconds; migrations and simulators were not reached.
+
+Starting from clean local fix commit `79f46a5`, added `-Duser.timezone=UTC` to root Surefire and Failsafe argLine while retaining the Mockito agent. PgJDBC reads the default JVM timezone before authentication, so a container-only timezone or a later SQL SET would not solve this startup error. The host Windows timezone and production process defaults remain unchanged.
+
+Added a fork-timezone assertion beside the existing image-declaration regression. `mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane -Dtest=PostgresImageConfigurationTests -l .cache/p0.2-utc-handshake-regression.log test` on Java 21 exited 0 at 19:26:26 IST, 10.720 seconds, **2 passed/0 failures/errors/skips**. Core test sources compiled. No full PostgreSQL rerun was possible in the restricted coding session; next task remains the same host verification script. Updated README/guide/evidence/handoff/roadmap/limitations; no application behavior, migration, dependency or P0.3 change.
+
 ## 2026-10-16 — fix Testcontainers digest image declaration after host run
 
 The owner's first host persistence run used bundled PowerShell 7.6.5 and Java 21.0.12.1. Docker 29.8.2 and Ryuk worked; five Core default tests passed. Core's PostgreSQL IT then failed during static initialization because Testcontainers did not accept the tag-plus-digest image reference as its postgres family. Failsafe recorded one initialization error (zero assertion failures/skips), root exit 1 at 19:10:03 IST after 47.696 seconds; simulators and PostgreSQL migrations were not reached.

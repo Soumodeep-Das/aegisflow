@@ -102,6 +102,8 @@ docker compose --profile postgres up -d
 
 The bootstrap script is repeatable after containers start and does not erase volumes. Flyway requires the pre-provisioned `aegisflow` schema and validates migrations; Hibernate validates rather than creates tables. The default `foundation` profile still starts without infrastructure and registers no persistence services. `postgres` fails if required credentials/database/migrations are unavailable. The direct Maven infrastructure profile explicitly reports unavailable Docker as skipped; the verification script turns any skip into a failed milestone gate. Commands above are reproducible instructions, not an assertion that they passed here. See [ADR 0008](docs/adr/0008-persistence-primitives-and-database-roles.md).
 
+Maven test JVMs explicitly use UTC because PgJDBC sends the JVM timezone during connection startup; some server timezone databases reject the legacy host alias `Asia/Calcutta`. For manual Java launches with `postgres`, put `-Duser.timezone=UTC` before `-jar` (and provide only that application's own DB variables). This leaves Windows timezone unchanged. A later Hibernate/SQL timezone setting cannot repair an already rejected startup handshake.
+
 ## Documentation map
 
 | Start here | Purpose |

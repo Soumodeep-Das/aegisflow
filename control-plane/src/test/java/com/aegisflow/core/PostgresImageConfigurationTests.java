@@ -3,10 +3,16 @@ package com.aegisflow.core;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+import java.util.TimeZone;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.DockerImageName;
 
 class PostgresImageConfigurationTests {
+    @Test
+    void testJvmUsesUtcForPostgresStartupHandshake() {
+        assertThat(TimeZone.getDefault().getID()).isEqualTo("UTC");
+    }
+
     @Test
     void actualContainerDeclarationInitializesWithoutDockerAndPreservesImmutableReference() {
         // Access initializes the IT's real static PostgreSQLContainer, but never starts it.
