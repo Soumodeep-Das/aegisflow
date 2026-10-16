@@ -1,5 +1,29 @@
 # Test evidence — current P0.2 checkpoint and preserved P0.1
 
+## 2026-10-16 — Warehouse PostgreSQL rerun succeeds
+
+Owner-supplied host output at source `7a90c57`, Java 21.0.12.1, Maven wrapper 3.10.0, Docker Desktop 29.8.2, digest-pinned PostgreSQL 18.6. Exact command from the existing repository:
+
+```powershell
+.\mvnw.cmd -B -ntp -pl simulators/warehouse-service -Pinfrastructure-tests clean verify
+```
+
+**BUILD SUCCESS / exit 0**, finished **2026-10-16T19:39:12+05:30**, **45.668 seconds**. Warehouse default tests: **10 passed, 0 failures/errors/skips** (command 3, event contract 3, proxy 1, foundation HTTP/context 2, architecture 1). `WarehousePersistenceIT`: **8 passed, 0 failures/errors/skips**, 15.48 seconds. The actual PostgreSQL container/bootstrap and Flyway V1 migration succeeded; Hibernate validated the schema and the `postgres` application context started. This verifies the proxy correction against a real database, not only the no-Docker regression.
+
+| Latest successful host suite | Default tests | PostgreSQL ITs |
+|---|---:|---:|
+| Core, preceding root attempt | 7 | 4 |
+| Order, preceding root attempt | 9 | 8 |
+| Payment, preceding root attempt | 12 | 9 |
+| Warehouse, this targeted run | 10 | 8 |
+| Total across separate runs | 38 | 29 |
+
+Every suite in this table has zero failures/errors/skips, but **this is not a successful full integrated root invocation**: the earlier root attempt exited 1 on the Warehouse defect. The default total counts each module's latest suite once; it does not add overlapping diagnostic reruns. The 29 PostgreSQL tests now provide observed owner-specific migration/state/outbox/rollback/replay/concurrency/constraint/locking/privilege evidence. The prior failures/skips below remain historical facts. Maven's two remote prefix-metadata HTTP 401 warnings were non-fatal in this run; no additional repository credentials were required for the successful build.
+
+Local documentation verification through bundled PowerShell 7 (`& $ps7 -NoProfile -File .\scripts\verify-docs.ps1`) **exited 0**: Markdown=29 Required=20 LocalLinks=109 Mermaid=7 JSON=1 Scenarios=16 InterviewQA=20 ADRs=8 Issues=0. `git diff --check` also passed. This is documentation consistency evidence, not Mermaid rendering or another database run.
+
+**Remaining:** run `verify-persistence.ps1` once for the final clean reactor plus all 29 ITs with zero skips; run current packaged `verify-startup.ps1` and repeat documentation validation after closing updates. Persistent Compose role-bootstrap execution remains unverified separately; no persistent volumes were changed. This checkpoint updates evidence only, without repeating implementation or starting P0.3.
+
 ## 2026-10-16 — real persistence passes for three owners; Warehouse proxy fix
 
 Host `verify-persistence.ps1` rerun after UTC fix, ending **19:31:15 IST**, **2 minutes 48 seconds**, root **exit 1**:

@@ -1,9 +1,9 @@
 # Prioritized roadmap
 
 **Last reviewed:** 2026-10-16
-**Observed product state:** P0.1 remains the last fully verified milestone. Approved P0.2 persistence source checkpoint exists; build/PostgreSQL acceptance evidence is pending.
+**Observed product state:** P0.1 remains the last fully verified milestone. Each owner's P0.2 PostgreSQL suite now passes on the host; final integrated reactor and packaged-startup acceptance remain pending.
 
-**Latest progress:** host passed all 37 default tests and 21 PostgreSQL ITs for Core/Order/Payment; all four migrations applied. Warehouse's context failed on final Repository adapters. Those four adapters are now proxyable and 8 focused Warehouse tests passed locally. Diagnose with Warehouse-only host verify next; then one final full gate, without reimplementing successful work.
+**Latest progress:** source `7a90c57` passed the Warehouse-only host build at 19:39:12 IST: 10 default + 8 PostgreSQL tests, no failures/errors/skips. Core/Order/Payment previously passed 21 PostgreSQL tests, so all 29 now pass across separate runs; all four V1 migrations applied. The Warehouse proxy defect is verified fixed. Next is one final integrated persistence run and packaged startup, without repeating implementation. Earlier dated results below remain historical.
 
 **Latest 2026-10-16 result:** six Core default tests passed and PostgreSQL started; JDBC bootstrap then failed on the host legacy timezone alias. Both Maven test JVMs now explicitly use UTC, and two image/timezone regression tests passed. Rerun the same host persistence gate; real migrations/atomicity remain pending.
 
@@ -25,9 +25,9 @@ Four service-owned PostgreSQL configurations and a digest-pinned Compose definit
 
 The owner approved P0.2 and allowed stopping at a meaningful checkpoint. Code now includes four V1 histories, separate migration/runtime roles, and minimal internal simulator state/replay/outbox operations. Continue from these actual paths rather than repeating the design review or implementation. The highest-priority task is the Java 21 clean reactor plus real PostgreSQL migration/atomicity/replay/concurrency/privilege gate with zero skips. This session's sandbox blocked global Maven-cache writes, Maven Central DNS, and the Docker engine pipe; successful host Docker use does not prove sandbox access. See evidence/handoff for exact attempts and commands.
 
-The role design is implemented in bootstrap SQL/Compose/profile configuration and must be privilege-tested against PostgreSQL. Core receives only its own runtime/Flyway credentials. Local credentials remain ignored environment configuration. P0.2 is not complete until its gate passes; P0.3 remains unapproved.
+The role design is implemented in bootstrap SQL/Compose/profile configuration; the real PostgreSQL suites now exercise privileges. Core receives only its own runtime/Flyway credentials. Local credentials remain ignored environment configuration. Persistent Compose bootstrap remains unexecuted. P0.2 is not complete until its final gate passes; P0.3 remains unapproved.
 
-The current focused evidence is 21 pure unit passes and 4 Core architecture passes; 4 Core PostgreSQL ITs skipped. Compose parsing and script syntax passed. The full reactor failed on sandbox loopback access, and simulator compilation/dependency resolution remains blocked. Finish the normal local gate and inspect actual errors before adding new code.
+Latest per-module host evidence totals 38 default tests and 29 PostgreSQL tests across separate runs, all passing with zero skips. These are not one successful integrated root invocation. Compose parsing and script syntax passed locally. Earlier sandbox loopback/cache/Docker failures remain in the evidence history; they do not invalidate the new host results. Finish the final normal host gate before adding new code.
 
 ## Next — P0 functional detection slice
 

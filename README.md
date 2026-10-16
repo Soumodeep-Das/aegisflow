@@ -2,7 +2,7 @@
 
 > **Status:** Approved P0.2 persistence checkpoint is implemented in source: four independent Flyway baselines, restricted database roles, and internal simulator state/replay/outbox transactions. The Java 21 and real PostgreSQL verification gate is pending; see the current handoff/evidence. P0.1's verified history is preserved. Stop before P0.3; Kafka, security infrastructure, AI, and recovery require approval.
 
-Latest host evidence: **37 default tests and 21 PostgreSQL ITs passed** for Core/Order/Payment; all four V1 migrations applied. Warehouse's startup proxy defect is fixed with a passing focused regression, and its real database rerun/final gate remain pending. See [current handoff](docs/HANDOFF.md) for the Warehouse-only command.
+Latest host evidence (2026-10-16): Warehouse's targeted build passed **10 default tests and 8 PostgreSQL ITs**, zero failures/errors/skips. Together with the preceding Core/Order/Payment run, **all 29 PostgreSQL tests have passed across separate runs**. All four V1 migrations applied. The final integrated persistence run and current four-JAR startup check remain pending; see [current handoff](docs/HANDOFF.md). No implementation needs repeating.
 
 AegisFlow is a learning-oriented, production-minded portfolio project for detecting and safely recovering inconsistent distributed business transactions. The first scenario uses independently persisted Order, Payment, and Warehouse simulators. A control plane will correlate their events, detect breached business invariants, assemble attributable evidence, propose a constrained recovery, require deterministic policy and human approval where appropriate, invoke only versioned service APIs, and verify the result against authoritative service state.
 
@@ -44,7 +44,7 @@ flowchart LR
   AI[Optional AI provider] -. evidence-bounded advice .-> A
 ```
 
-This diagram is the intended product design. The current code adds internal `create` persistence operations and stored outbox envelopes to P0.1's four application shells. Core remains a modular deployment with its own database; simulators stay separate deployables/databases. Real PostgreSQL execution of this checkpoint remains unverified. See [System Architecture](docs/architecture/SYSTEM_ARCHITECTURE.md) and [the handoff](docs/HANDOFF.md).
+This diagram is the intended product design. The current code adds internal `create` persistence operations and stored outbox envelopes to P0.1's four application shells. Core remains a modular deployment with its own database; simulators stay separate deployables/databases. Each owner's real PostgreSQL suite has passed on the host; this does not demonstrate the future Kafka flow shown above. See [System Architecture](docs/architecture/SYSTEM_ARCHITECTURE.md) and [the handoff](docs/HANDOFF.md).
 
 ## Build and run the foundation
 

@@ -1,4 +1,23 @@
-# Handoff — P0.2 local source checkpoint, verification pending
+# Handoff — P0.2 database suites passed; final combined gate pending
+
+**Latest snapshot:** 2026-10-16T14:10:12Z, Codex host-evidence continuation. Existing repository/branch `main`, entry/source HEAD `7a90c57`, clean on entry. This following documentation-only local commit records the user's successful rerun; resolve its hash/status with `git rev-parse HEAD` and `git status --short --branch`. No source changes, push, deployment, history rewrite or volume deletion.
+
+**New observed result:** Warehouse-only `mvnw.cmd -B -ntp -pl simulators/warehouse-service -Pinfrastructure-tests clean verify` succeeded on the owner's host at 19:39:12 IST, 45.668 seconds, **10 default tests + 8 real PostgreSQL ITs**, zero failures/errors/skips. Docker 29.8.2/PostgreSQL 18.6, role bootstrap, Flyway V1, Hibernate validation and postgres context all ran. The four-adapter proxy fix is verified; do not repeat its implementation or diagnosis.
+
+Together with the previous Core/Order/Payment successes, latest suites total **38 default tests and 29 PostgreSQL ITs across separate runs**, zero failures/errors/skips. All four owners' database suites now pass. This is not yet a successful single clean integrated root run; P0.1 remains the last fully exit-gated milestone, P0.2 only remains approved, and P0.3 is unapproved/unstarted. Exact per-module counts, previous failures and commands are in `docs/evidence/TEST_RESULTS.md`; implemented entry points/flow below are unchanged.
+
+**Single next task:** final host acceptance run, in the existing repository with Java 21 and Docker Desktop running. Use bundled PowerShell 7 because the owner's ordinary terminal is 5.1:
+
+```powershell
+$ps7 = 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe'
+& $ps7 -NoProfile -Command '$ErrorActionPreference = "Stop"; & .\scripts\verify-persistence.ps1; & .\scripts\verify-startup.ps1; & .\scripts\verify-docs.ps1'
+```
+
+Acceptance: full reactor success; all **29 PostgreSQL ITs execute with zero failures/errors/skips**; all four packaged foundation JARs return HTTP 200/UP; documentation checker has zero issues. The combined command stops at the first error. Do not repeat successful targeted diagnostics or redesign code. Preserve final summaries/first underlying error if any, then update evidence/handoff and make the final local milestone checkpoint. Only after this gate may P0.2 be marked complete and P0.3 approval requested.
+
+**Local checkpoint validation:** documentation checker exited 0 (29 Markdown, 20 required, 109 links, 7 Mermaid, 1 JSON, 16 scenarios, 20 Q&As, 8 ADRs, zero issues); whitespace check passed. No application changes or redundant application test reruns.
+
+**Not yet executed:** this final integrated run, current packaged startup, and persistent Compose bootstrap. The latter is a separately recorded rehearsal limitation; temporary Testcontainers do not validate the Compose helper. Sandbox Docker/loopback restrictions remain distinct from host success. No credentials or `.env` are needed for the test-container gate. Do not delete volumes or edit already-applied V1 migrations. Older snapshots below are historical and superseded by this latest record.
 
 **Latest Warehouse update:** 2026-10-16T14:06:48Z (2026-10-16 IST). Entry HEAD `bd3a1be` was clean; this scoped follow-up fixes Warehouse proxyability and records new host evidence. Resolve this following local commit with `git rev-parse HEAD`.
 

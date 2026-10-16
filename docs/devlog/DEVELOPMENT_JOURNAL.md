@@ -1,5 +1,15 @@
 # Development journal
 
+## 2026-10-16 — Warehouse database verification passes; final acceptance remains
+
+At 2026-10-16T14:10:12Z, continued from clean `main` at `7a90c57` using the owner's new host result, without repeating implementation or architectural review. Exact host command: `.\mvnw.cmd -B -ntp -pl simulators/warehouse-service -Pinfrastructure-tests clean verify`. **BUILD SUCCESS / exit 0**, finished 19:39:12 IST, 45.668 seconds: **10 default + 8 real PostgreSQL tests**, zero failures/errors/skips. Docker Desktop 29.8.2/PostgreSQL 18.6, bootstrap, Flyway V1, Hibernate validation and postgres context ran. The proxy defect is now verified fixed against the database.
+
+Latest per-module successes total **38 default tests and 29 PostgreSQL ITs across separate host invocations**. This is not a single successful root reactor run; the earlier root Warehouse failure remains recorded below. Recorded the exact result and final acceptance command in README/evidence/handoff/roadmap/guide/limitations, preserving earlier failures. No source or migration changes were needed. Maven's metadata HTTP 401 warnings were non-fatal; no credential change is warranted by this successful run.
+
+Local `& $ps7 -NoProfile -File .\scripts\verify-docs.ps1` exited 0: Markdown=29 Required=20 LocalLinks=109 Mermaid=7 JSON=1 Scenarios=16 InterviewQA=20 ADRs=8 Issues=0; `git diff --check` passed. No application tests were rerun for documentation-only edits.
+
+Next: one final host `verify-persistence.ps1`, then current packaged `verify-startup.ps1` and `verify-docs.ps1` through bundled PowerShell 7, stopping at the first error. Require root success, all 29 ITs without skips, four packaged foundation health checks, and zero documentation issues before marking P0.2 complete. Persistent Compose bootstrap remains a separate unexecuted rehearsal limitation. This documentation-only checkpoint stays local; no push/deployment/volume operation or P0.3 work.
+
 ## 2026-10-16 — Warehouse repository proxy fix after three persistence suites pass
 
 Host root run after UTC fix ended at 19:31:15 IST, 2:48, exit 1. All 37 default tests passed. Real PostgreSQL ITs passed for Core (4), Order (8), Payment (9), with zero skips; all four V1 migrations applied. Warehouse's 8 ITs errored during shared context startup, before behavioral assertions, because its final IdempotencyRepository could not be subclassed for Spring exception translation.
