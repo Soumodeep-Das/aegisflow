@@ -43,6 +43,56 @@ function Get-RehearsalPublishedPort {
     $port
 }
 
+function Get-RehearsalJavaImage {
+    # Official multi-platform index recorded in the rehearsal evidence; never a floating tag.
+    'eclipse-temurin:21-jre-jammy@sha256:8d584faeef02c22f6b58ad8a3cee8e1e53ae52bdf2224f4afb989cc35983b8ae'
+}
+
+function Get-RehearsalApplicationArguments {
+    param(
+        [Parameter(Mandatory)][string]$RepositoryRoot,
+        [Parameter(Mandatory)][string]$ProjectName,
+        [Parameter(Mandatory)][ValidateSet('core', 'order', 'payment', 'warehouse')][string]$Owner,
+        [Parameter(Mandatory)][string]$JarPath,
+        [Parameter(Mandatory)][string]$ProbeDirectory
+    )
+    if ($ProjectName -cnotmatch '^aegisflow-p03-verify-[0-9a-f]{32}$') { throw 'Refusing a non-disposable application project.' }
+    if (-not [IO.Path]::IsPathFullyQualified($RepositoryRoot)) { throw 'RepositoryRoot must be absolute.' }
+    foreach ($path in @($JarPath, $ProbeDirectory)) {
+        if (-not [IO.Path]::IsPathFullyQualified($path) -or $path.Contains(',')) { throw 'Rehearsal mounts require absolute, unambiguous paths.' }
+        $relative = [IO.Path]::GetRelativePath($RepositoryRoot, $path)
+        if ([IO.Path]::IsPathFullyQualified($relative) -or $relative -eq '..' -or $relative.StartsWith('..' + [IO.Path]::DirectorySeparatorChar)) {
+            throw 'Refusing an application mount outside the repository.'
+        }
+    }
+    $arguments = @('create', '--pull', 'never', '--label', "com.aegisflow.rehearsal.project=$ProjectName",
+        '--network', "${ProjectName}_${Owner}-data", '--read-only', '--user', '65532:65532',
+        '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
+        '--tmpfs', '/tmp:rw,noexec,nosuid,nodev,size=128m,mode=1777', '--entrypoint', 'java',
+        '--mount', "type=bind,source=$JarPath,target=/opt/aegisflow/app.jar,readonly",
+        '--mount', "type=bind,source=$ProbeDirectory,target=/opt/aegisflow/probe,readonly")
+    $prefix = $Owner.ToUpperInvariant() + '_DB_'
+    foreach ($suffix in @('URL', 'RUNTIME_USER', 'RUNTIME_PASSWORD', 'MIGRATION_USER', 'MIGRATION_PASSWORD')) {
+        # Docker copies values from its own filtered child environment; no password is an argument.
+        $arguments += @('--env', ($prefix + $suffix))
+    }
+    $arguments + @((Get-RehearsalJavaImage), '-Duser.timezone=UTC', '-jar', '/opt/aegisflow/app.jar',
+        '--spring.profiles.active=postgres', '--server.address=127.0.0.1', '--server.port=8080')
+}
+
+function Assert-RehearsalOwnedContainer {
+    param(
+        [Parameter(Mandatory)][string]$ContainerId,
+        [Parameter(Mandatory)][string]$ProjectName,
+        [Parameter(Mandatory)][AllowEmptyString()][string]$ObservedProjectLabel
+    )
+    if ($ContainerId -cnotmatch '^[0-9a-f]{64}$' -or
+            $ProjectName -cnotmatch '^aegisflow-p03-verify-[0-9a-f]{32}$' -or
+            $ObservedProjectLabel -cne $ProjectName) {
+        throw 'Refusing to target an application container without its exact ID and matching rehearsal ownership label.'
+    }
+}
+
 function New-RehearsalChildEnvironment {
     param(
         [Parameter(Mandatory)][System.Collections.IDictionary]$SourceEnvironment,

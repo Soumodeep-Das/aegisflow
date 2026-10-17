@@ -132,4 +132,38 @@ foreach ($originalState in @('absent', 'empty', 'existing')) {
     }
 }
 
+foreach ($owner in @('core', 'order', 'payment', 'warehouse')) {
+    Invoke-Case "$owner verification container stays on its own internal network with owner-only credentials" {
+        $project = New-RehearsalProjectName
+        $containerArguments = @(Get-RehearsalApplicationArguments -RepositoryRoot $repositoryRoot -ProjectName $project -Owner $owner `
+                -JarPath (Join-Path $repositoryRoot 'synthetic fixture/application.jar') -ProbeDirectory (Join-Path $repositoryRoot 'synthetic fixture/probe'))
+        Assert-True ($containerArguments -contains 'create') 'Expected an explicit container creation command.'
+        Assert-True ($containerArguments -contains "${project}_${owner}-data") 'Owner network missing.'
+        foreach ($required in @('--read-only', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges', '--user', '65532:65532')) {
+            Assert-True ($containerArguments -contains $required) "Container hardening argument missing: $required"
+        }
+        Assert-True (-not ($containerArguments -contains '--publish') -and -not ($containerArguments -contains '-p')) 'A verification application port was exposed to the host.'
+        Assert-True (-not (($containerArguments -join ' ') -match 'docker\.sock|dockerDesktopLinuxEngine')) 'Docker control endpoint mounted in the application.'
+        $environmentNames = @()
+        for ($index = 0; $index -lt $containerArguments.Count; $index++) {
+            if ($containerArguments[$index] -in @('--env', '-e')) { $environmentNames += $containerArguments[$index + 1] }
+        }
+        Assert-True ($environmentNames.Count -eq 5) 'Unexpected database environment count.'
+        foreach ($name in $environmentNames) {
+            Assert-True ($name -cmatch ('^' + $owner.ToUpperInvariant() + '_DB_(URL|RUNTIME_USER|RUNTIME_PASSWORD|MIGRATION_USER|MIGRATION_PASSWORD)$')) 'A sibling credential or credential value was placed in Docker arguments.'
+        }
+        $mounts = @($containerArguments | Where-Object { $_ -match '^(type=bind,|.*:ro$)' })
+        Assert-True ($mounts.Count -ge 2) 'Read-only JAR/probe mounts missing.'
+        Assert-True (($containerArguments -join ' ') -match '@sha256:[0-9a-f]{64}') 'Verification image is not digest-pinned.'
+    }
+}
+
+Invoke-Case 'cleanup rejects foreign projects and malformed container identities' {
+    $project = New-RehearsalProjectName
+    $containerId = 'a' * 64
+    Assert-RehearsalOwnedContainer -ContainerId $containerId -ProjectName $project -ObservedProjectLabel $project
+    Assert-Rejected { Assert-RehearsalOwnedContainer -ContainerId $containerId -ProjectName $project -ObservedProjectLabel 'aegisflow-foundation' }
+    Assert-Rejected { Assert-RehearsalOwnedContainer -ContainerId 'not-an-id' -ProjectName $project -ObservedProjectLabel $project }
+}
+
 Write-Output "Compose rehearsal helper tests: passed=$passed, failures=0; Docker/PostgreSQL not exercised."

@@ -19,16 +19,22 @@ $jars = @{
 }
 $savedEnvironment = @{}
 $passwords = [Collections.Generic.List[string]]::new()
-$ownedProcesses = [Collections.Generic.List[Diagnostics.Process]]::new()
+$ownedApplications = [Collections.Generic.List[object]]::new()
 $resourcesAttempted = $false
 $logDirectory = Join-Path $repositoryRoot ".cache/compose-persistence/$projectName"
 $snapshots = @{}
 $jarHashes = @{}
-$result = [ordered]@{ Project = $projectName; StaticOnly = [bool]$StaticOnly; Passed = $false; Checks = @(); VolumesRetained = $true }
+$result = [ordered]@{ Project = $projectName; StaticOnly = [bool]$StaticOnly; Passed = $false; Stage = 'configuration'; Checks = @(); VolumesRetained = $true }
 $dockerExecutable = (Get-Command docker -ErrorAction Stop).Source
 
 function Invoke-RehearsalDocker {
-    param([Parameter(Mandatory)][string[]]$Arguments, [string]$InputText)
+    param(
+        [Parameter(Mandatory)][string[]]$Arguments,
+        [string]$InputText,
+        [System.Collections.IDictionary]$ChildEnvironment,
+        [switch]$AllowNonzero,
+        [switch]$IncludeStandardError
+    )
     $start = [Diagnostics.ProcessStartInfo]::new($dockerExecutable)
     $start.WorkingDirectory = $repositoryRoot
     $start.UseShellExecute = $false
@@ -37,6 +43,10 @@ function Invoke-RehearsalDocker {
     $start.RedirectStandardOutput = $true
     $start.RedirectStandardError = $true
     $start.RedirectStandardInput = $true
+    if ($null -ne $ChildEnvironment) {
+        $start.Environment.Clear()
+        foreach ($key in $ChildEnvironment.Keys) { $start.Environment[[string]$key] = [string]$ChildEnvironment[$key] }
+    }
     foreach ($argument in $Arguments) { $start.ArgumentList.Add($argument) }
     $process = [Diagnostics.Process]::new()
     $process.StartInfo = $start
@@ -51,8 +61,10 @@ function Invoke-RehearsalDocker {
             throw 'Docker command exceeded the bounded rehearsal timeout.'
         }
         $output = $outputTask.GetAwaiter().GetResult()
-        $null = $errorTask.GetAwaiter().GetResult()
+        $errorOutput = $errorTask.GetAwaiter().GetResult()
+        if ($IncludeStandardError) { $output += $errorOutput }
         # No expanded Compose config, credentials, or raw Docker errors are printed.
+        if ($AllowNonzero) { return [pscustomobject]@{ ExitCode = $process.ExitCode; Output = $output.Trim() } }
         if ($process.ExitCode -ne 0) {
             throw "Docker operation failed (exit $($process.ExitCode)); check engine access/configuration without printing expanded secrets."
         }
@@ -77,73 +89,63 @@ function Invoke-RehearsalSql {
     Invoke-RehearsalDocker -Arguments $arguments
 }
 
+function Stop-RehearsalApplication {
+    param([Parameter(Mandatory)]$Application)
+    if ($Application.Removed) { return }
+    $label = Invoke-RehearsalDocker -Arguments @('inspect', '--format', '{{ index .Config.Labels "com.aegisflow.rehearsal.project" }}', $Application.Id)
+    Assert-RehearsalOwnedContainer -ContainerId $Application.Id -ProjectName $projectName -ObservedProjectLabel $label
+    # Collect diagnostics before removal, including failed startup; never print raw logs.
+    try {
+        $log = Invoke-RehearsalDocker -Arguments @('logs', $Application.Id) -IncludeStandardError
+        foreach ($password in $passwords) { $log = $log.Replace($password, '[REDACTED]') }
+        Set-Content -LiteralPath (Join-Path $logDirectory "$($Application.Owner)-pass-$($Application.Pass).log") -Value $log -Encoding utf8
+    } catch {
+        Write-Warning 'Could not save redacted application logs; still stopping only the verified owned container.'
+    }
+    $null = Invoke-RehearsalDocker -Arguments @('stop', '--time', '15', $Application.Id)
+    # Recheck ownership immediately before removing this one container; no project or volume pruning.
+    $label = Invoke-RehearsalDocker -Arguments @('inspect', '--format', '{{ index .Config.Labels "com.aegisflow.rehearsal.project" }}', $Application.Id)
+    Assert-RehearsalOwnedContainer -ContainerId $Application.Id -ProjectName $projectName -ObservedProjectLabel $label
+    $null = Invoke-RehearsalDocker -Arguments @('rm', $Application.Id)
+    $Application.Removed = $true
+}
+
 function Start-RehearsalApplication {
-    param([string]$Owner, [int]$DatabasePort, [int]$Pass)
+    param([string]$Owner, [int]$Pass)
     $prefix = $Owner.ToUpperInvariant() + '_DB_'
     $connection = @{}
-    $connection[$prefix + 'URL'] = "jdbc:postgresql://127.0.0.1:$DatabasePort/aegisflow_$Owner"
+    $connection[$prefix + 'URL'] = "jdbc:postgresql://${Owner}-db:5432/aegisflow_$Owner"
     foreach ($suffix in @('RUNTIME_USER','RUNTIME_PASSWORD','MIGRATION_USER','MIGRATION_PASSWORD')) {
         $connection[$prefix + $suffix] = [Environment]::GetEnvironmentVariable($prefix + $suffix, 'Process')
     }
     $childEnvironment = New-RehearsalChildEnvironment -SourceEnvironment ([Environment]::GetEnvironmentVariables('Process')) -Owner $Owner -ConnectionEnvironment $connection
-    $start = [Diagnostics.ProcessStartInfo]::new($javaExecutable)
-    $start.WorkingDirectory = $repositoryRoot
-    $start.UseShellExecute = $false
-    $start.CreateNoWindow = $true
-    $start.WindowStyle = [Diagnostics.ProcessWindowStyle]::Hidden
-    $start.RedirectStandardOutput = $true
-    $start.RedirectStandardError = $true
-    $start.Environment.Clear()
-    foreach ($key in $childEnvironment.Keys) { $start.Environment[$key] = $childEnvironment[$key] }
-    foreach ($argument in @('-Duser.timezone=UTC', '-jar', (Join-Path $repositoryRoot $jars[$Owner]),
-            '--spring.profiles.active=postgres', '--server.address=127.0.0.1', '--server.port=0')) { $start.ArgumentList.Add($argument) }
-    $process = [Diagnostics.Process]::new()
-    $process.StartInfo = $start
-    $lines = [Collections.Generic.List[string]]::new()
-    $lineTask = $null
-    $errorTask = $null
+    $createArguments = @(Get-RehearsalApplicationArguments -RepositoryRoot $repositoryRoot -ProjectName $projectName -Owner $Owner -JarPath (Join-Path $repositoryRoot $jars[$Owner]) -ProbeDirectory $probeDirectory)
+    $containerId = Invoke-RehearsalDocker -Arguments $createArguments -ChildEnvironment $childEnvironment
+    if ($containerId -cnotmatch '^[0-9a-f]{64}$') { throw 'Docker did not return one exact application container ID; refusing an ambiguous target.' }
+    $application = [pscustomobject]@{ Id = $containerId; Owner = $Owner; Pass = $Pass; Removed = $false }
+    $ownedApplications.Add($application)
     try {
-        if (-not $process.Start()) { throw "Could not start $Owner JAR." }
-        $ownedProcesses.Add($process)
-        $errorTask = $process.StandardError.ReadToEndAsync()
-        $lineTask = $process.StandardOutput.ReadLineAsync()
+        $label = Invoke-RehearsalDocker -Arguments @('inspect', '--format', '{{ index .Config.Labels "com.aegisflow.rehearsal.project" }}', $containerId)
+        Assert-RehearsalOwnedContainer -ContainerId $containerId -ProjectName $projectName -ObservedProjectLabel $label
+        $null = Invoke-RehearsalDocker -Arguments @('start', $containerId)
         $deadline = [DateTimeOffset]::UtcNow.AddSeconds($TimeoutSeconds)
-        $port = 0
         while ([DateTimeOffset]::UtcNow -lt $deadline) {
-            while ($lineTask.IsCompleted) {
-                $line = $lineTask.GetAwaiter().GetResult()
-                if ($null -eq $line) { break }
-                $lines.Add($line)
-                if ($line -match 'Tomcat started on port (\d+)') { $port = [int]$Matches[1] }
-                $lineTask = $process.StandardOutput.ReadLineAsync()
-            }
-            if ($process.HasExited) { throw "$Owner postgres JAR exited before readiness; inspect its redacted rehearsal logs." }
-            if ($port) {
-                $response = Invoke-WebRequest -Uri "http://127.0.0.1:$port/actuator/health" -TimeoutSec 5
-                $content = if ($response.Content -is [byte[]]) { [Text.Encoding]::UTF8.GetString($response.Content) } else { [string]$response.Content }
-                $health = $content | ConvertFrom-Json
-                if ($response.StatusCode -eq 200 -and $health.status -eq 'UP') {
-                    if ((Get-FileHash -LiteralPath (Join-Path $repositoryRoot $jars[$Owner]) -Algorithm SHA256).Hash -ne $jarHashes[$Owner]) {
-                        throw 'JAR changed during the persistence rehearsal.'
-                    }
-                    $result.Checks += "$Owner postgres JAR pass $Pass healthy; Flyway/Hibernate validation completed"
-                    Write-Output "$Owner postgres JAR pass ${Pass}: HTTP 200/UP; own database credentials only"
-                    return
+            $running = Invoke-RehearsalDocker -Arguments @('inspect', '--format', '{{.State.Running}}', $containerId)
+            if ($running -cne 'true') { throw "$Owner postgres JAR exited before readiness; inspect its redacted rehearsal logs." }
+            $probe = Invoke-RehearsalDocker -Arguments @('exec', $containerId, 'java', '-cp', '/opt/aegisflow/probe', 'RehearsalHealthProbe') -AllowNonzero
+            if ($probe.ExitCode -eq 0) {
+                if ((Get-FileHash -LiteralPath (Join-Path $repositoryRoot $jars[$Owner]) -Algorithm SHA256).Hash -ne $jarHashes[$Owner]) {
+                    throw 'JAR changed during the persistence rehearsal.'
                 }
+                $result.Checks += "$Owner postgres JAR pass $Pass healthy in isolated Java 21 container; Flyway/Hibernate validation completed"
+                Write-Output "$Owner postgres JAR pass ${Pass}: HTTP 200/UP; own database credentials/network only"
+                return
             }
-            Start-Sleep -Milliseconds 200
+            Start-Sleep -Milliseconds 500
         }
         throw "$Owner postgres JAR did not become healthy within $TimeoutSeconds seconds."
     } finally {
-        if ($process.Id -and -not $process.HasExited) { $process.Kill(); $null = $process.WaitForExit(5000) }
-        if ($lineTask) {
-            $remainingLine = $lineTask.GetAwaiter().GetResult()
-            if ($null -ne $remainingLine) { $lines.Add($remainingLine) }
-            $lines.Add($process.StandardOutput.ReadToEnd())
-        }
-        $log = ($lines -join [Environment]::NewLine) + $(if ($errorTask) { $errorTask.GetAwaiter().GetResult() })
-        foreach ($password in $passwords) { $log = $log.Replace($password, '[REDACTED]') }
-        Set-Content -LiteralPath (Join-Path $logDirectory "$Owner-pass-$Pass.log") -Value $log -Encoding utf8
+        Stop-RehearsalApplication -Application $application
     }
 }
 
@@ -189,35 +191,57 @@ try {
         Write-Output 'STATIC ONLY: Docker engine, bootstrap, migration and retained-volume assertions were NOT executed.'
         return
     }
+    $result.Stage = 'engine-access'
     $null = Invoke-RehearsalDocker -Arguments @('info', '--format', '{{.ServerVersion}}')
+    $result.Stage = 'artifact-and-probe-prerequisites'
     if (-not $JavaHome) { throw 'Set JAVA_HOME to Java 21; the rehearsal never builds or downloads dependencies.' }
     $javaExecutable = Join-Path $JavaHome 'bin/java.exe'
     if (-not (Test-Path -LiteralPath $javaExecutable)) { throw 'Java executable not found.' }
     $javaVersion = (& $javaExecutable -version 2>&1 | Out-String)
     if ($javaVersion -notmatch 'version "21\.') { throw 'The rehearsal requires Java 21.' }
+    $javacExecutable = Join-Path $JavaHome 'bin/javac.exe'
+    if (-not (Test-Path -LiteralPath $javacExecutable)) { throw 'Java 21 JDK compiler not found; required for the isolated readiness probe.' }
+    $probeSource = Join-Path $PSScriptRoot 'java/RehearsalHealthProbe.java'
+    if (-not (Test-Path -LiteralPath $probeSource)) { throw 'Rehearsal readiness probe source is missing.' }
+    $probeDirectory = Join-Path $logDirectory 'probe'
+    New-Item -ItemType Directory -Force -Path $probeDirectory | Out-Null
+    $compileOutput = (& $javacExecutable --release 21 -d $probeDirectory $probeSource 2>&1 | Out-String)
+    if ($LASTEXITCODE -ne 0) { throw 'Could not compile the isolated readiness probe; no containers were started.' }
+    $compileOutput = $null
     foreach ($owner in $owners) {
         $jar = Join-Path $repositoryRoot $jars[$owner]
         if (-not (Test-Path -LiteralPath $jar)) { throw "Missing existing built JAR: $jar. Build explicitly before this rehearsal." }
         $jarHashes[$owner] = (Get-FileHash -LiteralPath $jar -Algorithm SHA256).Hash
     }
+    $result.Stage = 'pinned-java-runtime'
+    $result.RuntimeImage = Get-RehearsalJavaImage
+    # Downloaded by the engine before isolated containers start; applications gain no external network.
+    Write-Output 'Preparing the pinned official Java 21 test image; the first run may download it.'
+    $null = Invoke-RehearsalDocker -Arguments @('pull', $result.RuntimeImage)
     if (Invoke-RehearsalDocker -Arguments @('ps', '-aq', '--filter', "label=com.docker.compose.project=$projectName")) { throw 'Project collision: refusing to touch existing containers.' }
     if (Invoke-RehearsalDocker -Arguments @('volume', 'ls', '-q', '--filter', "label=com.docker.compose.project=$projectName")) { throw 'Project collision: refusing to touch existing volumes.' }
     Write-Output "Disposable project: $projectName"
     for ($pass = 1; $pass -le 2; $pass++) {
+        $result.Stage = "pass-$pass-database-startup"
         $resourcesAttempted = $true
         $null = Invoke-RehearsalDocker -Arguments ($composeArguments + @('up', '-d', '--wait', '--wait-timeout', [string]$TimeoutSeconds))
         # The production bootstrap helper/SQL is intentionally reused, not copied.
         # Capture bootstrap output too: a psql failure must not accidentally echo
         # an expanded ALTER ROLE password statement into the host transcript.
+        $result.Stage = "pass-$pass-role-bootstrap"
         try {
             $bootstrapOutput = & (Join-Path $PSScriptRoot 'bootstrap-databases.ps1') -ComposeFile @((Join-Path $repositoryRoot 'compose.yaml'), (Join-Path $repositoryRoot 'compose.persistence-test.yaml')) -ProjectName $projectName -EnvFile (Join-Path $repositoryRoot '.env.example') 2>&1
         } catch {
             throw 'Role bootstrap failed in the isolated project; raw SQL/error output suppressed to protect credentials.'
         } finally { $bootstrapOutput = $null }
+        $result.Checks += "Role bootstrap pass ${pass}: all four databases provisioned by the existing helper"
         Write-Output "Role bootstrap pass ${pass}: all four databases provisioned by the existing helper"
         foreach ($owner in $owners) {
-            $publishedPort = Get-RehearsalPublishedPort -Output (Invoke-RehearsalDocker -Arguments ($composeArguments + @('port', "${owner}-db", '5432')))
-            Start-RehearsalApplication -Owner $owner -DatabasePort $publishedPort -Pass $pass
+            $result.Stage = "pass-$pass-$owner-application"
+            # Internal-only Docker networks need no published database port: use
+            # the same packaged JAR on its owner's network, not a less-isolated DB.
+            Start-RehearsalApplication -Owner $owner -Pass $pass
+            $result.Stage = "pass-$pass-$owner-sql-boundaries"
             if ($pass -eq 1) { $null = Invoke-RehearsalSql -Owner $owner -Mode setup }
             $null = Invoke-RehearsalSql -Owner $owner -Mode runtime
             $null = Invoke-RehearsalSql -Owner $owner -Mode roles
@@ -235,19 +259,19 @@ try {
             $result.Checks += "$owner pass $pass SQL runtime DML/no DDL/history writes; separate restricted roles; three foreign logins denied"
             Write-Output "$owner pass ${pass}: runtime/role/foreign-credential assertions passed"
         }
+        $result.Stage = "pass-$pass-retain-storage"
         $null = Invoke-RehearsalDocker -Arguments ($composeArguments + @('down', '--timeout', '15'))
         if ($pass -eq 1) { Write-Output 'First project stopped WITHOUT deleting volumes; restarting the same retained storage.' }
     }
     $result.Checks += 'Four immutable sentinel/history snapshots identical after retained-volume restart and repeated bootstrap/Flyway'
+    $result.Stage = 'complete'
     $result.Passed = $true
     Write-Output 'PASS: all four postgres JARs, real role boundaries, and retained-volume restart/repeated migration checks.'
 } finally {
     try {
-        foreach ($process in $ownedProcesses) {
-            try {
-                if (-not $process.HasExited) { $process.Kill(); $null = $process.WaitForExit(5000) }
-            } catch { Write-Warning 'Could not stop an owned Java child; no unrelated process was targeted.' }
-            finally { $process.Dispose() }
+        foreach ($application in $ownedApplications) {
+            try { Stop-RehearsalApplication -Application $application }
+            catch { Write-Warning 'Could not stop/remove an exactly labeled rehearsal application; no unrelated container or volume was targeted.' }
         }
         if ($resourcesAttempted) {
             try { $null = Invoke-RehearsalDocker -Arguments ($composeArguments + @('down', '--timeout', '15')) }

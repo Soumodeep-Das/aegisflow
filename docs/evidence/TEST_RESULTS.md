@@ -1,5 +1,26 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-17 — real bootstrap succeeds; internal-network rehearsal repair
+
+Entry/source `9c3b8c6`. Owner's exact host command, with Java 21 selected: `& $ps7 -NoProfile -File .\scripts\verify-compose-persistence.ps1`. Host timestamp/duration were not supplied. Project `aegisflow-p03-verify-e26461bf21cc43df8d20d260881a7808`: real Compose startup and **first role bootstrap of all four PostgreSQL databases succeeded**. It then terminated at `Get-RehearsalPublishedPort` before the first application JAR, Flyway startup or fixture/SQL/restart assertions. Result file has `Passed=false`; all four JAR hashes were recorded, not executed. Containers were stopped; the four project volumes were retained. This is a failed rehearsal with a successful bootstrap subset, not a database migration/privilege/retained-volume pass.
+
+The original raw `compose port` output is unavailable. A direct local probe of the actual `Invoke-RehearsalDocker` function using `docker compose version --short` returned exactly one String `5.5.1`, not pipeline pollution. All four DBs are attached only to `internal: true` networks. A [Moby upstream report](https://github.com/moby/moby/discussions/53256) describes the same healthy internal-only container but missing host publication; the exact host cause remains inferred. Docker's [PostgreSQL networking guide](https://docs.docker.com/guides/postgresql/immediate-setup-and-data-persistence/) distinguishes host-published access from same-network container access. No security guard was loosened and no internal network was made external.
+
+The repaired runner mounts each unchanged built JAR into an owner-network Java 21 verification container and uses `owner-db:5432`. No host port lookup is required. Its in-container probe is standalone Java 21 under `scripts/java/`, not an application/Maven change. Five owner environment names only (values passed through a filtered Docker CLI child environment), read-only JAR/probe/root, unprivileged UID, bounded tmpfs, no extra capabilities/privileges/host ports/socket, and exact-ID/label checks precede cleanup. Progress `Stage` and successful actual bootstrap checks are now saved even when a later gate fails. Only these temporary app containers may be removed; all database volumes remain.
+
+Official [Docker Hub metadata](https://hub.docker.com/v2/repositories/library/eclipse-temurin/tags/21-jre-jammy), fetched with read-only `Invoke-RestMethod` on 2026-10-17, supplied index digest **`sha256:8d584faeef02c22f6b58ad8a3cee8e1e53ae52bdf2224f4afb989cc35983b8ae`** and Linux/amd64 manifest `sha256:8c2dddf1bb2a8455160f4e23080059de5003eddc5cb839130b177c6be0c2cfe0`. The runner pins tag+index, not a floating tag. Metadata retrieval is not an image pull, runtime or supply-chain security verification.
+
+After the repair, exact local commands through bundled PowerShell 7:
+
+| Command | Observed outcome |
+|---|---|
+| `-NoProfile -File .\scripts\test-compose-persistence.ps1` | exit 0; **19 passed / 0 failures**, includes four hardened owner-network container argv cases and exact-label cleanup rejection; no engine |
+| `-NoProfile -File .\scripts\test-rehearsal-probe.ps1` | exit 0; real JDK 21 `javac --release 21` + `java` ran **10 passed / 0 failures** for strict healthy/unhealthy/malformed/duplicate/oversized responses; no HTTP/Docker |
+| `-NoProfile -File .\scripts\verify-compose-persistence.ps1 -StaticOnly` | exit 0; real Compose merge/config checks only; no database/container startup |
+| PowerShell all-script `Parser.ParseFile` | zero errors |
+
+The guarded combined rerun exited 0 at **2026-10-17T05:19:55Z**. An initial new argv test failed because it expected the canonical `no-new-privileges` token while the helper used `no-new-privileges=true`; canonical spelling was aligned and all 19 passed, without removing the protection. Application entrypoint is explicitly `java`; root/mounts remain read-only. Live Docker still denies this session's engine pipe. No Maven/app regression run was performed for unchanged production code/POMs. **Real repaired JRE pull/startup, SQL grants/history/sentinel, retained-volume restart and all Kafka scenarios remain unverified.** Owner must rerun the corrected host command; no old volume deletion or completed P0.2 inspection/build is required.
+
 ## 2026-10-16 — P0.3-A tooling/static checkpoint; real Compose rehearsal blocked
 
 Entry `86452ef`, clean `main` tracking `origin/main`; no Java/POM/business migration changes. The owner approved P0.3 and requested persistent-Compose validation before adding Kafka. Baseline P0.2 results below remain historical and valid. Compose CLI **5.5.1** is available. Direct `docker info --format '{{.ServerVersion}}'` **exit 1**, permission denied on `npipe:////./pipe/dockerDesktopLinuxEngine`, including a retry after the owner reported a version from their normal PowerShell. Host availability is not sandbox authorization.

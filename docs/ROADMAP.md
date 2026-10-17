@@ -1,7 +1,9 @@
 # Prioritized roadmap
 
-**Last reviewed:** 2026-10-16
+**Last reviewed:** 2026-10-17
 **Observed product state:** P0.2 is complete. P0.3 is approved and in progress at P0.3-A, the isolated persistent-Compose rehearsal. Kafka/relay/inbox are not implemented yet; P0.4 remains unapproved.
+
+**Current first unfinished task:** rerun the repaired same-JAR/owner-network container rehearsal. The first host attempt bootstrapped four actual databases but failed at the host-port assumption before Java. The fix preserves `internal: true` and uses a pinned non-root/read-only Java 21 test runtime plus in-container health; no business source/migration changes. Helper/probe/static checks are distinct from the required repaired real run. Preserve all failed-run volumes/evidence; no cleanup or unrelated-project startup is needed.
 
 **Final P0.2 result:** the full clean reactor succeeded at 19:45:47 IST (2:17), 38 default + 29 real PostgreSQL tests with zero failures/errors/skips, followed by four packaged foundation JARs returning HTTP 200/UP and a zero-issue documentation check. The report counter's incomplete glob is corrected using all four real XML reports; no business code changed after verification. Persistent Compose bootstrap remains a separate unexecuted rehearsal. Earlier dated results below are historical.
 

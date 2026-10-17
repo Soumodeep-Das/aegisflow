@@ -1,5 +1,15 @@
 # Development journal
 
+## 2026-10-17 — repair rehearsal's host-versus-internal-network mismatch
+
+Continued at clean `9c3b8c6`, main ahead1, without redoing P0.2. Owner's real run created project `aegisflow-p03-verify-e26461bf21cc43df8d20d260881a7808` and bootstrapped all four PostgreSQL role sets. It then failed the original loopback-port guard before Java/migrations/SQL/second pass; `Passed=false` and four retained volumes preserved. Raw port text was not captured. Local actual-function CLI probe returned one clean String `5.5.1`; upstream Moby reports match internal-only networks not yielding host publications, but exact host packet cause is not proven. No network guard was relaxed or volume removed.
+
+Repaired the test harness, not business code: same built JAR now runs in a pinned Java 21 container on only its owner's existing internal network, JDBC `owner-db:5432`. Owner-only five env values are copied through filtered CLI environment, not password argv; RO root/mounts, non-root UID, tmpfs, drop-all/no-new-privileges, no exposed application port/socket, and exact-ID/project-label cleanup preserve boundaries. Added standalone Java health probe and no-network contract tests; progress stages/actual successful bootstrap checks now survive later failures. Official Docker Hub metadata pinned the runtime index; image pull/real execution is still pending.
+
+Guarded bundled-PS7 rerun at 2026-10-17T05:19:55Z: `test-compose-persistence.ps1` **19 pass/0 fail**, `test-rehearsal-probe.ps1` compiled with actual JDK21 and **10 pass/0 fail**, `verify-compose-persistence.ps1 -StaticOnly` exit0, all PS scripts parsed. Initial argv spelling mismatch test failed, then canonical no-new-privileges token aligned and all passed. These are not PostgreSQL/Kafka/HTTP integration passes. Engine pipe remains denied here; exact pipe permission request could not be represented, and no alias/security-setting bypass was attempted. No production Java/POM/V1 changes, no Maven rerun or remote push.
+
+Updated evidence, README/architecture/learning/limitations/roadmap/handoff to the new actual flow and known partial host result. Highest-priority next task: owner reruns corrected isolated rehearsal (same command) and shares summary/first error; keep old failed-run volumes. Only after eight in-container JAR health checks plus SQL/retained-history assertions pass may Kafka infrastructure begin. P0.3 incomplete; P0.4 unapproved. Commit scoped work locally, no push/deployment.
+
 ## 2026-10-16 — approve P0.3; prepare isolated Compose persistence gate
 
 Resumed from clean `main` at `86452ef`, now tracking `origin/main` (owner reports pushing P0.2). Owner explicitly approved P0.3 only and asked for limited-credit, small recoverable checkpoints. No new remote push/deployment/P0.4 authority. Targeted inspection reused existing bootstrap, credentials/profiles, module/event/data contracts, ADRs and failure requirements; no P0.2 code or architectural audit was recreated. The prompt's ingestion module maps to existing Core `eventing`; its explicit deferral of correlation/projection overrides older P0.3 plan wording, recorded without adding another module.
