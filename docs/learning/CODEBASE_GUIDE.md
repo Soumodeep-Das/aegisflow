@@ -1,12 +1,14 @@
 # Codebase guide
 
-**Latest 2026-10-17 host result:** the complete persistence rehearsal **passed**, actual report Passed=true/Stage=complete for `aegisflow-p03-verify-93dcfedb932a45a1b5d28241d4c5098b`. Eight postgres-profile HTTP 200/UP startups, eight owner SQL-boundary groups, 24 sibling-credential denial attempts and identical sentinel/full Flyway histories after retained-volume restart prove this operational slice. Fresh V1 runs once per owner; the second startup validates existing V1 without another migration. This does not repeat or replace P0.2 atomicity tests and does not prove Kafka delivery. No owner action/rerun now; minimum Kafka infrastructure is next.
+**Latest 2026-10-17 Kafka checkpoint:** local Kafka infrastructure and its verification client are implemented; real broker startup and delivery remain unverified because the coding session cannot access Docker's engine pipe. The standalone Java 21 Maven build passed, as did 10 PowerShell guard groups and 15 Java guard checks. The next owner action is `scripts/verify-kafka.ps1` on the normal Docker-capable host; the Kafka section below explains what it exercises.
+
+**Completed 2026-10-17 persistence host result:** the complete persistence rehearsal **passed**, actual report Passed=true/Stage=complete for `aegisflow-p03-verify-93dcfedb932a45a1b5d28241d4c5098b`. Eight postgres-profile HTTP 200/UP startups, eight owner SQL-boundary groups, 24 sibling-credential denial attempts and identical sentinel/full Flyway histories after retained-volume restart prove this operational slice. Fresh V1 runs once per owner; the second startup validates existing V1 without another migration. This does not repeat or replace P0.2 atomicity tests and does not prove Kafka delivery. No persistence rerun is needed to continue.
 
 **Health correction lesson, preserved:** `scripts/java/RehearsalHealthProbe.java` accepts detail-free Actuator root UP plus optional probe-group array in either order, with HTTP 200/4096-byte limit/no redirects or duplicate/nested status/details. Group names remain visible with `show-details: never`. Its 23 no-network checks are distinct from the eight real host health gates. For future timeouts read safe last-check diagnostics/redacted owner logs before changing timeouts or business code; no response/credential is printed. Earlier Core migration/startup succeeded but the bare-UP matcher timed out; that failure remains in evidence.
 
 **Earlier same-day network correction:** the first runner failed before Java at its host-port assumption (raw output unavailable; not a proven IPv6 defect). The current runner executes the same built JAR in a pinned Java 21 test container on only its owner's internal network, using `owner-db:5432`. `Get-RehearsalApplicationArguments` builds hardening/read-only mounts and five owner-only credential names; `Assert-RehearsalOwnedContainer` guards cleanup by exact ID and label. Base networks/roles/application Java/V1 remain unchanged; standalone Java is test harness only.
 
-**Current P0.3-A checkpoint:** P0.3 is approved/incomplete; the persistence prerequisite is now verified. `scripts/verify-compose-persistence.ps1`/helpers/probe are test tooling; application Java, migrations and Maven dependencies are unchanged. Next implement minimum Kafka infrastructure, then relay/Core inbox and real fault tests. No Kafka broker, relay, inbox, correlation or recovery is implemented here; P0.4 remains unapproved.
+**Current P0.3-A checkpoint:** P0.3 is approved/incomplete; the persistence prerequisite is verified and Kafka setup/provisioning/smoke tooling is written. Application Java, migrations and application Maven dependencies are unchanged; `tools/kafka-smoke` is a separate verification project. Once actual Kafka startup, both listeners, topic settings and credential boundaries pass, continue the approved relay/Core inbox and real fault tests. No application relay, inbox, correlation or recovery is implemented here; P0.4 remains unapproved.
 
 **P0.2 verification passed (2026-10-16):** the final clean full reactor reported `BUILD SUCCESS` at **19:45:47 IST**, **2 min 17 s**, at entry HEAD `66282a9` with implementation source `7a90c57`. **38 default tests and 29 real PostgreSQL ITs passed**, zero failures/errors/skips: Core 7/4, Order 9/8, Payment 12/9, Warehouse 10/8. All four packaged foundation JARs returned HTTP 200 / `UP`; the documentation checker reported **Issues 0** (29/20/109/7/1/16/20/8 checks). These remain preserved P0.2 results. Subsequently approved P0.3's separate persistent-Compose/postgres-profile prerequisite passed on 2026-10-17; broker/relay/inbox remain next.
 
@@ -99,7 +101,7 @@ The root `pom.xml` is both the parent POM and the aggregator. Parent inheritance
 
 The root build pins Spring Boot `4.1.1`, compiles with Java release `21`, and imports Spring Modulith BOM `2.1.1`. Maven Enforcer requires Java `[21,22)` and Maven `[3.10.0,3.11.0)`. The wrapper properties select Maven `3.10.0`, wrapper implementation/plugin `3.3.4`, and a distribution checksum. The distinction matters: `3.3.4` is the Maven Wrapper version, while `3.10.0` is the Maven distribution that executes the build.
 
-The child POMs share web MVC, Actuator, Flyway, PostgreSQL runtime support, tests, and the Spring Boot Maven plugin. Core retains JDBC and adds Spring Modulith. The three simulators now use `spring-boot-starter-data-jpa`; all four modules have PostgreSQL/JUnit Testcontainers dependencies. Boot's Flyway starter supplies the auto-configuration, while `flyway-database-postgresql` supplies PostgreSQL support. The root `infrastructure-tests` profile activates Maven Failsafe for `*IT` classes throughout the reactor. Spring AI, Kafka, and Spring Security remain absent.
+The child POMs share web MVC, Actuator, Flyway, PostgreSQL runtime support, tests, and the Spring Boot Maven plugin. Core retains JDBC and adds Spring Modulith. The three simulators now use `spring-boot-starter-data-jpa`; all four modules have PostgreSQL/JUnit Testcontainers dependencies. Boot's Flyway starter supplies the auto-configuration, while `flyway-database-postgresql` supplies PostgreSQL support. The root `infrastructure-tests` profile activates Maven Failsafe for `*IT` classes throughout the reactor. Spring AI, Kafka, and Spring Security remain absent from these application deployables. The separate `tools/kafka-smoke` project now uses Boot-managed Kafka clients for infrastructure verification.
 
 The parent also bans dependencies on all four deployable artifacts. That prevents a module from quietly importing another service's implementation instead of using a future versioned API or event contract.
 
@@ -393,6 +395,80 @@ Only after durable accepted-inbox or technical-quarantine commit. A crash before
 
 No. Kafka orders records within a topic partition; different topics/partitions do not share one total order. The existing key is `tenantId:businessTransactionId`; that workflow identifier differs from the immutable event ID. Out-of-order source versions must remain attributable evidence, not overwrite newer state blindly. A tenant inside payload bytes is still a claim: ingestion needs an enforced trusted source/tenant binding or must block it. Future correlation/recovery cannot authorize actions from unvalidated payload identity. See [Kafka design](https://kafka.apache.org/41/design/design/).
 
+## P0.3-A: local Kafka infrastructure and verification
+
+`compose.kafka.yaml` adds a companion stack that can run independently or merge with the existing Compose file. It leaves the four PostgreSQL services, networks and volumes unchanged. The broker is pinned to `apache/kafka:4.2.2@sha256:1213eb3943d551e5ed1fca7a4e109001cee35770b66a02a0c37a8964efe09b69`; one process acts as broker and KRaft controller, so ZooKeeper is unnecessary. One broker and replication factor one are a small local development choice, not high availability.
+
+The actual new paths are:
+
+```text
+compose.kafka.yaml                         # broker, readiness, provisioning, dedicated network/volume
+scripts/
+├── start-kafka.ps1                         # normal local startup; creates ignored .env.kafka once
+├── verify-kafka.ps1                        # isolated broker and both listener smoke checks
+├── build-kafka-smoke.ps1                   # Java 21 build with repository-local Maven cache
+├── test-kafka-infrastructure.ps1           # infrastructure-free guard checks
+├── lib/kafka-infrastructure.ps1            # configuration, environment and cleanup guards
+└── kafka/
+    ├── server.properties                  # KRaft, SASL, default-deny authorizer, topic defaults
+    ├── common.sh / startup.sh             # private generated configuration and broker startup
+    ├── healthcheck.sh                     # authenticated broker readiness
+    └── provision.sh                       # repeatable topic creation and additive source/Core ACLs
+tools/kafka-smoke/
+├── pom.xml                                # standalone child of root parent; outside reactor modules
+└── src/main/java/com/aegisflow/tools/kafka/KafkaSmoke.java
+```
+
+Kafka's bootstrap address is only the first contact. The broker then returns its advertised address, which must be reachable from that caller. The `HOST` listener binds container port 19092 and advertises `127.0.0.1:<KAFKA_HOST_PORT>`; the ordinary host default is 19092, while the rehearsal selects an available loopback port. Containers on `kafka-events` use the `INTERNAL` listener at `kafka:9092`. The controller endpoint `kafka:9093` is private to that Docker network and has no host port. The Kafka network is separate from the owner database networks; clients do not need database network membership for this smoke test.
+
+Six distinct generated passwords belong to `broker`, `admin`, `order`, `payment`, `warehouse`, and `core`. Local SASL/PLAIN authenticates these principals, but SASL_PLAINTEXT does not encrypt their traffic: this configuration is for synthetic local development. Broker/admin privileges are infrastructure-only. Each source principal may write/describe its own `aegisflow.<source>.events.v1` topic and use producer idempotence. Core may read/describe those three topics and use groups starting with `aegisflow-core-`; it receives no topic-write grant. The broker denies operations without an ACL. These source boundaries do not authenticate a `tenantId` inside event bytes; trusted tenant provenance and fail-closed intake still belong to the unfinished inbox work.
+
+Provisioning creates `aegisflow.order.events.v1`, `aegisflow.payment.events.v1`, and `aegisflow.warehouse.events.v1`, each with three partitions, one replica, minimum in-sync replicas one, seven-day delete retention and a 1 MiB message limit. Automatic topic creation is disabled. Repeated provisioning creates missing topics and adds ACLs; it does not silently change existing topic settings or remove ACLs. The smoke client checks settings against the expected contract.
+
+The traceable verification flow is `verify-kafka.ps1` → isolated Compose broker → authenticated health check → `provision.sh` → host `KafkaSmoke` → container `KafkaSmoke`. The Java client checks advertised metadata and topic configuration, sends one unique synthetic record per authorized source with `acks=all` and idempotence, then reads those exact acknowledged offsets as Core. It disables auto-commit, commits the consumed offsets explicitly, and reads them back from the coordinator. It also requires explicit Kafka authorization rejection for six sibling writes and a Core write, plus authentication rejection for an incorrect password. A timeout cannot satisfy a denial assertion. This is transport verification; the synthetic client does not consume real outbox rows or write a Core inbox.
+
+From the repository root in PowerShell 7 with `JAVA_HOME` pointing to Java 21:
+
+```powershell
+# Infrastructure-free build and guard checks:
+.\scripts\build-kafka-smoke.ps1
+.\scripts\test-kafka-infrastructure.ps1
+& "$env:JAVA_HOME\bin\java.exe" -cp 'tools/kafka-smoke/target/classes;tools/kafka-smoke/target/lib/*' com.aegisflow.tools.kafka.KafkaSmoke --self-test
+.\scripts\verify-kafka.ps1 -StaticOnly
+
+# Actual isolated startup, provisioning and both listener tests; Docker engine required:
+.\scripts\verify-kafka.ps1
+
+# After verification, optional normal local Kafka startup:
+.\scripts\start-kafka.ps1
+```
+
+The standalone Maven package build passed on 2026-10-17 at 14:47:59 UTC in 13.935 seconds using Java 21 and Boot-managed Kafka clients 4.2.1. The 10 PowerShell guard groups and 15 Java guard checks passed at 14:49:50 UTC. Those checks validate configuration handling and test failure classification, not a running broker. The actual rehearsal attempt stopped at Docker engine access for project `aegisflow-kafka-verify-640d32dcef43411695f40b0f0b8e953b`, before startup. Real broker health, topic provisioning, listener connectivity, ACL denials and delivery are therefore pending host execution. Reports belong under ignored `.cache/kafka/<project>/`; the harness retains its Kafka volume and does not touch PostgreSQL storage. See [test evidence](../evidence/TEST_RESULTS.md) for the full command outcomes.
+
+### Kafka debugging exercise: bootstrap succeeds but later traffic cannot connect
+
+On a disposable rehearsal, examine the sanitized listener smoke log and compare `scripts/kafka/startup.sh` with `KafkaSmoke.verifyMetadata`. A host can reach its bootstrap port yet receive `kafka:9092` in metadata, an address intended for Docker DNS. Predict the result: the host smoke must reject the advertised host/port, and other clients may fail subsequent requests even though the initial socket connected. The correct host metadata is `127.0.0.1:<selected host port>`; the container metadata is `kafka:9092`. Keep any intentional fault injection confined to a disposable setup, then restore the expected metadata and rerun the isolated smoke. Increasing a timeout does not repair an unreachable advertised address. This is a debugging exercise, not a recorded fault-test pass.
+
+### Q26. Why does this broker need two client listeners?
+
+The host and containers resolve different addresses. Host applications reach a loopback-published port; containers reach the Docker service name `kafka`. Kafka returns a listener-specific address after bootstrap, so changing only the initial bootstrap URL cannot correct a wrong advertised listener. `KafkaSmoke.verifyMetadata` checks that returned address before sending records.
+
+### Q27. What does a single-node KRaft broker simplify, and what does it give up?
+
+The same process stores Kafka records and participates in the metadata quorum, avoiding a separate ZooKeeper deployment. With only one broker/controller and replication factor one, an outage stops service and there is no second replica to survive storage loss. `acks=all` and minimum ISR one still mean only one in-sync replica here; they do not make this development stack highly available.
+
+### Q28. How do source ACLs differ from tenant provenance?
+
+An Order credential can publish only to the Order topic, so broker authorization constrains source identity. It does not inspect or authorize a tenant field in arbitrary JSON. The later Core inbox must validate the envelope and trusted tenant/source binding, or refuse intake; accepting `tenantId` solely because a source authenticated would weaken tenant isolation.
+
+### Q29. Why explicitly provision topics instead of enabling automatic creation?
+
+Explicit provisioning records the intended partitions, replicas, retention and size limits and avoids a misspelled name quietly creating another topic. Repeating the current bootstrap preserves existing data and settings; the verification client detects configuration drift. Topic creation success alone does not demonstrate correct source permissions or consumer delivery, so those receive separate real checks.
+
+### Q30. Why do a smoke-test timeout and an authorization rejection mean different things?
+
+A `TopicAuthorizationException` or `SaslAuthenticationException` is an explicit broker/client authentication outcome. A timeout can mean an unreachable listener, an unavailable broker or an unknown operation result, so it cannot prove that a forbidden write was denied. The client tests this distinction without infrastructure and requires the specific denial during a real run. Its committed-offset check proves a transport observation, not an atomic PostgreSQL inbox transaction or exactly-once business effect.
+
 ## Historical Phase 0 design concepts
 
 The following material is retained from the documentation-only phase. The local simulator state/outbox write is now implemented in source; the remaining distributed flow is still planned and unverified.
@@ -503,4 +579,4 @@ It uses several independent layers: Maven modules avoid compile-time implementat
 
 ## Honest next step
 
-P0.2 is complete. P0.3 is approved/incomplete; the complete isolated persistence rehearsal passed on the normal host on 2026-10-17. Next is minimum Kafka infrastructure, followed by relay/inbox and real fault verification. Do not repeat the passed rehearsal, P0.2 audits or successful Maven tests merely to resume. P0.4 remains unapproved. The handoff names the precise next task, acceptance criteria and environment limitations.
+P0.2 and the isolated persistent-PostgreSQL rehearsal are complete. P0.3 Kafka infrastructure and verification tooling are now written, but the real Kafka rehearsal is blocked by coding-session Docker access. Run `scripts/verify-kafka.ps1` on the normal Docker-capable host, record its actual listener/topic/ACL/delivery results, and fix any observed failure before continuing the approved relay/inbox work. Do not repeat the completed persistence work merely to resume. P0.4 remains unapproved. The handoff names the precise acceptance criteria and environment limitations.

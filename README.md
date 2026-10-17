@@ -1,10 +1,27 @@
 # AegisFlow
 
-> **Status:** P0.2 is complete; P0.3 is approved/incomplete. Its persistent-Compose prerequisite passed on the owner's host on 2026-10-17: eight application health checks, role boundaries and unchanged retained-volume data/history. Minimum Kafka infrastructure is next; broker/relay/consumer/inbox are not implemented yet. No P0.4, recovery, AI or remote push is authorized.
+> **Status:** P0.2 and the persistent-Compose prerequisite are verified. P0.3's Kafka Compose setup, topic/credential provisioning and host/container smoke client are implemented; real Kafka execution is pending host verification. Relay and Core inbox are next after that gate. P0.3 remains incomplete; P0.4/recovery/AI and remote pushes remain unapproved.
 
 Final P0.2 host evidence (2026-10-16, source `7a90c57`, completed checkpoint `86452ef`): **full clean reactor BUILD SUCCESS, 38 default tests + 29 real PostgreSQL ITs**, zero failures/errors/skips. All four packaged foundation JARs returned HTTP 200/UP; documentation checks passed. These remain preserved results, not a substitute for P0.3 verification. The current coding session cannot access Docker's engine pipe. See [current handoff](docs/HANDOFF.md) and [test evidence](docs/evidence/TEST_RESULTS.md).
 
 AegisFlow is a learning-oriented, production-minded portfolio project for detecting and safely recovering inconsistent distributed business transactions. The first scenario uses independently persisted Order, Payment, and Warehouse simulators. A control plane will correlate their events, detect breached business invariants, assemble attributable evidence, propose a constrained recovery, require deterministic policy and human approval where appropriate, invoke only versioned service APIs, and verify the result against authoritative service state.
+
+## Current Kafka checkpoint
+
+From the existing repository in the normal host terminal, with Docker Desktop available:
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-kafka.ps1
+```
+
+This creates an isolated Kafka verification project, generates transient credentials, builds only the standalone verification client and exercises both listener paths. It never loads the PostgreSQL Compose file or private `.env`. Expect repeated topic/ACL provisioning, exact message round trips, committed offsets and explicit permission/authentication denials; sanitized logs/results are saved in `.cache/kafka/<project>/`. Verification containers stop afterward; volumes remain. The first run may download the pinned Kafka image. A real pass is still required: current local evidence is compilation, Compose validation and 25 no-broker guard checks; this session's Docker engine access is denied.
+
+For an ordinary persistent local Kafka stack after verification, use bundled PowerShell 7 to run `scripts/start-kafka.ps1`. It creates ignored `.env.kafka` once with six distinct credentials and reuses it on later starts. Existing `.env` and PostgreSQL resources remain untouched. Host applications use `127.0.0.1:19092` (or `.env.kafka`'s `KAFKA_HOST_PORT`); container clients on `aegisflow-foundation_kafka-events` use `kafka:9092`. Both require SASL/PLAIN credentials. Controller port 9093 is unpublished. To stop only the ordinary broker while retaining data: `docker compose --env-file .env.kafka -f compose.kafka.yaml stop kafka`. Do not use broad pruning or delete volumes to diagnose startup problems.
+
+The three source topics each have 3 partitions, replication factor 1, min ISR 1 and seven-day retention. Source credentials can publish only to their own topic; Core can read the topics with its scoped consumer group. The plaintext local transport is for synthetic development on a trusted machine. Tenant provenance validation is still required before the later inbox accepts business events. [ADR 0009](docs/adr/0009-local-kafka-listeners-and-source-topics.md) records listener, retention, authentication and single-broker tradeoffs. No application relay/consumer is connected yet.
+
+Infrastructure-free checks in PowerShell 7: `scripts/build-kafka-smoke.ps1`, `scripts/test-kafka-infrastructure.ps1`, and `scripts/verify-kafka.ps1 -StaticOnly`. These do not establish live Kafka connectivity. The root Maven application reactor and existing PostgreSQL migrations are unchanged.
 
 AegisFlow is **not** represented as enterprise-ready software. It is a deliberately bounded system in which failure semantics, security boundaries, tests, and resumable documentation are treated as first-class deliverables.
 
@@ -164,7 +181,7 @@ Those results describe the committed P0.1 source, not the new P0.2 source. The o
 
 1. Read [the handoff](docs/HANDOFF.md), then [the implementation plan](docs/roadmap/IMPLEMENTATION_PLAN.md).
 2. Inspect `git status` and the latest local commit before editing.
-3. P0.2 is complete. Continue the approved P0.3 checkpoint named in the handoff, beginning with the real isolated Compose rehearsal; do not recreate or rerun P0.2 merely to resume. Kafka comes after this gate, then the existing Core `eventing` inbox. P0.4 remains unapproved.
+3. P0.2 and the persistence rehearsal are complete. Run the current Kafka verifier from the handoff; after actual broker acceptance, continue source-owned relay and the existing Core `eventing` inbox. Do not repeat completed persistence work merely to resume. P0.4 remains unapproved.
 4. Preserve the milestone protocol in [AGENTS.md](AGENTS.md): tested code, updated explanations, reproducible commands with factual outcomes, devlog/roadmap updates, and a fresh handoff.
 
 The owner reports pushing the completed P0.2 baseline; local `main` now tracks `origin/main` at `86452ef`. New P0.3 commits remain local only. No new push, external deployment, or publication is authorized.

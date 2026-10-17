@@ -1,7 +1,7 @@
 # Implementation plan
 
 **Planning horizon:** preserve a useful, teachable repository even if assisted coding stops after 6–7 days.
-**Current authorization:** P0.2 verified; P0.3 explicitly approved on 2026-10-16. Isolated Compose persistence prerequisite passed on the host on 2026-10-17; next minimum Kafka infrastructure (A), source-owned relay (B), Core inbox (C), and real failure/end-to-end verification (D).
+**Current authorization:** P0.2 verified; P0.3 explicitly approved on 2026-10-16. Isolated Compose persistence prerequisite passed on the host on 2026-10-17 and is recorded at `1043a51`. Minimum Kafka infrastructure (A) is now written; the next task is its real host verification, followed by source-owned relay (B), Core inbox (C), and real failure/end-to-end verification (D).
 **Next approval gate:** stop after P0.3; P0.4 and product P1 recovery are not authorized. New remote pushes/deployments are not authorized.
 
 ## Delivery principles
@@ -100,7 +100,7 @@ Acceptance:
 
 ### P0.3 Kafka delivery and control-plane inbox
 
-**Approved; incomplete.** The persistent-Compose bootstrap prerequisite passed on the owner's host on 2026-10-17: eight postgres-profile health gates, owner role/SQL boundaries and unchanged retained-volume sentinel/full history. Next provision minimum Kafka infrastructure and verify real broker/topic readiness/producer-consumer smoke behavior. The coding session still cannot access Docker; host results remain distinct from static/helper checks. Preserve P0.2 migrations/application code; do not repeat the completed rehearsal merely to resume.
+**Approved; incomplete.** The persistent-Compose bootstrap prerequisite passed on the owner's host on 2026-10-17: eight postgres-profile health gates, owner role/SQL boundaries and unchanged retained-volume sentinel/full history, recorded at `1043a51`. `compose.kafka.yaml`, authenticated broker health/topic/ACL provisioning and `tools/kafka-smoke` are implemented; Compose/static checks, the standalone Java 21 build and 25 infrastructure-free guard checks passed. The next task is `scripts/verify-kafka.ps1` on the Docker-capable host to verify actual broker readiness, host/container listeners, topic settings, producer/consumer delivery and explicit credential/permission rejections. The coding session's real attempt stopped at engine-pipe access before broker startup. Source-topic ACLs are written but runtime-unverified, and local SASL/PLAIN has no TLS. Relay and Core inbox remain unimplemented. Preserve P0.2 migrations/application code; do not repeat the completed persistence rehearsal merely to resume.
 
 Use `(tenantId, businessTransactionId)` as the Kafka key for per-transaction partition ordering, while remaining correct when producers or topics create reordering. Reuse the ten-module Core's existing `eventing` package. Persist validated accepted inbox receipt in one Core transaction, deduplicated by `(tenantId, sourceSystem, eventId)` and canonical content. The owner's explicit P0.3 request supersedes the older projection wording here: correlation/projection/detection stays P0.4. When those consumers arrive, their derived effects must join the relevant local inbox transaction, not a best-effort later dual write.
 

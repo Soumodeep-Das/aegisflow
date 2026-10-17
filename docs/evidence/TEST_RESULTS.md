@@ -1,5 +1,25 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-17 — Kafka infrastructure implemented; real host verification pending
+
+Entry `1043a51`, existing repository clean/main. Added Kafka-only companion Compose, pinned Apache 4.2.2, three source topics, dual client listeners plus authenticated controller, separate SASL credentials/default-deny ACLs and standalone client/provisioning scripts. Existing PostgreSQL Compose/application POMs/migrations are unchanged; no prior runtime gate was repeated. Official Docker Hub tag metadata was fetched with read-only `Invoke-RestMethod` after turn-scoped network access: index `sha256:1213eb3943d551e5ed1fca7a4e109001cee35770b66a02a0c37a8964efe09b69`, amd64 manifest `sha256:daa39dc85acd37b148fad74d6b22b60fa5f7fa05048a5c8aa3b654140c63dd58`, arm64 manifest `sha256:031e51202f27021e6afcc1f55d1d0efd9c54864a96d57506e7c1af7dc97839dd`. Metadata/source review does not establish image execution or vulnerability clearance; primary links are in ADR 0009.
+
+| Exact command/check | Actual outcome |
+|---|---|
+| `docker info --format '{{.ServerVersion}}'` | exit1, Docker engine pipe permission denied; CLI `docker compose version --short` returns5.5.1 |
+| Java21 `scripts/build-kafka-smoke.ps1` (wrapper `-B -ntp -Dmaven.repo.local=<workspace-cache> -f tools/kafka-smoke/pom.xml package`) | **BUILD SUCCESS/exit0**, 20:17:59 IST / 13.935s; compile/package standalone client against Boot-managed kafka-clients4.2.1, slf4j-nop2.0.18. No JUnit suite in this helper; self-checks run separately |
+| Java21 `scripts/test-kafka-infrastructure.ps1` | exit0 at14:49:50Z; **10 PowerShell guard groups + 15 Java self-checks**, zero failed; no broker/network |
+| `scripts/verify-kafka.ps1 -StaticOnly` | exit0; real Compose config parse/guard pass, report explicitly StaticOnly/Passed=false; no broker assertion |
+| New Kafka PowerShell `Parser.ParseFile`, shell-file LF byte check | zero parser errors; shell sources LF |
+| Git Bash `-n scripts/kafka/...` | exit1 before syntax parsing; MSYS `NtCreateDirectoryObject` denied (`0xC0000022`). Shell execution not verified here |
+| Java21 `scripts/verify-kafka.ps1` | **exit1 at docker-engine**, project `aegisflow-kafka-verify-640d32dcef43411695f40b0f0b8e953b`; Passed=false, no Kafka resource created |
+
+The initial subagent Maven attempt could not resolve `repo.maven.apache.org`; it failed before compilation. The later network-authorized parent build above succeeded without dependency/version substitutions. Independent review found that the broker API-version CLI could print per-broker errors while exiting0, so readiness was corrected before runtime use to an authenticated `kafka-topics.sh --list` request. No false readiness result is accepted.
+
+Written live assertions remain **unexecuted**: authenticated broker readiness, two provisioning passes, each listener's metadata/topic settings, three source-published/Core-consumed exact markers and committed offsets, six sibling-topic write denials plus one Core write denial and one wrong-password rejection. Negative checks require Kafka's explicit authorization/authentication exceptions; timeouts fail. This smoke flow does not implement business outbox relay or database inbox/offset atomicity. The normal local `start-kafka.ps1` path and Kafka restart durability also remain runtime-unverified. No Kafka Testcontainers/fault/end-to-end pass, exactly-once effect or production security claim is made. The owner must run the same verifier through bundled PowerShell7; preserve its final result/first error and ignored sanitized logs. No PostgreSQL volume/configuration, remote repo or deployment was changed.
+
+After an intentional interruption, the 16:15:20Z continuation confirmed the scoped files survived and finished current documentation. `scripts/verify-docs.ps1` exited0: Markdown=30 / Required=20 / LocalLinks=122 / Mermaid=7 / JSON=1 / Scenarios=16 / InterviewQA=30 / ADRs=9 / Issues=0. All Kafka PowerShell files parsed with zero errors; whitespace check passed. An incorrect ADR local filename was corrected before this pass. No previous Maven/PostgreSQL/guard run was repeated and no Kafka success was added by this documentation checkpoint.
+
 ## 2026-10-17 — persistent Compose gate PASSED on the owner's host
 
 Test tooling source **`4c6585e`**, unchanged P0.2 applications. Owner ran `& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-compose-persistence.ps1` from the existing repository with Java 21 selected and working Docker Desktop. Final console reports **PASS**; actual `.cache/compose-persistence/aegisflow-p03-verify-93dcfedb932a45a1b5d28241d4c5098b/results.json` independently confirms **Passed=true / Stage=complete / VolumesRetained=true**. Captured/reviewed here at 05:40:58Z; transcript does not include numeric process exit, duration or exact run-end timestamp. This supersedes the pending host gate, not the preserved failures below.

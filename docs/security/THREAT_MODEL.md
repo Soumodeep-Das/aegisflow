@@ -1,8 +1,8 @@
 # AegisFlow Threat Model
 
-**Status:** Phase 0 design; no controls are implemented or verified yet
+**Status:** threat design with implemented persistence controls and Kafka infrastructure source; consult dated evidence for verification limits.
 
-Current P0.2 source implements separate owner/migration/runtime database configuration, tenant composite storage keys, versioned request fingerprints, and immutable outbox intent. Their database/privilege tests are written but not executed in this restricted session; pure producer validation/hash tests passed. Authentication, Kafka tenant/source provenance, recovery policy and AI controls below remain planned. This narrower snapshot supersedes the historical status line without implying complete security verification.
+P0.2's owner/migration/runtime roles, tenant composite storage keys, versioned request fingerprints and immutable outbox intent passed the recorded host database suites; the separate persistent-Compose gate also passed. Current Kafka infrastructure source adds six distinct SASL credentials and default-deny source-topic/Core-group ACLs, with live verification pending. SASL plaintext is restricted to synthetic local development; TLS, authenticated tenant ingress, payload tenant/source provenance, recovery policy and AI controls below remain planned. Topic ACLs cannot authenticate payload tenant claims. Before durable inbox acceptance, configured trusted source/tenant binding must be enforced or intake blocked. See ADR 0009 and dated evidence; no complete security verification is claimed.
 
 **Last reviewed:** 2026-10-12
 

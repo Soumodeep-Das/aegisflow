@@ -1,0 +1,69 @@
+name: aegisflow-foundation
+
+# This companion can run alone, or merge with compose.yaml without changing DB services.
+# SASL/PLAIN here is authenticated but unencrypted: local synthetic development only.
+x-kafka-image: &kafka-image
+  image: apache/kafka:4.2.2@sha256:1213eb3943d551e5ed1fca7a4e109001cee35770b66a02a0c37a8964efe09b69
+  user: "1000:1000"
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  networks: [kafka-events]
+
+services:
+  kafka:
+    <<: *kafka-image
+    entrypoint: ["/bin/sh", "/opt/aegisflow/kafka/startup.sh"]
+    environment:
+      KAFKA_CLUSTER_ID: ${KAFKA_CLUSTER_ID:-MkU3OEVBNTcwNTJENDM2Qk}
+      KAFKA_HOST_PORT: ${KAFKA_HOST_PORT:-19092}
+      KAFKA_BROKER_PASSWORD: ${KAFKA_BROKER_PASSWORD:?Set a unique 64-character lowercase hex KAFKA_BROKER_PASSWORD}
+      KAFKA_ADMIN_PASSWORD: ${KAFKA_ADMIN_PASSWORD:?Set a unique 64-character lowercase hex KAFKA_ADMIN_PASSWORD}
+      KAFKA_ORDER_PASSWORD: ${KAFKA_ORDER_PASSWORD:?Set a unique 64-character lowercase hex KAFKA_ORDER_PASSWORD}
+      KAFKA_PAYMENT_PASSWORD: ${KAFKA_PAYMENT_PASSWORD:?Set a unique 64-character lowercase hex KAFKA_PAYMENT_PASSWORD}
+      KAFKA_WAREHOUSE_PASSWORD: ${KAFKA_WAREHOUSE_PASSWORD:?Set a unique 64-character lowercase hex KAFKA_WAREHOUSE_PASSWORD}
+      KAFKA_CORE_PASSWORD: ${KAFKA_CORE_PASSWORD:?Set a unique 64-character lowercase hex KAFKA_CORE_PASSWORD}
+      KAFKA_HEAP_OPTS: "-Xms256m -Xmx512m"
+      LOG_DIR: /tmp/aegisflow-kafka/logs
+    ports:
+      - "127.0.0.1:${KAFKA_HOST_PORT:-19092}:19092"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+      - ./scripts/kafka:/opt/aegisflow/kafka:ro
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=128m,mode=1777
+      - /etc/kafka/secrets:rw,noexec,nosuid,nodev,size=1m,uid=1000,gid=1000,mode=0700
+      - /mnt/shared/config:rw,noexec,nosuid,nodev,size=1m,uid=1000,gid=1000,mode=0700
+    healthcheck:
+      test: ["CMD", "/bin/sh", "/opt/aegisflow/kafka/healthcheck.sh"]
+      interval: 10s
+      timeout: 15s
+      retries: 12
+      start_period: 20s
+    stop_grace_period: 30s
+
+  kafka-init:
+    <<: *kafka-image
+    entrypoint: ["/bin/sh", "/opt/aegisflow/kafka/provision.sh"]
+    environment:
+      KAFKA_ADMIN_PASSWORD: ${KAFKA_ADMIN_PASSWORD:?Set a unique 64-character lowercase hex KAFKA_ADMIN_PASSWORD}
+      KAFKA_HEAP_OPTS: "-Xms64m -Xmx256m"
+      LOG_DIR: /tmp/aegisflow-kafka/logs
+    depends_on:
+      kafka:
+        condition: service_healthy
+    volumes:
+      - ./scripts/kafka:/opt/aegisflow/kafka:ro
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m,mode=1777
+      - /etc/kafka/secrets:rw,noexec,nosuid,nodev,size=1m,uid=1000,gid=1000,mode=0700
+      - /mnt/shared/config:rw,noexec,nosuid,nodev,size=1m,uid=1000,gid=1000,mode=0700
+      - /var/lib/kafka/data:rw,noexec,nosuid,nodev,size=1m,uid=1000,gid=1000,mode=0700
+    restart: "no"
+
+volumes:
+  kafka-data:
+
+networks:
+  kafka-events:
+    driver: bridge
