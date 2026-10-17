@@ -1,5 +1,24 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-17 — Core really migrates/starts; health-probe format false-negative repaired
+
+Source entry `99b908f`; owner's same Java 21/bundled PowerShell 7 `-File .\scripts\verify-compose-persistence.ps1` command. Project `aegisflow-p03-verify-ef3015775b284312a6be9d62b6176fb7` passed configuration, pinned JRE preparation, four database startups and first role bootstrap. The saved Core log at **05:23:58Z** records successful V1 migration against PostgreSQL 18.6; **05:23:59Z** records Tomcat/app startup in **11.418 seconds**; **05:24:00Z** records a successful runtime Hikari connection during health probing. These are observed startup/migration subsets, not a full readiness/privilege pass. The helper timed out at 120 seconds; result is **Passed=false / pass-1-core-application**. Other JARs, SQL fixtures/role assertions and second pass were not reached. All four verification volumes remain; no cleanup was performed.
+
+Original health matcher rejected every body except a bare root UP. Existing `probes.enabled: true` and managed Boot 4.1.1 `SystemHealthDescriptor.getGroups()`/`HealthEndpointSupport.getCompositeDescriptor` bytecode establish that groups are not hidden by `show-details: never`. Additional root groups are the likely timeout cause; no actual failed response body was captured. The repaired matcher accepts root UP plus optional string-array groups in either member order and remains strict about duplicate/nested status, HTTP 200, valid detail-free shape and 4096-byte maximum. It never treats nested UP as root readiness. Fixed-category diagnostics now survive a future timeout without exposing raw bodies/secrets. No timeout, application configuration, database schema or dependency changed.
+
+Exact available checks through bundled PowerShell 7, completed **2026-10-17T05:29:18Z**, combined exit 0:
+
+| Command/check | Actual result |
+|---|---|
+| `-NoProfile -File .\scripts\test-rehearsal-probe.ps1` with Temurin JDK 21 | `javac --release 21` and Java test main succeeded; **23 passed / 0 failures**, including groups/order, duplicates, DOWN/nested status, malformed/trailing JSON, detail leakage and safe diagnostics; no network |
+| `-NoProfile -File .\scripts\test-compose-persistence.ps1` | **19 passed / 0 failures**; no engine/PostgreSQL |
+| `-NoProfile -File .\scripts\verify-compose-persistence.ps1 -StaticOnly` | exit 0; actual Compose configuration only, explicitly no container/database assertion |
+| All-script PowerShell `Parser.ParseFile` | 0 parse errors |
+
+A focused existing Core foundation JAR attempt with ephemeral port failed before HTTP with `SocketException: Permission denied: connect` / `Unable to establish loopback connection`; owned child stopped, ignored `.cache/core-health-payload.stdout.log`/`.stderr.log` retained. This is a coding-session restriction, not the owner's successful container startup. No successful HTTP reproduction, repaired Docker run, new Maven pass or Kafka test is claimed. Owner reruns the same host command; preserve volumes/first failure and do not repeat P0.2 implementation/builds merely to resume.
+
+Closing `scripts/verify-docs.ps1` at **05:30:44Z** exited 0: Markdown=29 / Required=20 / LocalLinks=111 / Mermaid=7 / JSON=1 / Scenarios=16 / InterviewQA=25 / ADRs=8 / Issues=0. `git diff --check` passed. Independent focused tooling review found no blocker; review is not runtime verification.
+
 ## 2026-10-17 — real bootstrap succeeds; internal-network rehearsal repair
 
 Entry/source `9c3b8c6`. Owner's exact host command, with Java 21 selected: `& $ps7 -NoProfile -File .\scripts\verify-compose-persistence.ps1`. Host timestamp/duration were not supplied. Project `aegisflow-p03-verify-e26461bf21cc43df8d20d260881a7808`: real Compose startup and **first role bootstrap of all four PostgreSQL databases succeeded**. It then terminated at `Get-RehearsalPublishedPort` before the first application JAR, Flyway startup or fixture/SQL/restart assertions. Result file has `Passed=false`; all four JAR hashes were recorded, not executed. Containers were stopped; the four project volumes were retained. This is a failed rehearsal with a successful bootstrap subset, not a database migration/privilege/retained-volume pass.

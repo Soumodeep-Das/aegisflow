@@ -129,10 +129,16 @@ function Start-RehearsalApplication {
         Assert-RehearsalOwnedContainer -ContainerId $containerId -ProjectName $projectName -ObservedProjectLabel $label
         $null = Invoke-RehearsalDocker -Arguments @('start', $containerId)
         $deadline = [DateTimeOffset]::UtcNow.AddSeconds($TimeoutSeconds)
+        $lastProbe = 'probe/not-executed';
         while ([DateTimeOffset]::UtcNow -lt $deadline) {
             $running = Invoke-RehearsalDocker -Arguments @('inspect', '--format', '{{.State.Running}}', $containerId)
             if ($running -cne 'true') { throw "$Owner postgres JAR exited before readiness; inspect its redacted rehearsal logs." }
             $probe = Invoke-RehearsalDocker -Arguments @('exec', $containerId, 'java', '-cp', '/opt/aegisflow/probe', 'RehearsalHealthProbe') -AllowNonzero
+            # Only accept the Java helper's fixed diagnostic vocabulary. Never
+            # propagate raw Docker output, HTTP bodies or environment values.
+            $lastProbe = if ($probe.Output -cmatch '\A(?:HTTP [1-5][0-9]{2}/(?:UP|not-ready|unexpected-health-body)|probe/(?:interrupted|connection-failed))\z') {
+                $probe.Output
+            } else { "probe/docker-exec-exit-$($probe.ExitCode)" }
             if ($probe.ExitCode -eq 0) {
                 if ((Get-FileHash -LiteralPath (Join-Path $repositoryRoot $jars[$Owner]) -Algorithm SHA256).Hash -ne $jarHashes[$Owner]) {
                     throw 'JAR changed during the persistence rehearsal.'
@@ -143,7 +149,7 @@ function Start-RehearsalApplication {
             }
             Start-Sleep -Milliseconds 500
         }
-        throw "$Owner postgres JAR did not become healthy within $TimeoutSeconds seconds."
+        throw "$Owner postgres JAR did not become healthy within $TimeoutSeconds seconds; last check: $lastProbe."
     } finally {
         Stop-RehearsalApplication -Application $application
     }

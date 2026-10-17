@@ -1,5 +1,15 @@
 # Development journal
 
+## 2026-10-17 — repair the rehearsal health matcher, not Core startup
+
+Resumed clean `main` at `99b908f`, ahead2, directly from the owner's new timeout. Read only relevant surviving report/log/config/helper, not completed P0.2 audits. Project `aegisflow-p03-verify-ef3015775b284312a6be9d62b6176fb7` bootstrapped all four databases; Core applied V1 and started in 11.418 seconds, then opened its runtime DB connection during probing. Nevertheless the strict bare-UP matcher timed out at 120 seconds; full result remains false and later owner/SQL/restart gates were not reached. No volumes deleted.
+
+Actuator groups are enabled; local managed Boot 4.1.1 bytecode confirms hidden details do not remove root group names. The original matcher rejects that expected valid response (failing HTTP body not captured, so cause remains corroborated inference). Fixed only the bounded detail-free response contract: root UP with optional groups in either order, no duplicate/nested status, malformed/trailing JSON, detail leakage, oversized bodies or non-200. Added safe fixed diagnostic categories/runner allowlist instead of raw HTTP bodies/errors. No timeout increase or app/network/security/schema change.
+
+Guarded JDK21/bundled-PS7 checks completed 05:29:18Z, exit0: **23 probe tests + 19 helper tests**, Compose static-only PASS and zero PowerShell parse errors. Exact commands/results in evidence. A focused actual foundation JAR capture failed before HTTP on this session's denied Java loopback connection, recorded separately; no live health/database success was inferred. Maven/business source is unchanged, so no redundant reactor run. Updated guide, evidence, roadmap, limitations and handoff. Local checkpoint only, no push/deployment. Next: owner reruns the same rehearsal, keeps evidence/volumes and shares first error or final summary. P0.3 remains incomplete; Kafka begins only after this gate; P0.4 is unapproved.
+
+Closing review at 05:30:44Z: docs exit0 (29 Markdown / 20 required / 111 links / 7 Mermaid / 1 JSON / 16 scenarios / 25 Q&As / 8 ADRs / zero issues), whitespace pass, independent focused three-tooling-file review found no blocker. No runtime claims added by review.
+
 ## 2026-10-17 — repair rehearsal's host-versus-internal-network mismatch
 
 Continued at clean `9c3b8c6`, main ahead1, without redoing P0.2. Owner's real run created project `aegisflow-p03-verify-e26461bf21cc43df8d20d260881a7808` and bootstrapped all four PostgreSQL role sets. It then failed the original loopback-port guard before Java/migrations/SQL/second pass; `Passed=false` and four retained volumes preserved. Raw port text was not captured. Local actual-function CLI probe returned one clean String `5.5.1`; upstream Moby reports match internal-only networks not yielding host publications, but exact host packet cause is not proven. No network guard was relaxed or volume removed.

@@ -2,6 +2,8 @@
 
 **Status:** P0.2 host-verified; P0.3 approved/incomplete at infrastructure rehearsal checkpoint
 
+**Latest 2026-10-17 subset:** four real database bootstraps and Core V1/application startup succeeded on the host; the test health matcher then timed out. It now accepts Actuator's optional group names while retaining strict root UP/HTTP 200/body-size/detail checks; 23 no-network probe tests pass. The failing HTTP body was not captured and full repaired execution, other owners, role SQL and retained-volume comparison still need the host rerun. A focused live payload capture here was denied Java loopback access; this does not contradict host startup. Preserve failed-run volumes; no timeout/configuration/security weakening or P0.2 rebuild is needed.
+
 **Last reviewed:** 2026-10-16
 
 This project is intentionally a production-oriented **student portfolio project**, not an enterprise-ready transaction-recovery product. This list separates designed intent from demonstrated capability and must be updated at every significant milestone.
