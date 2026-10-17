@@ -1,5 +1,31 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-17 — persistent Compose gate PASSED on the owner's host
+
+Test tooling source **`4c6585e`**, unchanged P0.2 applications. Owner ran `& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-compose-persistence.ps1` from the existing repository with Java 21 selected and working Docker Desktop. Final console reports **PASS**; actual `.cache/compose-persistence/aegisflow-p03-verify-93dcfedb932a45a1b5d28241d4c5098b/results.json` independently confirms **Passed=true / Stage=complete / VolumesRetained=true**. Captured/reviewed here at 05:40:58Z; transcript does not include numeric process exit, duration or exact run-end timestamp. This supersedes the pending host gate, not the preserved failures below.
+
+| Observed assertion group | Result |
+|---|---|
+| Existing role bootstrap against four fresh databases, then the same retained volumes | Two complete passes |
+| Same four packaged postgres-profile JARs on owner-only internal networks | Eight HTTP 200/UP checks; no foundation fallback |
+| Flyway/history startup | Four fresh V1 applications; four second starts validate V1/up-to-date, no additional migration |
+| Restricted runtime DML/catalog/DDL/history-write boundaries and separated roles | Eight owner SQL assertion groups passed |
+| Three sibling runtime credentials rejected per owner, per pass | 24 denial attempts passed, not 24 separate JUnit tests |
+| Immutable fixture sentinel and full Flyway-history snapshots across restart | All four identical, including history checksums/timestamps |
+
+Actual report records official Java runtime `eclipse-temurin:21-jre-jammy@sha256:8d584faeef02c22f6b58ad8a3cee8e1e53ae52bdf2224f4afb989cc35983b8ae`; four PostgreSQL owners use the existing pinned 18.6 image. Per-owner redacted `*-pass-1.log`/`*-pass-2.log` corroborate real migrations/startup and repeated validation. Application artifact SHA-256 values:
+
+| Owner | SHA-256 |
+|---|---|
+| Core | `2630576EE4FFDC5D03B1A2673C2E5C8695E83E8873D493E6E0FB6795B26C746F` |
+| Order | `996E3BFFE1162A6F1F119611606812B27B10B84E60C7DB5EC6591C8FD1B0BDCF` |
+| Payment | `C168C1602200164D351A82F4584B8DDBD4E8BCB1EFF3BE10D733B753A4741227` |
+| Warehouse | `A44F4350C15BD7094D5220F9531AE23A0E150F234DD29228728E24D7210FB461` |
+
+This is operational Compose/bootstrap/role/migration/persistence evidence, **not** a new Maven/Testcontainers business atomicity run, general security proof or Kafka/exactly-once result. P0.2's historical 38+29 tests remain unchanged. Independent focused evidence review found report/log/counts consistent, without running Docker/Maven again. All successful and failed verification volumes remain; no deletion/push/deployment performed. P0.3 persistence prerequisite is complete; Kafka infrastructure, relay/inbox and all Kafka fault/end-to-end assertions remain unimplemented/unverified. No further persistence rerun is needed merely to record this checkpoint.
+
+Documentation-only closing check at **05:43:44Z**: `scripts/verify-docs.ps1` exit 0, Markdown=29 / Required=20 / LocalLinks=111 / Mermaid=7 / JSON=1 / Scenarios=16 / InterviewQA=25 / ADRs=8 / Issues=0; whitespace check passed. Current stale pending-rehearsal statements were reconciled without removing historical evidence. No runtime test was rerun to update these records.
+
 ## 2026-10-17 — Core really migrates/starts; health-probe format false-negative repaired
 
 Source entry `99b908f`; owner's same Java 21/bundled PowerShell 7 `-File .\scripts\verify-compose-persistence.ps1` command. Project `aegisflow-p03-verify-ef3015775b284312a6be9d62b6176fb7` passed configuration, pinned JRE preparation, four database startups and first role bootstrap. The saved Core log at **05:23:58Z** records successful V1 migration against PostgreSQL 18.6; **05:23:59Z** records Tomcat/app startup in **11.418 seconds**; **05:24:00Z** records a successful runtime Hikari connection during health probing. These are observed startup/migration subsets, not a full readiness/privilege pass. The helper timed out at 120 seconds; result is **Passed=false / pass-1-core-application**. Other JARs, SQL fixtures/role assertions and second pass were not reached. All four verification volumes remain; no cleanup was performed.

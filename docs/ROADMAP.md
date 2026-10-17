@@ -1,11 +1,11 @@
 # Prioritized roadmap
 
 **Last reviewed:** 2026-10-17
-**Observed product state:** P0.2 is complete. P0.3 is approved and in progress at P0.3-A, the isolated persistent-Compose rehearsal. Kafka/relay/inbox are not implemented yet; P0.4 remains unapproved.
+**Observed product state:** P0.2 is complete. P0.3 is approved/incomplete; P0.3-A's persistent-Compose prerequisite passed on the host on 2026-10-17. Kafka/relay/inbox are not implemented yet; P0.4 remains unapproved.
 
-**Current first unfinished task:** rerun the same-JAR/owner-network rehearsal after the focused health matcher fix. Latest host run bootstrapped four databases and actually migrated/started Core in 11.418 seconds, but the bare-UP-only probe timed out; Actuator also returns group names. The repaired bounded matcher accepts optional groups while still requiring root UP/HTTP 200 and rejecting duplicate/nested status/details/malformed bodies. 23 probe checks, 19 helper checks and static configuration pass locally; the full repaired host run, other owners/SQL/retained-volume assertions remain pending. Isolation/timeouts/business source/migrations are unchanged. Preserve all failed-run volumes/evidence; no rebuild, cleanup or unrelated-project startup is needed.
+**Current first unfinished task:** minimum pinned Kafka infrastructure/topic provisioning, with isolated readiness and a real host producer/consumer smoke check; source/tenant trust must be enforced or intake blocked. The persistence prerequisite is now proven: project `aegisflow-p03-verify-93dcfedb932a45a1b5d28241d4c5098b`, Passed=true/Stage=complete, eight health gates/eight owner SQL groups/24 sibling-login denials and four unchanged sentinel/history snapshots after repeated bootstrap. Preserve all volumes/evidence. No persistence rerun, rebuild, cleanup or owner action is required now.
 
-**Final P0.2 result:** the full clean reactor succeeded at 19:45:47 IST (2:17), 38 default + 29 real PostgreSQL tests with zero failures/errors/skips, followed by four packaged foundation JARs returning HTTP 200/UP and a zero-issue documentation check. The report counter's incomplete glob is corrected using all four real XML reports; no business code changed after verification. Persistent Compose bootstrap remains a separate unexecuted rehearsal. Earlier dated results below are historical.
+**Final P0.2 result:** the full clean reactor succeeded at 19:45:47 IST (2:17), 38 default + 29 real PostgreSQL tests with zero failures/errors/skips, followed by four packaged foundation JARs returning HTTP 200/UP and a zero-issue documentation check. The report counter's incomplete glob is corrected using all four real XML reports; no business code changed after verification. The separate persistent-Compose prerequisite subsequently passed on 2026-10-17. Earlier dated failures below remain historical.
 
 **Latest 2026-10-16 result:** six Core default tests passed and PostgreSQL started; JDBC bootstrap then failed on the host legacy timezone alias. Both Maven test JVMs now explicitly use UTC, and two image/timezone regression tests passed. Rerun the same host persistence gate; real migrations/atomicity remain pending.
 
@@ -27,7 +27,7 @@ Four service-owned PostgreSQL configurations and a digest-pinned Compose definit
 
 Four V1 histories, separate migration/runtime roles, and minimal internal simulator state/replay/outbox operations are implemented. The Java 21 full clean reactor and real PostgreSQL migration/atomicity/replay/concurrency/constraint/locking/privilege suites passed with zero skips. Packaged foundation startup and documentation checks passed. Do not repeat completed implementation or architectural review. Earlier sandbox failures remain recorded separately from host successes.
 
-The role design is implemented in bootstrap SQL/Compose/profile configuration; the real PostgreSQL suites exercise privileges. Core receives only its own runtime/Flyway credentials. Local credentials remain ignored environment configuration. Persistent Compose bootstrap remains unexecuted; its helper/existing-volume behavior is not inferred from Testcontainers. All outbox events remain durable pending publication intents; no Kafka delivery is claimed.
+The role design is implemented in bootstrap SQL/Compose/profile configuration; the real PostgreSQL suites exercise privileges. Core receives only its own runtime/Flyway credentials. Local credentials remain ignored environment configuration. Persistent Compose bootstrap/helper/existing-volume behavior was separately verified on the host on 2026-10-17, not inferred from Testcontainers. All outbox events remain durable pending publication intents; no Kafka delivery is claimed.
 
 The final integrated root invocation passed 38 default and 29 PostgreSQL tests. Compose parsing and script syntax also passed locally. The outer cross-PowerShell quoted command emitted an initial `Stop` error; the actual build/startup/docs checks nevertheless completed successfully. Future instructions avoid nested command quoting. See evidence/handoff for the exact distinction and reporting correction.
 
@@ -37,8 +37,8 @@ The single highest-value outcome is one reproducible flow from a simulator's com
 
 Priority order:
 
-1. **P0.3-A now:** run the isolated fresh/restarted-volume Compose bootstrap rehearsal on the normal host. Sandbox Docker pipe is denied; static/helper checks must not be called a database pass.
-2. After persistence rehearsal passes, introduce minimal single-broker Kafka/topic provisioning with source/tenant trust explicitly enforced or untrusted input blocked.
+1. **P0.3-A prerequisite complete:** real isolated fresh/restarted-volume Compose bootstrap/roles/JAR/history checks passed on the owner's host, 2026-10-17. Do not repeat merely to resume; coding-session pipe denial is separate.
+2. **P0.3-A next:** introduce minimal single-broker Kafka/topic provisioning with source/tenant trust explicitly enforced or untrusted input blocked, then real readiness/producer/consumer smoke evidence.
 3. **P0.3-B:** bounded claim/lease/fencing outbox relay, broker acknowledgement then fenced status update, stable IDs and bounded retries.
 4. **P0.3-C:** existing Core `eventing` validation, durable inbox uniqueness and technical quarantine; offset acknowledgement after committed acceptance/quarantine only. No projection/invariant engine yet.
 5. **P0.3-D:** real end-to-end/failure tests, metrics where feasible, learning/evidence/handoff and final local commit; then stop for P0.4 approval.

@@ -4,7 +4,7 @@
 
 ## 0. Implemented P0.2 subset
 
-P0.3-A does not modify these migrations or add business/inbox tables. Its isolated Compose-only `scripts/db/persistence-rehearsal.sql` creates a test-harness `p03_rehearsal` schema/sentinel in fresh verification databases; it is not applied to the normal development project. The script compares this committed sentinel and the actual Flyway history after stopping/recreating containers with the same volumes. Actual execution is pending normal host access; static/helper passes do not establish persistence.
+P0.3-A does not modify these migrations or add business/inbox tables. Its isolated Compose-only `scripts/db/persistence-rehearsal.sql` creates a test-harness `p03_rehearsal` schema/sentinel in fresh verification databases; it is not applied to the normal development project. The script compares this committed sentinel and the actual Flyway history after stopping/recreating containers with the same volumes. Actual host execution passed on 2026-10-17: four fresh V1 applications, second-start validation without another migration and unchanged sentinel/full history for all four owners. This operational evidence is distinct from static/helper checks and does not add Kafka/inbox behavior.
 
 Each deployable owns one `aegisflow` schema in its separate PostgreSQL database and its own V1/Flyway history. Core V1 establishes the schema/role boundary only. Order V1 creates `orders`, `order_lines`, `idempotency_record`, `outbox_event`; Payment V1 creates `payments`, `idempotency_record`, `outbox_event`; Warehouse V1 creates `reservations`, `reservation_lines`, `idempotency_record`, `outbox_event`. Exact files are each deployable's `src/main/resources/db/migration/V1__*.sql`.
 

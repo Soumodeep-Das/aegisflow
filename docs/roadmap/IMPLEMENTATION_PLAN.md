@@ -1,7 +1,7 @@
 # Implementation plan
 
 **Planning horizon:** preserve a useful, teachable repository even if assisted coding stops after 6–7 days.
-**Current authorization:** P0.2 verified; P0.3 explicitly approved on 2026-10-16, in progress at isolated Compose persistence rehearsal (A), then Kafka, source-owned relay (B), Core inbox (C), and real failure/end-to-end verification (D).
+**Current authorization:** P0.2 verified; P0.3 explicitly approved on 2026-10-16. Isolated Compose persistence prerequisite passed on the host on 2026-10-17; next minimum Kafka infrastructure (A), source-owned relay (B), Core inbox (C), and real failure/end-to-end verification (D).
 **Next approval gate:** stop after P0.3; P0.4 and product P1 recovery are not authorized. New remote pushes/deployments are not authorized.
 
 ## Delivery principles
@@ -86,7 +86,7 @@ P0.1 acceptance evidence:
 
 ### P0.2 Service-owned persistence and outbox
 
-**Implemented and verified, 2026-10-16.** Four independent V1 migrations, role bootstrap/profile separation, and internal Order-create/initial Payment-outcome/initial Warehouse-outcome transactions are present. The final clean root host reactor passed 38 default tests and 29 PostgreSQL ITs with zero failures/errors/skips, followed by four packaged foundation health checks and zero-issue docs validation. The report aggregation correction is checked independently against all four actual XML reports. [ADR 0008](../adr/0008-persistence-primitives-and-database-roles.md) freezes the minimal schema, identifiers, money, version, and digest choices. Persistent Compose bootstrap remains an unexecuted rehearsal limitation. Preserve the implementation; no repeat build is required just to record completion. Stop before P0.3 approval.
+**Implemented and verified, 2026-10-16.** Four independent V1 migrations, role bootstrap/profile separation, and internal Order-create/initial Payment-outcome/initial Warehouse-outcome transactions are present. The final clean root host reactor passed 38 default tests and 29 PostgreSQL ITs with zero failures/errors/skips, followed by four packaged foundation health checks and zero-issue docs validation. The report aggregation correction is checked independently against all four actual XML reports. [ADR 0008](../adr/0008-persistence-primitives-and-database-roles.md) freezes the minimal schema, identifiers, money, version, and digest choices. Preserve the implementation; no repeat build is required to record completion. P0.3 was subsequently approved; its separate persistent-Compose prerequisite passed on 2026-10-17. Continue only its unfinished tasks; P0.4 requires approval.
 
 Implement the smallest state transitions needed for the event choreography in SYSTEM_ARCHITECTURE.md. Each simulator gets its own Flyway history and PostgreSQL database/schema ownership. Business-state mutation and resulting outbox row commit together; consumed-event inbox joins this transaction when consumers arrive in P0.3. Publication will be asynchronous and replayable; actual Kafka processing remains P0.3, not P0.2.
 
@@ -100,7 +100,7 @@ Acceptance:
 
 ### P0.3 Kafka delivery and control-plane inbox
 
-**Approved; incomplete.** Begin with the existing persistent-Compose bootstrap rehearsal, then provision the minimum Kafka infrastructure. The current coding session cannot access the Docker engine; host-only results must be reported separately from static/helper checks. Preserve the existing P0.2 migrations and application code.
+**Approved; incomplete.** The persistent-Compose bootstrap prerequisite passed on the owner's host on 2026-10-17: eight postgres-profile health gates, owner role/SQL boundaries and unchanged retained-volume sentinel/full history. Next provision minimum Kafka infrastructure and verify real broker/topic readiness/producer-consumer smoke behavior. The coding session still cannot access Docker; host results remain distinct from static/helper checks. Preserve P0.2 migrations/application code; do not repeat the completed rehearsal merely to resume.
 
 Use `(tenantId, businessTransactionId)` as the Kafka key for per-transaction partition ordering, while remaining correct when producers or topics create reordering. Reuse the ten-module Core's existing `eventing` package. Persist validated accepted inbox receipt in one Core transaction, deduplicated by `(tenantId, sourceSystem, eventId)` and canonical content. The owner's explicit P0.3 request supersedes the older projection wording here: correlation/projection/detection stays P0.4. When those consumers arrive, their derived effects must join the relevant local inbox transaction, not a best-effort later dual write.
 

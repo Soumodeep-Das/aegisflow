@@ -1,5 +1,13 @@
 # Development journal
 
+## 2026-10-17 — close the successful persistent-Compose prerequisite
+
+Resumed clean `main` at `4c6585e` (ahead3), directly from the owner's successful host transcript, without repeating completed inspections/builds. Actual report for `aegisflow-p03-verify-93dcfedb932a45a1b5d28241d4c5098b` is Passed=true/Stage=complete. Eight postgres-profile application HTTP 200/UP gates, eight owner SQL boundary groups, 24 sibling-credential denial attempts, two complete role bootstraps and four identical sentinel/full-history comparisons all passed. Logs show four fresh V1 applications and second-start validation without another migration. Counts are assertion groups/attempts, not new JUnit tests. No numeric process exit/duration was supplied; evidence includes actual artifact hashes, not invented timings.
+
+This closes P0.3-A's persistence prerequisite, not all of P0.3-A/P0.3. Updated current README/architecture, learning guide, limitations, roadmap/plan, evidence and handoff; older failures/results remain preserved. Independent read-only evidence review confirmed counts/logs without infrastructure reruns. No application/configuration/SQL edits, Maven/Docker rerun, secrets, push/deployment or volume deletion. Stop at the requested meaningful local checkpoint. Next authorized task is minimum pinned Kafka infrastructure/topic readiness plus real host smoke evidence and a fail-closed source/tenant provenance plan; relay/inbox/fault suites follow. Owner needs no command now and should keep retained evidence. P0.4 remains unapproved.
+
+Closing docs check at 05:43:44Z exited 0 (29 Markdown / 20 required / 111 links / 7 Mermaid / 1 JSON / 16 scenarios / 25 Q&As / 8 ADRs / zero issues); whitespace passed. Reconciled current stale rehearsal limitations while preserving previous failure chronology. Checkpoint is documentation only; Git resolves the closing hash/status without amending source history.
+
 ## 2026-10-17 — repair the rehearsal health matcher, not Core startup
 
 Resumed clean `main` at `99b908f`, ahead2, directly from the owner's new timeout. Read only relevant surviving report/log/config/helper, not completed P0.2 audits. Project `aegisflow-p03-verify-ef3015775b284312a6be9d62b6176fb7` bootstrapped all four databases; Core applied V1 and started in 11.418 seconds, then opened its runtime DB connection during probing. Nevertheless the strict bare-UP matcher timed out at 120 seconds; full result remains false and later owner/SQL/restart gates were not reached. No volumes deleted.
