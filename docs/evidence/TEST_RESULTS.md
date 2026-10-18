@@ -1,5 +1,31 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-19 — Order host gate passed on `b0f1a16`
+
+Owner ran from the existing repository, with `JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot`:
+
+```powershell
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-order-relay.ps1
+```
+
+The script ran Order-only Java21/Maven3.10 `clean verify -Pinfrastructure-tests` using the workspace Maven cache. **BUILD SUCCESS**, finished2026-10-19T02:48:14+05:30 / 2026-10-18T21:18:14Z, reported duration1:00, Docker29.8.2, Testcontainers2.0.5, PostgreSQL18.6 with the existing image pin. Final verifier PASS; no numeric outer-shell exit code supplied. Metadata401 warnings from Flyway community/Redgate repositories were nonfatal; no credentials or dependency changes were needed.
+
+Independently checked all saved XML suite counts under Order `target/surefire-reports` and `target/failsafe-reports` without rerunning anything:
+
+| Suite | Passed | Failures / errors / skipped |
+|---|---:|---|
+| OrderSimulatorApplicationTests | 2 | 0 / 0 / 0 |
+| OrderSimulatorArchitectureTest | 1 | 0 / 0 / 0 |
+| KafkaOutboxPublisherTests | 3 | 0 / 0 / 0 |
+| OrderOutboxRelayTests | 15 | 0 / 0 / 0 |
+| OrderPersistenceTests | 6 | 0 / 0 / 0 |
+| OrderOutboxRelayIT | 9 | 0 / 0 / 0 |
+| OrderPersistenceIT | 8 | 0 / 0 / 0 |
+
+Total **44 passed:27 default +17 real PostgreSQL**. Both independent test databases applied V1; foundation and postgres HTTP checks passed. This supersedes the earlier environment-limited Order result, preserving its failures/skips below. Relay SQL/fencing/concurrency and the synthetic-publisher ack/crash replay passed on PostgreSQL; it is **not actual Kafka relay delivery**, enabled-relay profile verification, a full root reactor, Payment/Warehouse relay or Core inbox acceptance. Real DB→Kafka outage/ack-crash tests are the next unfinished gate. No existing Compose storage was targeted; no runtime test repeated to record this evidence.
+
+Documentation-only closing check at2026-10-18T21:21:33Z exited0: Markdown=30 / Required=20 / LocalLinks=123 / Mermaid=7 / JSON=1 / Scenarios=16 / InterviewQA=35 / ADRs=9 / Issues=0. Whitespace passed; no source/configuration changes or runtime rerun.
+
 ## 2026-10-19 — Order-only relay source/unit checkpoint, PostgreSQL gate pending
 
 Source starts from `3bd9189`, with interrupted Order-only edits preserved. Java21 Temurin21.0.12.1, Maven3.10; workspace `.cache/maven-repository`, `TEMP`/`TMP` set to repository `.cache/tmp`. No changes to V1, other applications or Compose. Commands below ran from the existing repository; `M` abbreviates `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl simulators/order-service`.

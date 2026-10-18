@@ -1,6 +1,6 @@
 # AegisFlow System Architecture
 
-**Status:** P0.2 and P0.3-A's persistence/Kafka infrastructure gates are host-verified. P0.3-B adds an Order-only opt-in relay source/unit slice; its real PostgreSQL and DB→Kafka gates remain pending. Payment/Warehouse relays and Core inbox remain unwritten. P0.3 is incomplete; P0.4 is not approved.
+**Status:** P0.2 and P0.3-A infrastructure are host-verified. P0.3-B Order-only relay passed27default+17PostgreSQL tests on2026-10-19. Actual DB→Kafka relay delivery/faults and enabled-profile startup remain next; Payment/Warehouse relays and Core inbox are unwritten. P0.3 is incomplete; P0.4 is not approved.
 **Audience:** implementers, reviewers, and students continuing without the original conversation.
 
 ## 1. Purpose and scope

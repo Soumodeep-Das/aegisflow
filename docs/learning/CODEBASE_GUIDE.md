@@ -2,7 +2,7 @@
 
 ## Current P0.3-B slice: Order outbox relay (2026-10-19)
 
-This is source/unit-verified, not a completed P0.3 delivery flow. Existing PostgreSQL/Kafka infrastructure gates remain passed. The new Order module compiled/packaged and25selected tests passed (18new); nine new PostgreSQL relay ITs skipped here because Docker access was denied. The full Order default attempt had two HTTP-class initialization errors from denied loopback. Run `scripts/verify-order-relay.ps1` on the host next; it rejects skips. Payment/Warehouse relays and the Core inbox are still unwritten. Earlier sections below describe preserved checkpoints.
+The Order host gate now passes on source `b0f1a16`: **27 default +17 real PostgreSQL tests**, zero failures/errors/skips, including all nine relay ITs. Saved XML reports independently confirm the owner's run finished2026-10-19 at02:48:14IST. Earlier sandbox loopback errors/skips remain in evidence; no rerun is needed. Actual Order DB→Kafka delivery/outage/ack-crash testing and enabled-profile startup are next, followed by Payment/Warehouse relays and Core inbox. This is not a completed P0.3 delivery flow.
 
 Actual new files under `simulators/order-service/src/main/java/com/aegisflow/simulator/order/persistence/`:
 
@@ -24,7 +24,7 @@ Kafka uses `acks=all`, idempotence,5s request/max-block and15s delivery limits, 
 
 Activation is deliberately separate from ordinary postgres startup. Only when ready for a synthetic local trial, supply `ORDER_OUTBOX_RELAY_ENABLED=true`, `ORDER_KAFKA_BOOTSTRAP_SERVERS` (`127.0.0.1:<port>` or Docker `kafka:9092`), the Order-only `KAFKA_ORDER_PASSWORD`, and `ORDER_OUTBOX_ALLOWED_TENANTS` (comma-separated exact IDs, no padding). `ORDER_OUTBOX_MAX_PER_POLL` defaults10 and is bounded1..100. Keep that process's database credentials Order-only; never load broker/admin/Core/sibling credentials into it. Configure every intended tenant before enabling: excluded rows become FAILED. This application startup path has not yet passed a real DB/Kafka test. Host-to-base internal PostgreSQL networking remains a known limitation; do not weaken networks to work around it.
 
-Debugging exercise (disposable test DB only): run `expiredClaimIsFencedBeforeAndAfterReclaimWithSameImmutableEvent` in `OrderOutboxRelayIT`. The test expires the lease using DB time without sleeps, proves old completion affects zero rows, then reclaims the same immutable ID/content with a higher fence. Next inspect `acknowledgedSendThenCompletionCrashReplaysSameIdentityOutsideDatabaseTransaction`: after its injected completion failure, the row remains pending; reclaim sends the same key/envelope again, then marks it published. This is a written real-DB/synthetic-publisher exercise, pending host execution—not observed real Kafka duplicate handling.
+Debugging exercise (disposable test DB only): inspect `expiredClaimIsFencedBeforeAndAfterReclaimWithSameImmutableEvent` in `OrderOutboxRelayIT`. The test expires the lease using DB time without sleeps, proves old completion affects zero rows, then reclaims the same immutable ID/content with a higher fence. Next inspect `acknowledgedSendThenCompletionCrashReplaysSameIdentityOutsideDatabaseTransaction`: after injected completion failure, the row remains pending; reclaim sends the same key/envelope again, then marks it published. Both passed on real PostgreSQL in the owner's2026-10-19 run. The publisher is synthetic: this is not observed real Kafka duplicate handling.
 
 ### Q31. Why use a lease and fencing token rather than a boolean claimed flag?
 

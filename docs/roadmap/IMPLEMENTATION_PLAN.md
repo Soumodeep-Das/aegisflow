@@ -1,7 +1,7 @@
 # Implementation plan
 
 **Planning horizon:** preserve a useful, teachable repository even if assisted coding stops after 6–7 days.
-**Current authorization:** P0.2 verified; P0.3 explicitly approved on 2026-10-16. P0.3-A persistence/Kafka gates passed; evidence at `3bd9189`. P0.3-B has an Order-only opt-in source/unit checkpoint; real PostgreSQL/relay-delivery verification and other owners remain. Next: finish B, Core inbox C, real failure/end-to-end D.
+**Current authorization:** P0.2 verified; P0.3 approved. P0.3-A infrastructure gates passed; Order source `b0f1a16` subsequently passed27default+17PostgreSQL tests on the owner's host. Next: real Order DB→Kafka fault/startup tests, remaining source relays B, Core inbox C, final end-to-end D.
 **Next approval gate:** stop after P0.3; P0.4 and product P1 recovery are not authorized. New remote pushes/deployments are not authorized.
 
 ## Delivery principles
@@ -100,7 +100,7 @@ Acceptance:
 
 ### P0.3 Kafka delivery and control-plane inbox
 
-**Approved; incomplete.** P0.3-A gates passed: persistent Compose at `1043a51`, Kafka source `0b7a707`/evidence `3bd9189`. The Order-only relay is now implemented behind explicit opt-in, with25selected unit/architecture passes and nine PostgreSQL ITs skipped here. Run `verify-order-relay.ps1` on the host, then actual Order DB→Kafka fault tests before Payment/Warehouse equivalents. Core inbox is unwritten. Local SASL/PLAIN has no TLS. Preserve existing V1 migrations and infrastructure volumes; do not repeat completed setup gates merely to resume.
+**Approved; incomplete.** P0.3-A gates passed. Order-only source `b0f1a16` passed its2026-10-19 host gate:27default+17PostgreSQL tests with zero failures/errors/skips. Next add/execute actual Order DB→Kafka outage/ack-crash and enabled-profile tests before Payment/Warehouse equivalents. Core inbox is unwritten. Local SASL/PLAIN has no TLS. Preserve V1 migrations, volumes and evidence; no completed infrastructure/Order database rerun is needed merely to resume.
 
 Use `(tenantId, businessTransactionId)` as the Kafka key for per-transaction partition ordering, while remaining correct when producers or topics create reordering. Reuse the ten-module Core's existing `eventing` package. Persist validated accepted inbox receipt in one Core transaction, deduplicated by `(tenantId, sourceSystem, eventId)` and canonical content. The owner's explicit P0.3 request supersedes the older projection wording here: correlation/projection/detection stays P0.4. When those consumers arrive, their derived effects must join the relevant local inbox transaction, not a best-effort later dual write.
 

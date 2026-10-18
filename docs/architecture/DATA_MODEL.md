@@ -2,7 +2,7 @@
 
 **Status:** P0.2 implemented subset verified on real PostgreSQL at the 2026-10-16 host gate. The logical future model below is preserved. Only the implemented subset in section 0 currently has migrations/code.
 
-**P0.3-B Order-only update, 2026-10-19:** no V1 is modified. `OrderOutboxStore` now uses its existing publication/lease/fencing columns with one-row SKIP LOCKED claims in separate short transactions. Database clock sets expiry/retry/publication time; completion requires tenant/outbox/owner/current token/PENDING/unexpired lease. Attempts increase on claims (saturating at integer max); fencing increases on every reclaim. Completion clears lease fields. Payload/identity/hash and business-state writes are untouched. Nine new real PostgreSQL tests are written but skipped here; source/unit results do not prove SQL execution. Other owners and inbox tables remain future work.
+**P0.3-B Order-only update, 2026-10-19:** no V1 is modified. `OrderOutboxStore` uses existing publication/lease/fencing columns with one-row SKIP LOCKED claims in separate short transactions. DB time sets expiry/retry/publication; completion requires tenant/outbox/owner/current token/PENDING/live lease. Attempts increase (saturating at integer max), fencing increases per reclaim, completion clears lease fields, and immutable intent is unchanged. All nine relay PostgreSQL tests now pass on the owner's host, including concurrency/fencing and synthetic-publisher ack/crash replay. Actual Kafka relay delivery, other owners and inbox tables remain future work.
 
 ## 0. Implemented P0.2 subset
 

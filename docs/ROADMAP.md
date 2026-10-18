@@ -1,9 +1,9 @@
 # Prioritized roadmap
 
 **Last reviewed:** 2026-10-19
-**Observed product state:** P0.2 and P0.3-A infrastructure are complete; successful Kafka host evidence is committed at `3bd9189`. P0.3-B now has an opt-in Order relay source slice:25selected unit/architecture tests passed, nine PostgreSQL relay ITs compiled but skipped here. Real Order DB→Kafka delivery, Payment/Warehouse relays and Core inbox remain unfinished. P0.3 is incomplete; P0.4 remains unapproved.
+**Observed product state:** P0.2 and P0.3-A infrastructure are complete. P0.3-B Order source `b0f1a16` passed the2026-10-19 host gate:27default +17PostgreSQL tests, zero failures/errors/skips. Real Order DB→Kafka delivery/faults, Payment/Warehouse relays and Core inbox remain unfinished. P0.3 is incomplete; P0.4 remains unapproved.
 
-**Current first unfinished task:** run `scripts/verify-order-relay.ps1` on the normal Java21/Docker-capable host to verify the new Order claim/lease/fencing path and its regressions. It targets Order only and rejects skipped ITs. Then add/run real Order DB→Kafka outage/ack-crash tests before extending the pattern to Payment/Warehouse; C durable Core inbox/quarantine follows with enforced source/tenant binding. Preserve existing infrastructure volumes/evidence; do not repeat completed setup rehearsals merely to resume.
+**Current first unfinished task:** add/run real Order DB→Kafka outage/ack-crash tests and enabled-profile startup before extending the pattern to Payment/Warehouse. The Order PostgreSQL claim/lease/fencing/regression gate has passed; its crash publisher was a test double. C durable Core inbox/quarantine follows with enforced source/tenant binding. Preserve volumes/evidence; do not repeat completed infrastructure or Order database gates merely to resume.
 
 **Final P0.2 result:** the full clean reactor succeeded at 19:45:47 IST (2:17), 38 default + 29 real PostgreSQL tests with zero failures/errors/skips, followed by four packaged foundation JARs returning HTTP 200/UP and a zero-issue documentation check. The report counter's incomplete glob is corrected using all four real XML reports; no business code changed after verification. The separate persistent-Compose prerequisite subsequently passed on 2026-10-17. Earlier dated failures below remain historical.
 
@@ -39,7 +39,7 @@ Priority order:
 
 1. **P0.3-A prerequisite complete:** real isolated fresh/restarted-volume Compose bootstrap/roles/JAR/history checks passed on the owner's host, 2026-10-17. Do not repeat merely to resume; coding-session pipe denial is separate.
 2. **P0.3-A complete:** the real Kafka host gate passed on 2026-10-17, including readiness, provisioning twice, both listener routes and explicit auth/ACL rejection. SASL/PLAIN is local-development-only and unencrypted; tenant provenance still needs explicit enforcement before intake. Ordinary persistent-stack restart and business crash/retry tests are not covered by this smoke.
-3. **P0.3-B in progress:** Order-only bounded claim/lease/fencing and ack-before-published source is written;25selected tests pass, but nine PostgreSQL ITs skipped and real relay delivery is unverified. Complete the targeted host gate and real Kafka fault tests, then extend to Payment/Warehouse. Do not infer completion from smoke-client delivery.
+3. **P0.3-B in progress:** Order-only source and database gate passed27default+17PostgreSQL tests on the host. Real DB→Kafka fault tests and enabled-profile startup are next, then Payment/Warehouse equivalents. Do not infer business delivery from the standalone infrastructure smoke or the acknowledged test publisher.
 4. **P0.3-C:** existing Core `eventing` validation, durable inbox uniqueness and technical quarantine; offset acknowledgement after committed acceptance/quarantine only. No projection/invariant engine yet.
 5. **P0.3-D:** real end-to-end/failure tests, metrics where feasible, learning/evidence/handoff and final local commit; then stop for P0.4 approval.
 6. **Unapproved P0.4:** correlation/projection, one clock-driven invariant and durable incident/evidence timeline.

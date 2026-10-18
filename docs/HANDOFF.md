@@ -1,4 +1,18 @@
-# Handoff — P0.3-B Order relay source checkpoint; real owner verification next
+# Handoff — Order relay PostgreSQL host gate passed; real Kafka relay tests next
+
+**Latest checkpoint:** 2026-10-18T21:19:32Z (2026-10-19 IST), Codex host-evidence continuation. Entry `b0f1a16`, clean `main`, ahead7. This following local documentation-only commit records the successful host run; resolve closing hash/status with `git rev-parse HEAD` and `git status --short --branch`. No source/configuration/migration changes, rerun, push/deployment or volume deletion.
+
+**Actually verified on the owner's host:** the existing bundled-PowerShell7 `-File .\scripts\verify-order-relay.ps1` command, Java21.0.12.1/Docker29.8.2, finished BUILD SUCCESS at 2026-10-19T02:48:14+05:30 (21:18:14Z), Maven duration1:00. All **27 default tests + 17 real PostgreSQL tests passed**, zero failures/errors/skips. Independently read all seven saved Surefire/Failsafe XML reports: default2+1+3+15+6; relay IT9 and existing persistence IT8. Final verifier PASS confirms its skip gate. Numeric outer-shell exit code was not printed; no invented code. Nonfatal repository metadata401 warnings did not prevent dependency resolution/build/tests; no private repository credentials were added.
+
+**What that proves:** actual Order claims, concurrency/SKIP LOCKED, DB-clock lease expiry/reclaim, tenant/owner/fence completion checks, retry/terminal metadata, immutable identity, transaction boundaries, and simulated ack/completion-crash replay now pass on real PostgreSQL. Existing Order atomicity/replay/constraint/privilege and foundation HTTP regressions also pass. The crash test still uses an acknowledged test publisher, not Kafka. Earlier sandbox failures/skips remain historical; the host result does not change session permissions.
+
+**Single next task:** add and execute a real Order database→Kafka relay integration/fault test using the existing pinned infrastructure and Order-only credentials. Prove actual publication/offset identity, committed intent during broker outage, bounded retry/eventual delivery, and duplicate stable-ID delivery after broker ack/local completion failure. Include enabled-profile configuration/startup coverage. Preserve existing databases/volumes and V1s; do not repeat completed infrastructure or Order PostgreSQL gates merely to resume. Then extend the verified pattern to Payment/Warehouse and implement Core `eventing` durable inbox/quarantine with trusted source/tenant binding and post-DB-commit offsets. Full root reactor/final P0.3 end-to-end acceptance still remains. P0.4/recovery/AI remain unapproved.
+
+**Owner action now:** none; keep Docker Desktop available for later new tests. No need to rerun the completed verifier or supply credentials/tokens. This closes the Order database gate, not P0.3-B or all P0.3. Older snapshots below are retained history and are superseded by this result.
+
+**Closing documentation check:** 2026-10-18T21:21:33Z, bundled PowerShell7 `scripts/verify-docs.ps1` exited0:30 Markdown /20 required /123 local links /7 Mermaid /1 JSON /16 scenarios /35 Q&As /9 ADRs /0 issues. Whitespace passed. Only documentation changed; no application or infrastructure test was rerun. The following local commit records this evidence; inspect Git for its closing hash/clean status.
+
+---
 
 **Current checkpoint:** 2026-10-18T20:52:38Z (2026-10-19 IST), Codex continuation from `3bd9189` on `main`, ahead6 on entry. The following local commit contains the Order-only opt-in relay slice and continuity docs; resolve its closing hash/status with `git rev-parse HEAD` and `git status --short --branch`. No push/deployment, infrastructure rerun, volume deletion or V1 migration modification. The earlier Kafka infrastructure gate remains passed.
 

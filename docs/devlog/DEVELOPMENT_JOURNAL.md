@@ -1,5 +1,13 @@
 # Development journal
 
+## 2026-10-19 — close the successful Order PostgreSQL host gate
+
+Owner's `verify-order-relay.ps1` run on `b0f1a16` passed clean Order build plus27default and17real PostgreSQL tests, zero failures/errors/skips; Maven finished02:48:14IST, duration1:00. Independently inspected all seven current XML reports and confirmed counts. Docker29.8.2, Java21.0.12.1; prior engine/loopback failures remain historical. Two repository metadata401 warnings were nonfatal, not a reason to add credentials. The nine relay ITs now prove actual PostgreSQL concurrency/lease/fencing and simulated ack/completion-crash behavior, not real Kafka publication.
+
+Entry clean `main` at `b0f1a16`, ahead7. Updated evidence/current status/learning/handoff without source edits, repeated tests, volume deletion or push/deployment. No owner action needed now. Highest-priority next work: actual Order DB→Kafka integration with broker outage, ack-crash stable-ID replay and enabled-profile startup, then Payment/Warehouse relay and Core durable inbox. P0.3 remains incomplete; P0.4/AI/recovery remain unapproved. Preserve the completed host gates and don't rerun them merely to resume.
+
+Closing documentation check at21:21:33Z passed with30 Markdown /20 required /123 links /7 Mermaid /1 JSON /16 scenarios /35 Q&As /9 ADRs /0 issues; whitespace passed. Commit only this evidence/status reconciliation locally; no application code was changed.
+
 ## 2026-10-19 — resume and checkpoint the first Order relay slice
 
 Continued from local evidence commit `3bd9189`, preserving interrupted Order source and the agent-written PostgreSQL test file; no infrastructure audit/rehearsal repeated. Existing V1 columns/grants already support claims, so no migration rewrite or broadened database access. Implemented opt-in Order-only relay: one-row SKIP LOCKED/DB-clock leases, short independent transactions, fenced completion, stored canonical identity/hash preflight, explicit tenant allowlist, fixed Order credential/topic, bounded send/ack waits and1..60s retry backoff. Invalid/disallowed intent remains FAILED and retained. Stable event IDs survive retries; stale-worker broker duplicates remain possible and require later inbox idempotency.
