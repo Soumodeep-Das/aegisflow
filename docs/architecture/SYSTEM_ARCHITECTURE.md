@@ -1,9 +1,11 @@
 # AegisFlow System Architecture
 
-**Status:** P0.2 and P0.3-A's persistence/Kafka infrastructure gates are verified on the owner's host. Kafka's two listener routes, topics, delivery and selected authentication/ACL denials passed on 2026-10-17. Relay/Core inbox remain unimplemented. P0.3 is incomplete; P0.4 is not approved.
+**Status:** P0.2 and P0.3-A's persistence/Kafka infrastructure gates are host-verified. P0.3-B adds an Order-only opt-in relay source/unit slice; its real PostgreSQL and DB→Kafka gates remain pending. Payment/Warehouse relays and Core inbox remain unwritten. P0.3 is incomplete; P0.4 is not approved.
 **Audience:** implementers, reviewers, and students continuing without the original conversation.
 
 ## 1. Purpose and scope
+
+Order's new `persistence/OrderOutboxStore` commits a bounded DB-clock lease/fence claim before `OrderOutboxRelay` invokes `KafkaOutboxPublisher`; only a subsequent acknowledgement permits a fenced PUBLISHED update. No database connection/lock is held for Kafka. Order-only identity/topic and explicit tenant allowlist are configured under `aegisflow.order.relay`; opt-in defaults false. Failure preserves pending intent with bounded retry rate or retained FAILED for invalid/unconfigured-tenant input. Canonical JSONB representation is restored before existing hash verification. Source details and remaining checks are in the guide; actual relay delivery is not inferred from the passed standalone smoke.
 
 Kafka infrastructure is defined separately in `compose.kafka.yaml`, with the existing project name, its own network and data volume, and no database network attachment. Host clients use authenticated `127.0.0.1:19092`; Docker clients use `kafka:9092`; the authenticated controller listener is unpublished. `scripts/kafka/` provisions source topics/ACLs; `scripts/verify-kafka.ps1` exercises both client routes with `tools/kafka-smoke`. The real host gate passed for project `aegisflow-kafka-verify-ff292985977442009ee4e3fd306c28a6`; coding-session engine access remains restricted. [ADR 0009](../adr/0009-local-kafka-listeners-and-source-topics.md) records RF1/seven-day retention, plaintext synthetic-local transport and topic/tenant trust boundaries. No application relay or inbox is connected yet. The next task is the relay, not another persistence/Kafka setup rehearsal.
 

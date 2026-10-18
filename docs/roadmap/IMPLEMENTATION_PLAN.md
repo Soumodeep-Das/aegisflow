@@ -1,7 +1,7 @@
 # Implementation plan
 
 **Planning horizon:** preserve a useful, teachable repository even if assisted coding stops after 6–7 days.
-**Current authorization:** P0.2 verified; P0.3 explicitly approved on 2026-10-16. P0.3-A's isolated Compose persistence and Kafka infrastructure gates passed on the host on 2026-10-17 (source checkpoints `1043a51` and `0b7a707`). Next: source-owned relay (B), Core inbox (C), and real failure/end-to-end verification (D).
+**Current authorization:** P0.2 verified; P0.3 explicitly approved on 2026-10-16. P0.3-A persistence/Kafka gates passed; evidence at `3bd9189`. P0.3-B has an Order-only opt-in source/unit checkpoint; real PostgreSQL/relay-delivery verification and other owners remain. Next: finish B, Core inbox C, real failure/end-to-end D.
 **Next approval gate:** stop after P0.3; P0.4 and product P1 recovery are not authorized. New remote pushes/deployments are not authorized.
 
 ## Delivery principles
@@ -100,7 +100,7 @@ Acceptance:
 
 ### P0.3 Kafka delivery and control-plane inbox
 
-**Approved; incomplete.** Persistent-Compose verification passed at `1043a51`; the owner's Kafka gate on source `0b7a707` subsequently passed: authenticated readiness, provisioning twice, both advertised listeners, topic settings, three round trips/offset commits per route and selected credential/write denials. Saved report `aegisflow-kafka-verify-ff292985977442009ee4e3fd306c28a6` is Passed=true/Stage=complete. The earlier coding-session pipe failure remains historical. Local SASL/PLAIN has no TLS. Relay and Core inbox remain unimplemented and are next. Preserve existing V1 migrations and infrastructure volumes; do not repeat completed setup gates merely to resume.
+**Approved; incomplete.** P0.3-A gates passed: persistent Compose at `1043a51`, Kafka source `0b7a707`/evidence `3bd9189`. The Order-only relay is now implemented behind explicit opt-in, with25selected unit/architecture passes and nine PostgreSQL ITs skipped here. Run `verify-order-relay.ps1` on the host, then actual Order DB→Kafka fault tests before Payment/Warehouse equivalents. Core inbox is unwritten. Local SASL/PLAIN has no TLS. Preserve existing V1 migrations and infrastructure volumes; do not repeat completed setup gates merely to resume.
 
 Use `(tenantId, businessTransactionId)` as the Kafka key for per-transaction partition ordering, while remaining correct when producers or topics create reordering. Reuse the ten-module Core's existing `eventing` package. Persist validated accepted inbox receipt in one Core transaction, deduplicated by `(tenantId, sourceSystem, eventId)` and canonical content. The owner's explicit P0.3 request supersedes the older projection wording here: correlation/projection/detection stays P0.4. When those consumers arrive, their derived effects must join the relevant local inbox transaction, not a best-effort later dual write.
 

@@ -38,7 +38,8 @@ import tools.jackson.databind.json.JsonMapper;
 
 @Testcontainers(disabledWithoutDocker = true)
 @ActiveProfiles("postgres")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = "aegisflow.order.relay.enabled=false")
 class OrderPersistenceIT {
     private static final String RUNTIME = "aegisflow_order_runtime";
     private static final String MIGRATOR = "aegisflow_order_migrator";

@@ -2,6 +2,8 @@
 
 **Status:** threat design with implemented persistence controls and Kafka infrastructure source; consult dated evidence for verification limits.
 
+**Order relay source update, 2026-10-19:** activation is off by default and requires postgres plus explicit opt-in, an Order-only password and complete allowed-tenant set. The publisher pins username `order`/Order topic and accepts only local loopback or Docker `kafka` bootstrap endpoints. It does not inherit arbitrary Spring Kafka overrides or admin credentials. Invalid/unconfigured-tenant intent is retained FAILED; do not treat producer allowlisting as authenticated business ingress or Core intake provenance. DB/Kafka enabled-mode execution, comprehensive hostile-input schema handling, metrics and operator requeue remain unverified/unimplemented. Raw envelope/exception text is not written by relay diagnostics.
+
 P0.2's owner/migration/runtime roles, tenant composite storage keys, versioned request fingerprints and immutable outbox intent passed the recorded host database suites; the separate persistent-Compose gate also passed. Kafka infrastructure adds six distinct SASL credentials and default-deny source-topic/Core-group ACLs; the 2026-10-17 host run passed both routes' delivery and selected authentication/write-denial checks. SASL plaintext is restricted to synthetic local development; TLS, authenticated tenant ingress, payload tenant/source provenance, recovery policy and AI controls below remain planned. Topic ACLs cannot authenticate payload tenant claims. Before durable inbox acceptance, configured trusted source/tenant binding must be enforced or intake blocked. See ADR 0009 and dated evidence; no complete security verification is claimed.
 
 **Last reviewed:** 2026-10-12

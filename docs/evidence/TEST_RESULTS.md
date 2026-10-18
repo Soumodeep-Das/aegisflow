@@ -1,5 +1,24 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-19 — Order-only relay source/unit checkpoint, PostgreSQL gate pending
+
+Source starts from `3bd9189`, with interrupted Order-only edits preserved. Java21 Temurin21.0.12.1, Maven3.10; workspace `.cache/maven-repository`, `TEMP`/`TMP` set to repository `.cache/tmp`. No changes to V1, other applications or Compose. Commands below ran from the existing repository; `M` abbreviates `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl simulators/order-service`.
+
+| Exact command (using M prefix above) | Observed outcome |
+|---|---|
+| `M '-Dtest=OrderOutboxRelayTests,KafkaOutboxPublisherTests' -l .cache/p03-order-relay-unit.log test` | exit1,02:19:35IST,13.157s; new tests used obsolete three-argument MockProducer constructor; production source compiled, tests did not run |
+| Same selection with `-l .cache/p03-order-relay-unit-rerun.log test` after four-argument constructor fix | exit0,02:20:21IST,16.018s;18 new tests passed,0failures/errors/skips |
+| `M -Pinfrastructure-tests '-Dit.test=OrderOutboxRelayIT' -l .cache/p03-order-relay-verify.log verify` | exit1,02:21:34IST,14.999s;27default tests:25passed,0assertion failures,2errors,0skips. Existing HTTP test class initialization failed because Java loopback connect was denied; ITs not reached |
+| `M -Pinfrastructure-tests '-Dtest=OrderSimulatorArchitectureTest,OrderPersistenceTests,OrderOutboxRelayTests,KafkaOutboxPublisherTests' '-Dit.test=OrderOutboxRelayIT' -l .cache/p03-order-relay-available.log verify` | exit0,02:22:38IST,28.967s;25selected tests passed,0failures/errors/skips; JAR packaged. **Nine relay PostgreSQL tests skipped**,0executed, due Docker pipe denial. Maven success is not acceptance |
+| Bundled PowerShell7 `-NoProfile -File .\scripts\verify-order-relay.ps1` with Java21 | exit1 at explicit Docker gate before Maven; named-pipe permission denied, correctly not PASS |
+| PowerShell parser for new verifier | zero parse errors; not host runtime validation |
+
+New unit tests prove orchestration/serialization/configuration decisions with test doubles, not actual broker acknowledgement or PostgreSQL locks. Nine real PostgreSQL tests are written for durable/disjoint/skipped-lock claims, lease expiry/reclaim/fencing, tenant/owner/token denial, terminal states, timed retry, independent claim commit and simulated ack/completion-crash replay outside the DB transaction. The last uses an acknowledged test publisher, not real Kafka. Old eight Order persistence ITs remain enabled; both IT contexts explicitly disable the new scheduler so a caller's opt-in cannot steal fixture rows.
+
+The new host verifier runs only Order `clean verify -Pinfrastructure-tests`, checks both fresh IT reports and rejects all skips. Expected current counts are27default+17PostgreSQL, not observed host results yet. No full root reactor, enabled-relay startup, actual DB→Kafka event, outage/restart/duplicate delivery, Payment/Warehouse relay or Core inbox pass is claimed. Prior infrastructure host results remain valid and need no repetition.
+
+Closing documentation/whitespace checks at 2026-10-18T20:56:27Z passed: Markdown=30 / Required=20 / LocalLinks=123 / Mermaid=7 / JSON=1 / Scenarios=16 / InterviewQA=35 / ADRs=9 / Issues=0. These are documentation checks, not additional runtime tests.
+
 ## 2026-10-17 — actual Kafka host verification passed on `0b7a707`
 
 Owner ran from the existing repository:

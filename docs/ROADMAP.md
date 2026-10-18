@@ -1,9 +1,9 @@
 # Prioritized roadmap
 
-**Last reviewed:** 2026-10-18
-**Observed product state:** P0.2 is complete. P0.3 is approved/incomplete; P0.3-A's persistent-Compose prerequisite passed at `1043a51`. Kafka infrastructure at `0b7a707` passed its 2026-10-17 real host gate: both routes, topic settings, delivery/offsets and selected auth/ACL checks. Report `aegisflow-kafka-verify-ff292985977442009ee4e3fd306c28a6` is Passed=true/Stage=complete. Relay/inbox remain unimplemented; P0.4 remains unapproved.
+**Last reviewed:** 2026-10-19
+**Observed product state:** P0.2 and P0.3-A infrastructure are complete; successful Kafka host evidence is committed at `3bd9189`. P0.3-B now has an opt-in Order relay source slice:25selected unit/architecture tests passed, nine PostgreSQL relay ITs compiled but skipped here. Real Order DB→Kafka delivery, Payment/Warehouse relays and Core inbox remain unfinished. P0.3 is incomplete; P0.4 remains unapproved.
 
-**Current first unfinished task:** P0.3-B source-owned bounded outbox claims/leases/fencing, acknowledgement-before-published relay and retries, then C durable validated inbox/quarantine. Trusted tenant provenance must still be enforced or intake blocked. Both infrastructure prerequisites have passed; preserve their volumes/evidence and do not repeat the persistence/Kafka setup gates merely to resume. Coding-session Docker restrictions remain separate from owner-host success.
+**Current first unfinished task:** run `scripts/verify-order-relay.ps1` on the normal Java21/Docker-capable host to verify the new Order claim/lease/fencing path and its regressions. It targets Order only and rejects skipped ITs. Then add/run real Order DB→Kafka outage/ack-crash tests before extending the pattern to Payment/Warehouse; C durable Core inbox/quarantine follows with enforced source/tenant binding. Preserve existing infrastructure volumes/evidence; do not repeat completed setup rehearsals merely to resume.
 
 **Final P0.2 result:** the full clean reactor succeeded at 19:45:47 IST (2:17), 38 default + 29 real PostgreSQL tests with zero failures/errors/skips, followed by four packaged foundation JARs returning HTTP 200/UP and a zero-issue documentation check. The report counter's incomplete glob is corrected using all four real XML reports; no business code changed after verification. The separate persistent-Compose prerequisite subsequently passed on 2026-10-17. Earlier dated failures below remain historical.
 
@@ -39,7 +39,7 @@ Priority order:
 
 1. **P0.3-A prerequisite complete:** real isolated fresh/restarted-volume Compose bootstrap/roles/JAR/history checks passed on the owner's host, 2026-10-17. Do not repeat merely to resume; coding-session pipe denial is separate.
 2. **P0.3-A complete:** the real Kafka host gate passed on 2026-10-17, including readiness, provisioning twice, both listener routes and explicit auth/ACL rejection. SASL/PLAIN is local-development-only and unencrypted; tenant provenance still needs explicit enforcement before intake. Ordinary persistent-stack restart and business crash/retry tests are not covered by this smoke.
-3. **P0.3-B:** bounded claim/lease/fencing outbox relay, broker acknowledgement then fenced status update, stable IDs and bounded retries.
+3. **P0.3-B in progress:** Order-only bounded claim/lease/fencing and ack-before-published source is written;25selected tests pass, but nine PostgreSQL ITs skipped and real relay delivery is unverified. Complete the targeted host gate and real Kafka fault tests, then extend to Payment/Warehouse. Do not infer completion from smoke-client delivery.
 4. **P0.3-C:** existing Core `eventing` validation, durable inbox uniqueness and technical quarantine; offset acknowledgement after committed acceptance/quarantine only. No projection/invariant engine yet.
 5. **P0.3-D:** real end-to-end/failure tests, metrics where feasible, learning/evidence/handoff and final local commit; then stop for P0.4 approval.
 6. **Unapproved P0.4:** correlation/projection, one clock-driven invariant and durable incident/evidence timeline.

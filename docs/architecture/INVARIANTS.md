@@ -2,6 +2,8 @@
 
 **Status:** Phase 0 specification. Deadlines are configurable design assumptions until product values are chosen. No invariant engine or measured result exists yet.
 
+**P0.3-B source update, 2026-10-19:** the opt-in Order relay now implements the SAFE-005 claim/completion mechanism with DB-clock leases and tenant/owner/fencing compare-and-set. Unit orchestration checks pass; nine real PostgreSQL relay ITs skipped here, so database enforcement is not yet a measured relay result. No recovery worker or invariant engine was added. This supersedes the older no-worker statement below only for this Order transport worker.
+
 P0.2 adds storage guards relevant to SAFE-001/002/004 and INV-005: separate database roles, composite tenant references, stable replay/event identities, optimistic versions, and same-aggregate/version outbox uniqueness. Producer input/hash vectors and real PostgreSQL assertions passed at the 2026-10-16 host gate. This proves the recorded storage scenarios, not an invariant engine or complete tenant authentication. No invariant evaluation, authenticated API, worker, recovery or resolution implementation exists yet. See [ADR 0008](../adr/0008-persistence-primitives-and-database-roles.md) and [test evidence](../evidence/TEST_RESULTS.md).
 
 ## 1. Evaluation model

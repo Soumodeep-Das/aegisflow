@@ -1,6 +1,8 @@
 # AegisFlow
 
-> **Status:** P0.2 and P0.3-A's persistence/Kafka infrastructure gates are verified. Kafka's host/container listener, topic, delivery and authentication/ACL smoke checks passed on the owner's host on 2026-10-17. Source-owned relay and durable Core inbox are next and remain unimplemented. P0.3 remains incomplete; P0.4/recovery/AI and remote pushes remain unapproved.
+> **Status:** P0.2 and P0.3-A's persistence/Kafka infrastructure gates are verified. P0.3-B now has an opt-in Order-only relay source slice:25selected unit/architecture tests passed, but nine new PostgreSQL ITs skipped here; real relay delivery is unverified. Payment/Warehouse relay and Core inbox remain unwritten. P0.3 remains incomplete; P0.4/recovery/AI and remote pushes remain unapproved.
+
+**Current next host command (PowerShell7/Java21):** `scripts/verify-order-relay.ps1`. It runs the changed Order module's default tests and both PostgreSQL suites, rejects skips, and never uses existing Compose storage. It is not a Kafka delivery gate; real Order DB→Kafka outage/crash tests remain next. The completed `verify-kafka.ps1` infrastructure smoke below need not be repeated. Relay activation is off by default; read [the guide](docs/learning/CODEBASE_GUIDE.md) before configuring credentials/allowed tenants.
 
 Final P0.2 host evidence (2026-10-16, source `7a90c57`, completed checkpoint `86452ef`): **full clean reactor BUILD SUCCESS, 38 default tests + 29 real PostgreSQL ITs**, zero failures/errors/skips. All four packaged foundation JARs returned HTTP 200/UP; documentation checks passed. These remain preserved results, not a substitute for P0.3 verification. The current coding session cannot access Docker's engine pipe. See [current handoff](docs/HANDOFF.md) and [test evidence](docs/evidence/TEST_RESULTS.md).
 

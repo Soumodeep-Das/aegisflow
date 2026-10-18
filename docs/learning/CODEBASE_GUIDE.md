@@ -1,5 +1,55 @@
 # Codebase guide
 
+## Current P0.3-B slice: Order outbox relay (2026-10-19)
+
+This is source/unit-verified, not a completed P0.3 delivery flow. Existing PostgreSQL/Kafka infrastructure gates remain passed. The new Order module compiled/packaged and25selected tests passed (18new); nine new PostgreSQL relay ITs skipped here because Docker access was denied. The full Order default attempt had two HTTP-class initialization errors from denied loopback. Run `scripts/verify-order-relay.ps1` on the host next; it rejects skips. Payment/Warehouse relays and the Core inbox are still unwritten. Earlier sections below describe preserved checkpoints.
+
+Actual new files under `simulators/order-service/src/main/java/com/aegisflow/simulator/order/persistence/`:
+
+| Class | Responsibility |
+|---|---|
+| `OutboxClaim` | immutable lease capability; redacted `toString`, not a new event identity |
+| `OrderOutboxStore` | JDBC one-row SKIP LOCKED claim; DB-clock expiry, independent local transaction and fenced completion |
+| `OrderOutboxRelay` | bounded incremental poll, tenant/content checks, send outside transaction, ack then published; fixed error categories |
+| `KafkaOutboxPublisher` | fixed Order topic, producer future acknowledgement, bounded close |
+| `OrderRelayConfiguration` | postgres+explicit opt-in only, fixed Order SASL identity and local endpoint, scheduling |
+
+Tests in the matching test package are `OrderOutboxRelayTests`, `KafkaOutboxPublisherTests`, and `OrderOutboxRelayIT`. The first two run without a broker/database and have18tests. The IT has nine real-PostgreSQL cases; its crash-window publisher is a test double, not a broker. `scripts/verify-order-relay.ps1` runs all Order defaults and both IT suites with fresh reports, not the whole reactor.
+
+Flow: existing `OrderPersistenceService.create` commits business state plus immutable intent → a short `REQUIRES_NEW` JDBC claim transaction commits owner/60s lease/increased fence+attempt → validate explicit allowed tenant and canonical stored envelope → Kafka `send(...).get(...)` outside the database transaction → separate compare-and-set update to PUBLISHED with DB timestamp, only for the same tenant/outbox/owner/fence and live lease. Each next row is claimed only when ready to send, so a queued batch does not age its own leases. Original V1 metadata/grants suffice; no migration is changed.
+
+PostgreSQL JSONB reorders/pretty-prints content. The relay parses it to maps and reuses `CanonicalJson.write` before checking the existing `aegisflow-json-v1` digest; hashing raw `jsonb::text` would falsely reject valid events. This preflight checks size (256KiB), stored hash/profile, identity/source/schema/type, bounded identifiers/time and details object. It supports existing `OrderCreated` only and is not a general consumer JSON-schema validator.
+
+Kafka uses `acks=all`, idempotence,5s request/max-block and15s delivery limits, then a20s future wait; these are below the60s lease in normal execution. The database transaction is never held over network waits. Unconfirmed sends retain PENDING with exponential1/2/4/8/16/32/60s retries, capped in rate but not lifetime attempts. An interrupted worker leaves its lease to expire. Invalid content or an unconfigured tenant becomes retained FAILED intent with a fixed reason, not a deleted record. No automated requeue, metrics/alerting or operator API exists yet.
+
+Activation is deliberately separate from ordinary postgres startup. Only when ready for a synthetic local trial, supply `ORDER_OUTBOX_RELAY_ENABLED=true`, `ORDER_KAFKA_BOOTSTRAP_SERVERS` (`127.0.0.1:<port>` or Docker `kafka:9092`), the Order-only `KAFKA_ORDER_PASSWORD`, and `ORDER_OUTBOX_ALLOWED_TENANTS` (comma-separated exact IDs, no padding). `ORDER_OUTBOX_MAX_PER_POLL` defaults10 and is bounded1..100. Keep that process's database credentials Order-only; never load broker/admin/Core/sibling credentials into it. Configure every intended tenant before enabling: excluded rows become FAILED. This application startup path has not yet passed a real DB/Kafka test. Host-to-base internal PostgreSQL networking remains a known limitation; do not weaken networks to work around it.
+
+Debugging exercise (disposable test DB only): run `expiredClaimIsFencedBeforeAndAfterReclaimWithSameImmutableEvent` in `OrderOutboxRelayIT`. The test expires the lease using DB time without sleeps, proves old completion affects zero rows, then reclaims the same immutable ID/content with a higher fence. Next inspect `acknowledgedSendThenCompletionCrashReplaysSameIdentityOutsideDatabaseTransaction`: after its injected completion failure, the row remains pending; reclaim sends the same key/envelope again, then marks it published. This is a written real-DB/synthetic-publisher exercise, pending host execution—not observed real Kafka duplicate handling.
+
+### Q31. Why use a lease and fencing token rather than a boolean claimed flag?
+
+A dead process cannot clear a boolean. Expiry allows another worker to reclaim; the increasing token prevents an old resumed worker from finalizing that newer claim. DB time avoids host-clock disagreement. Tenant/owner/token/status/expiry all participate in the final update.
+
+### Q32. Why is the claim transaction separate from Kafka publishing?
+
+Holding a row lock or connection during network waits consumes database capacity and couples outage duration to transactions. `TransactionTemplate` commits each short claim/update independently. The relay rejects an ambient database transaction before polling, so its caller cannot accidentally enclose the broker wait.
+
+### Q33. Does producer idempotence eliminate the ack-crash duplicate window?
+
+No. Kafka may acknowledge before PostgreSQL records PUBLISHED. A restarted process can resend the same event under a new producer session. The later durable inbox must deduplicate the original event identity; this slice does not implement that inbox.
+
+### Q34. Why not mark every send timeout FAILED or PUBLISHED?
+
+A timeout leaves the broker outcome unknown. PUBLISHED would invent success; dropping the intent would risk loss. The relay retains PENDING with bounded backoff and the same ID. Only deterministic preflight rejection produces retained FAILED here; raw exception text is not saved as an error code.
+
+### Q35. What do the passing18unit tests actually prove?
+
+They prove local orchestration, digest representation, bounded configuration/retry and explicit acknowledgement ordering using doubles. They do not prove SQL locking/grants or actual Kafka delivery. Nine PostgreSQL ITs and a future real DB→Kafka fault test cover different boundaries. The verifier treats skipped ITs as failure, regardless of Maven's own exit code.
+
+Primary references for this slice: [PostgreSQL locking clauses](https://www.postgresql.org/docs/18/sql-select.html), [Kafka producer configuration](https://kafka.apache.org/42/configuration/producer-configs/) and [KafkaProducer acknowledgement API](https://kafka.apache.org/42/javadoc/org/apache/kafka/clients/producer/KafkaProducer.html). No production exactly-once or high-availability claim follows.
+
+---
+
 **Latest Kafka checkpoint, recorded 2026-10-18:** the owner's real 2026-10-17 host run passed both listener routes, topic settings, producer/consumer round trips, committed offsets and selected authentication/ACL denials. The saved report is Passed=true/Stage=complete. This follows the standalone build and 25 no-broker checks; the coding-session engine restriction remains separate. No owner rerun is needed; source-owned relay and durable Core inbox are next, not yet implemented.
 
 **Completed 2026-10-17 persistence host result:** the complete persistence rehearsal **passed**, actual report Passed=true/Stage=complete for `aegisflow-p03-verify-93dcfedb932a45a1b5d28241d4c5098b`. Eight postgres-profile HTTP 200/UP startups, eight owner SQL-boundary groups, 24 sibling-credential denial attempts and identical sentinel/full Flyway histories after retained-volume restart prove this operational slice. Fresh V1 runs once per owner; the second startup validates existing V1 without another migration. This does not repeat or replace P0.2 atomicity tests and does not prove Kafka delivery. No persistence rerun is needed to continue.
