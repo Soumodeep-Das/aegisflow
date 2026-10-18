@@ -1,5 +1,11 @@
 # Development journal
 
+## 2026-10-18 — record successful Kafka host gate; continue from `0b7a707`
+
+Owner supplied final PASS from `scripts/verify-kafka.ps1`. Independently read the actual report and both smoke logs for `aegisflow-kafka-verify-ff292985977442009ee4e3fd306c28a6`: Passed=true/Stage=complete, 2026-10-17T16:18:40.7629035Z–16:21:53.7753090Z, Docker29.8.2. Authenticated broker readiness, provisioning twice and both listener paths passed. Each route proved three exact acknowledged/consumed markers and committed offsets, six sibling writes plus one Core write denied, and incorrect-password rejection. Counts are smoke assertions, not JUnit tests or business relay/inbox proof. Numeric outer exit was not supplied. Verification containers stopped; its Kafka volume remains; PostgreSQL was not touched.
+
+Entry Git was clean `main` at `0b7a707`, ahead5. Reconciled current status/learning/evidence/handoff and retained earlier failures. No runtime rerun, application/configuration edit, push, deployment or volume deletion. P0.3-A infrastructure is verified; P0.3-B relay, C durable Core inbox/quarantine and D fault tests remain. Next work must preserve owner-local transactions, immutable envelopes/stable event IDs, bounded claims/retries and stale-worker fencing. Topic ACLs do not establish payload tenant authority. No owner command is needed now; keep Docker available for new tests only. P0.4/AI/recovery remain unapproved.
+
 ## 2026-10-17 — implement Kafka infrastructure from `1043a51`
 
 Continued directly from the completed persistence checkpoint. Added separate `compose.kafka.yaml` under the existing project name, leaving PostgreSQL definitions and volumes untouched. Official sources/registry confirmed the ADR0006 Kafka4.2.2 candidate and pinned image index. Selected three partitions/seven-day retention locally (OQ02, ADR0009), single KRaft/RF1, distinct host/internal/controller listeners, SASL/PLAIN local credentials and default-deny source/Core ACLs. This is a trusted-local synthetic configuration; it cannot establish payload tenant provenance or high availability. Relay/Core inbox remain next after actual Kafka verification.

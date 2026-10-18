@@ -1,5 +1,27 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-17 — actual Kafka host verification passed on `0b7a707`
+
+Owner ran from the existing repository:
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-kafka.ps1
+```
+
+Independently read the saved `results.json`, `host-smoke.log` and `container-smoke.log` in `.cache/kafka/aegisflow-kafka-verify-ff292985977442009ee4e3fd306c28a6/`: **Passed=true, Stage=complete**, final PASS. Start2026-10-17T16:18:40.7629035Z; finish16:21:53.7753090Z; Docker29.8.2; pinned broker4.2.2 and Boot-managed client4.2.1. Host listener was `127.0.0.1:59766`. Numeric outer exit code was not captured in the transcript/report and is not invented.
+
+| Actual boundary | Result |
+|---|---|
+| Broker authenticated readiness; topic/ACL provisioning | passed; provisioning executed twice |
+| HOST and INTERNAL metadata/topic checks | both passed: three topics, configured partitions/replication/retention/settings |
+| Source producer → Core smoke consumer | three exact acknowledged markers and committed offsets per route; six total round trips |
+| Unauthorized writes | six sibling-topic attempts plus one Core attempt rejected per route; fourteen explicit authorization denials total |
+| Incorrect password | explicit SASL authentication rejection per route; two total |
+| Scoped cleanup | final gate passed; verification containers stopped; Kafka volume retained; PostgreSQL not targeted |
+
+This closes the Kafka infrastructure gate, not P0.3 overall. No business relay, database inbox, broker outage/restart, crash-after-ack or Testcontainers Kafka scenario was executed. Ordinary persistent `start-kafka.ps1` reuse remains unverified. Previous sandbox engine failure below remains a real failed attempt; this host pass does not change sandbox permissions. Continuation on 2026-10-18 IST records evidence only, without rerunning completed runtime tests or changing source/configuration. No push, deployment or volume deletion.
+
 ## 2026-10-17 — Kafka infrastructure implemented; real host verification pending
 
 Entry `1043a51`, existing repository clean/main. Added Kafka-only companion Compose, pinned Apache 4.2.2, three source topics, dual client listeners plus authenticated controller, separate SASL credentials/default-deny ACLs and standalone client/provisioning scripts. Existing PostgreSQL Compose/application POMs/migrations are unchanged; no prior runtime gate was repeated. Official Docker Hub tag metadata was fetched with read-only `Invoke-RestMethod` after turn-scoped network access: index `sha256:1213eb3943d551e5ed1fca7a4e109001cee35770b66a02a0c37a8964efe09b69`, amd64 manifest `sha256:daa39dc85acd37b148fad74d6b22b60fa5f7fa05048a5c8aa3b654140c63dd58`, arm64 manifest `sha256:031e51202f27021e6afcc1f55d1d0efd9c54864a96d57506e7c1af7dc97839dd`. Metadata/source review does not establish image execution or vulnerability clearance; primary links are in ADR 0009.

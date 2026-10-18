@@ -36,7 +36,7 @@ Topic ACLs restrict source credentials, but do not authenticate payload tenant c
 
 ## Verification and sources
 
-The Java 21 standalone client package build and 25 infrastructure-free guard checks passed; Kafka Compose parsing passed. Live verification currently stops at the Docker engine permission boundary. Actual source/commands/errors and host acceptance remain in [test evidence](../evidence/TEST_RESULTS.md) and [handoff](../HANDOFF.md).
+The Java 21 standalone client package build and 25 infrastructure-free guard checks passed; Kafka Compose parsing passed. Initial live verification stopped at the coding-session engine boundary. Follow-up: the owner's 2026-10-17 host run passed both listener/topic/delivery and selected auth/ACL checks, report Passed=true/Stage=complete for project `aegisflow-kafka-verify-ff292985977442009ee4e3fd306c28a6`. This updates evidence, not the decision above. Actual source/commands/errors and remaining relay/inbox gates are in [test evidence](../evidence/TEST_RESULTS.md) and [handoff](../HANDOFF.md).
 
 - [Apache Kafka releases](https://kafka.apache.org/community/downloads/) lists 4.2.2; [official image metadata](https://hub.docker.com/v2/repositories/apache/kafka/tags/4.2.2) supplied the index digest on 2026-10-17.
 - [Kafka 4.2 listener configuration](https://kafka.apache.org/42/security/listener-configuration/) and [SASL documentation](https://kafka.apache.org/42/security/authentication-using-sasl/) describe listener names and authentication/transport choices.
