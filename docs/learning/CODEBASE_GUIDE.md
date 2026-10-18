@@ -1,5 +1,42 @@
 # Codebase guide
 
+## Next executable gate: real Order outbox to Kafka (2026-10-19)
+
+Added actual paths:
+
+```text
+scripts/verify-order-kafka.ps1
+simulators/order-service/src/test/java/com/aegisflow/simulator/order/persistence/
+  OrderKafkaDeliveryIT.java
+  OrderKafkaFixture.java
+```
+
+These compile, but all3 live tests skipped in the restricted session; the owner must run the focused verifier before calling this path verified. It does not rerun the already-passed44 tests. The helper creates an isolated pinned broker, reuses `scripts/kafka/` authentication/topics/ACLs, publishes only a random loopback host port, and label-checks the exact test container before stop/start. It never opens private env files or existing Compose storage. Fresh database roles use the unchanged Order V1 migration.
+
+Trace the test path: `OrderPersistenceService.create` commits aggregate+outbox → real `OrderOutboxStore` claim → real `KafkaOutboxPublisher` waits for broker acknowledgement → independent database completion → Core-identity **test observer** checks canonical payload hash, tenant, event ID, key and committed consumer offset. The real opt-in Spring producer configuration is loaded; a test scheduler suppresses automatic polls so fault placement is deterministic. No inbox or separately launched packaged application is claimed.
+
+Debugging exercise: in `actualKafkaAckThenLocalCompletionFailureRedeliversOriginalEvent`, stop at the injected exception inside the completion transaction. Expected: a real Kafka record exists, but rollback leaves the row PENDING with its lease. The test expires only that test lease, polls again, and requires a second offset with identical key/value/event ID, followed by PUBLISHED. Never edit an actual immutable payload or delete a development volume to reproduce this. A healthy second record is an at-least-once outcome, not an exactly-once guarantee.
+
+### Q36. Why is the broker test separate from the passed database tests?
+
+The database tests prove claims and local transaction rules. Only a real producer/broker/consumer round trip can test acknowledgement, listener/authentication configuration and network failure. A skipped integration test proves neither.
+
+### Q37. Why use a disposable broker for an outage?
+
+Stopping a shared development broker can disrupt unrelated work. The fixture owns a unique container and verifies its label/ID before interruption; existing Compose storage is never targeted.
+
+### Q38. Does an idempotent Kafka producer remove the outbox duplicate window?
+
+No. It handles certain transport retries, not a new application send after an acknowledged message's database completion rolled back. The test requires a later offset containing the original event; Core still needs database-backed inbox idempotency.
+
+### Q39. Why suppress scheduled callbacks in this test?
+
+Manual calls place the broker outage and completion rollback at precise points without another polling thread racing the assertions. This exercises real configured publishing but leaves wall-clock scheduling and packaged startup as separate unverified gates.
+
+### Q40. How is bounded retry checked without a fragile sleep?
+
+The outage poll has a duration bound and persists a retry timestamp between DB-clock observations plus the first backoff. Setting that test row's retry time in the future proves repeated polls do not claim it; making it due after broker restart allows delivery with unchanged identity. This bounds retry rate, not total lifetime attempts.
+
 ## Current P0.3-B slice: Order outbox relay (2026-10-19)
 
 The Order host gate now passes on source `b0f1a16`: **27 default +17 real PostgreSQL tests**, zero failures/errors/skips, including all nine relay ITs. Saved XML reports independently confirm the owner's run finished2026-10-19 at02:48:14IST. Earlier sandbox loopback errors/skips remain in evidence; no rerun is needed. Actual Order DB→Kafka delivery/outage/ack-crash testing and enabled-profile startup are next, followed by Payment/Warehouse relays and Core inbox. This is not a completed P0.3 delivery flow.

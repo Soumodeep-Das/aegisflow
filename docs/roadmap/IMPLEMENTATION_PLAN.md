@@ -4,6 +4,8 @@
 **Current authorization:** P0.2 verified; P0.3 approved. P0.3-A infrastructure gates passed; Order source `b0f1a16` subsequently passed27default+17PostgreSQL tests on the owner's host. Next: real Order DB→Kafka fault/startup tests, remaining source relays B, Core inbox C, final end-to-end D.
 **Next approval gate:** stop after P0.3; P0.4 and product P1 recovery are not authorized. New remote pushes/deployments are not authorized.
 
+**Exact continuation checkpoint (2026-10-19):** three real Order-to-Kafka delivery/fault ITs and `scripts/verify-order-kafka.ps1` now exist and compile; all3 skipped locally due Docker denial. Execute that focused host gate next, not the completed44-test gate. It loads real enabled producer configuration but invokes polls manually; packaged/scheduled startup remains outstanding. Extend other source relays and Core inbox only after actual Order delivery evidence.
+
 ## Delivery principles
 
 1. Build one thin path through real boundaries before adding breadth.

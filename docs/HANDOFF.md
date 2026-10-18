@@ -1,4 +1,23 @@
-# Handoff — Order relay PostgreSQL host gate passed; real Kafka relay tests next
+# Handoff — focused real Order-to-Kafka gate ready for host execution
+
+**Latest checkpoint:** 2026-10-18T21:33:53Z (2026-10-19 IST), Codex continuation from clean `main` at `f6709fd`, ahead8. This following local checkpoint adds only two Order test classes, a focused verifier and continuity docs. Resolve its closing commit/status with `git rev-parse HEAD` and `git status --short --branch`. No production Java, dependencies, migrations, Compose configuration or existing volumes changed; no push/deployment.
+
+**Implemented, NOT live-verified:** `simulators/order-service/src/test/java/com/aegisflow/simulator/order/persistence/OrderKafkaDeliveryIT.java` has three tests for committed state/outbox through the real configured Order producer to authenticated Kafka: ack-before-PUBLISHED, bounded outage/restart retry, and actual ack followed by injected completion-transaction rollback and stable-ID redelivery. `OrderKafkaFixture.java` reuses the pinned broker and existing Kafka scripts/ACLs, with fresh test credentials, loopback publication and an owned-container label guarding stop/start. Only its disposable broker is interrupted. Existing development infrastructure is not used. The test enables real relay configuration but suppresses scheduled invocation for deterministic manual polls; it does not cover a separately packaged enabled JAR, actual process kill, or Core durable inbox.
+
+**Actually checked:** Java21/Maven3.10 offline test compilation passed. Focused Failsafe discovery reported3 tests,0 failures,0 errors,**3 skipped** because the session cannot access Docker; Maven exit0 is NOT gate success. The host verifier correctly exits1 at Docker permission denial and parses with0 errors. Previously recorded44 host tests remain passed and were not repeated. Exact commands/results are in TEST_RESULTS; no real Order-to-Kafka success claimed.
+
+**Closing checks:** final test-only fixture refinement compiled successfully at03:04:12IST (9.004s, exit0); docs checker exit0:30 Markdown/20 required/124 links/7 Mermaid/1 JSON/16 scenarios/40 Q&As/9 ADRs/0 issues. Whitespace passed. No live test pass inferred from those checks. The following local commit contains these11 scoped files; no unrelated changes were present.
+
+**Single next action:** owner runs the command below from this repository with Docker Desktop available. Require all3 tests executed with0 failures/errors/skips and the verifier's final PASS. It compiles only Order and invokes only this IT, leaving the completed suites alone. Reports are in Order `target/failsafe-reports`; preserve the first error if it fails. First use may pull pinned images. Testcontainers cleans only its disposable resources; no existing named storage is targeted.
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-order-kafka.ps1
+```
+
+**Continuation after PASS:** record real evidence first; then extend the established relay pattern to Payment/Warehouse, implement Core eventing's durable inbox/quarantine with trusted source/tenant binding and post-DB-commit offsets, and demonstrate the full end-to-end path. Scheduled/packaged enabled startup and final root reactor acceptance remain outstanding. Do not repeat completed database/infrastructure gates without a relevant change. P0.3 remains incomplete; P0.4/AI/recovery unapproved. Stop here pending actual Docker-capable execution rather than copying an unverified delivery pattern. Safe recovery: preserve logs; no volume deletion, schema rewrite or credential changes needed. Older entries below are history.
+
+---
 
 **Latest checkpoint:** 2026-10-18T21:19:32Z (2026-10-19 IST), Codex host-evidence continuation. Entry `b0f1a16`, clean `main`, ahead7. This following local documentation-only commit records the successful host run; resolve closing hash/status with `git rev-parse HEAD` and `git status --short --branch`. No source/configuration/migration changes, rerun, push/deployment or volume deletion.
 

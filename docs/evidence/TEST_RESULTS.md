@@ -1,5 +1,22 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-19 — focused real Order-to-Kafka test checkpoint, host execution pending
+
+Entry `f6709fd`; production source/SQL/Compose untouched. Same Java21.0.12.1/Maven3.10/workspace cache as the preceding gate; TEMP/TMP point to `.cache/tmp`. No completed44-test rerun. Here `M` means `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl simulators/order-service`.
+
+| Exact command | Actual outcome |
+|---|---|
+| `M -l .cache/p03-order-kafka-compile.log test-compile` | exit0,02:58:51IST,10.524s; new test/helper compiled |
+| `M -Pinfrastructure-tests -l .cache/p03-order-kafka-it.log test-compile failsafe:integration-test failsafe:verify '-Dit.test=OrderKafkaDeliveryIT'` | exit0,03:02:02IST,22.735s;3 discovered,0failures,0errors,**3 skipped**; denied Docker environment, no actual publication |
+| Bundled PowerShell7 `-NoProfile -File .\scripts\verify-order-kafka.ps1` with Java21 | exit1 at denied Docker engine pipe; correctly does not report PASS |
+| PowerShell parser for new verifier |0 syntax errors |
+
+The three new ITs target FM-003/004: independent-connection observations of committed PENDING until real producer acknowledgement; unavailable broker with bounded send and persisted retry time, future-time eligibility, same-container restart and retained broker marker; real acknowledgement followed by a deliberately rolled-back local completion transaction, expired lease and identical event/key/content at a later broker offset. Runtime Order DB credentials and Order-only Kafka publishing credentials are used; the test observer has Core read/group credentials, not a durable inbox. The enabled Spring configuration is instantiated, but scheduled callbacks are suppressed and polls invoked manually. Test fault injection is not an OS process kill. No universal exactly-once, packaged startup, or successful live Kafka claim is made.
+
+The host verifier uses fresh report timestamps and requires exactly3 tests with zero failures/errors/skips. It invokes direct Failsafe goals, not the completed default/PostgreSQL suites. Testcontainers provisions independent PostgreSQL/Kafka resources using existing pinned images and Kafka scripts; ownership labels guard broker stop/start. Existing Compose containers/volumes and private env files are never used. Host command is in HANDOFF. Initial compile and discovery above preceded a test-only port-file location refinement; final compile/static checks are recorded in the closing entry below.
+
+Closing: `M -l .cache/p03-order-kafka-final-compile.log test-compile` exited0 at03:04:12IST,9.004s, compiling all9 Order test sources. Bundled PowerShell7 `scripts/verify-docs.ps1` exited0:30 Markdown/20 required/124 links/7 Mermaid/1 JSON/16 scenarios/40 Q&As/9 ADRs/0 issues. `git diff --check` passed. These are compile/documentation checks, not actual Kafka acceptance. Test-only helper keeps the advertised-port handoff file under `/tmp` (no tmpfs in this fixture), separate from broker data and retained across same-container restart.
+
 ## 2026-10-19 — Order host gate passed on `b0f1a16`
 
 Owner ran from the existing repository, with `JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot`:

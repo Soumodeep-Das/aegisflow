@@ -1,5 +1,15 @@
 # Development journal
 
+## 2026-10-19 — prepare the next real Order-to-Kafka gate from `f6709fd`
+
+Preserved the successful44-test host checkpoint; no broad audit or completed test rerun. Added three focused real-boundary ITs and an isolated pinned Kafka fixture reusing existing provisioning/authentication scripts. Tests exercise the existing relay/producer, committed state, ack ordering, broker outage and restart, and the ambiguity window after a real ack but before local completion commits. All immutable event identity/content must survive retry/redelivery. No production changes or broadened privileges were required.
+
+Java21 compilation passed; focused Failsafe discovery found3 tests but skipped all3 because this session cannot access Docker. Maven exit0 is not acceptance. New `verify-order-kafka.ps1` rejects unavailable Docker, missing/stale reports, incorrect test counts and all skips; actual session invocation exited1 at the engine gate, parser0errors. The fixture deliberately uses manual relay polls to place faults precisely; this is not wall-clock scheduler/packaged-JAR coverage. Rollback injection is not a process kill. Existing development broker/volumes are not touched.
+
+Stopped at a reproducible test-tooling checkpoint awaiting the owner's host command, instead of extending unverified delivery to other simulators. Payment/Warehouse relays, Core durable inbox and full end-to-end acceptance remain next after a genuine Order pass. Updated evidence, guide (Q36–40), roadmap and handoff. Only local commit; no push/deployment, P0.4, AI or recovery work. Detailed exact commands/outcomes remain in TEST_RESULTS; older failures are preserved.
+
+Final compile after fixture refinement passed at03:04:12IST,9.004s. Docs checker passed30 Markdown/20 required/124 links/7 Mermaid/1 JSON/16 scenarios/40 Q&As/9 ADRs/0 issues; whitespace passed. Checkpoint deliberately records compile/static verification and3 skipped live tests separately; the next host command is the only immediate owner action.
+
 ## 2026-10-19 — close the successful Order PostgreSQL host gate
 
 Owner's `verify-order-relay.ps1` run on `b0f1a16` passed clean Order build plus27default and17real PostgreSQL tests, zero failures/errors/skips; Maven finished02:48:14IST, duration1:00. Independently inspected all seven current XML reports and confirmed counts. Docker29.8.2, Java21.0.12.1; prior engine/loopback failures remain historical. Two repository metadata401 warnings were nonfatal, not a reason to add credentials. The nine relay ITs now prove actual PostgreSQL concurrency/lease/fencing and simulated ack/completion-crash behavior, not real Kafka publication.
