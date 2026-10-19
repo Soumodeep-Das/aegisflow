@@ -1,4 +1,25 @@
-# Handoff — real Order-to-Kafka delivery gate passed; remaining source relays next
+# Handoff — Payment/Warehouse relays implemented; host gate and Core inbox remain
+
+**Latest checkpoint:** 2026-10-19T15:45:48Z /2026-10-19 IST, resumed clean `main` at `c47edbb`, ahead12. This following local checkpoint implements the remaining source relays; resolve its closing commit/status with `git rev-parse HEAD` and `git status --short --branch`. Order source/tests and all V1 migrations are untouched. No push/deployment, private credentials, existing Compose-container interruption or volume deletion.
+
+**Implemented:** Payment `persistence/internal/{PaymentOutboxStore,PaymentOutboxRelay,PaymentRelayConfiguration,KafkaOutboxPublisher,OutboxClaim,RelaySupport}`; Warehouse `reservation/{WarehouseOutboxStore,WarehouseOutboxRelay,WarehouseRelayConfiguration,KafkaOutboxPublisher,OutboxClaim,RelaySupport}` under their existing `src/main/java/com/aegisflow/simulator/<owner>/` paths. These reuse Order's short REQUIRES_NEW claims, DB-clock leases, tenant/owner/fencing completion, bounded poll/send/retry and stable event IDs. Fixed owner topic/principal and explicit tenant allowlists remain mandatory. Payment supports existing Authorized/Declined events; Warehouse Reserved/Rejected. Owner-local canonicalizers are reused. Both postgres configs opt out by default; Kafka client version remains Boot-managed. No shared deployable dependency or new migration needed.
+
+**Actually verified:** Java21 offline selected new unit tests:38 passed (16 relay+3 publisher per owner),0 failures/errors/skips,21:11:47IST,45.655s. Separate boundary/discovery run:2 architecture tests passed; **24 integration tests skipped** (9 real-DB+3 real-Kafka per owner), none passed,21:13:01IST,36.356s. Maven success does NOT close the live gate. New PowerShell verifier parses with0 errors and correctly exits1 at this session's Docker pipe denial. Later bean-name cleanup is compile-checked; final details in TEST_RESULTS. No completed Order or P0.2 tests rerun.
+
+**Closing checks:** final owner-specific bean-name cleanup compiled both modules/test sources successfully at21:15:57IST,13.864s, exit0. Docs checker exit0:30 Markdown/20 required/124 links/7 Mermaid/1 JSON/16 scenarios/45 Q&As/9 ADRs/0 issues. Whitespace passed; scoped owner SQL/credentials/topics/hash adaptations reviewed. This is compile/static evidence only, not the pending live gate.
+
+**Single immediate next gate:** owner runs the command below with Docker Desktop available. It selects only Payment/Warehouse relay/unit/boundary tests and new relay ITs, rejects missing/stale reports/skips, and requires40 unit/boundary +24 live tests. Existing Order, sibling persistence suites and existing Compose storage are not targeted. Every live test uses fresh test-owned databases/broker with separate credentials. Preserve first error and each owner's target/{surefire,failsafe}-reports on failure.
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-simulator-relays.ps1
+```
+
+**Exact continuation after live gate:** implement Core durable ingestion in the existing `control-plane/.../eventing` module with a NEW V2 migration (do not edit V1). Enforce trusted topic/source/allowed-tenant bindings, bounded schema validation, immutable `(tenant,source,eventId)` uniqueness/canonical-content comparison, conflict/poison technical quarantine and Kafka offsets only after committed inbox/quarantine. Then prioritize a reproducible actual simulator service call→own PostgreSQL outbox→Kafka→Core database inbox test, including duplicate/changed duplicate, DB failure before commit and replay after commit-before-offset failure. Do not present the current Core-identity test observers as Core ingestion. Core implementation and full end-to-end test are still unwritten; no P0.3 completion claimed.
+
+**Limits/recovery:** the live relay ITs exercise initial positive outcomes, with both outcome catalogs checked by unit tests; they use manual polling, not separately packaged scheduled startup or OS process kill. Failed/disallowed intents stay stored; no automated requeue tool. Preserve full tenant allowlists before opt-in; no private env files are loaded by tests. Full reactor/final acceptance remains. P0.4/AI/recovery unapproved. Stopping at this recoverable source-relay checkpoint with the Docker-dependent gate pending, not expanding an unverified live claim. Older snapshots below are history.
+
+---
 
 **Latest checkpoint:** 2026-10-19T15:30:59Z /2026-10-19 IST, entry clean `main` at `a4a66de`, ahead11. Owner ran bundled PowerShell7 `scripts/verify-order-kafka.ps1` with Java21; BUILD SUCCESS at20:57:40IST (15:27:40Z), Maven1:34. **3 tests passed,0 failures/errors/skips**, final verifier PASS. Independently checked saved Failsafe XML: suite80.913s, acknowledged delivery2.388s, ack/completion-rollback redelivery0.782s, outage/restart16.0s. Outer-shell numeric exit not printed; no invented code. This documentation-only checkpoint preserves earlier failed runs below and does not repeat tests.
 

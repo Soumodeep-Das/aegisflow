@@ -1,5 +1,15 @@
 # Development journal
 
+## 2026-10-19 — extend verified relay pattern to Payment and Warehouse
+
+Resumed clean `c47edbb` without rerunning the passed Order gate. Reused its source-local claim/publish/fenced-completion algorithm in both remaining owners, preserving transactions, fixed source topics/principals, explicit tenant allowlists, bounded retry and original event identity. Adapted to existing Payment Map canonicalization and Warehouse JsonNode canonicalization and their two initial outcome catalogs. Existing V1 schemas/grants already support the worker, so no migration/role widening or shared deployable dependency. Disabled by default in both postgres configs.
+
+Added owner-specific unit/DB/Kafka suites using actual business creation services and preserved the working broker fixture permission/port fixes.38 new unit tests plus2 architecture tests passed;24 new live tests compiled but all skipped due this session's denied Docker access. Verifier parses and fails closed on Docker denial. No repeated P0.2/Order gates, no fake integration success. Added one focused host command requiring40+24 real results and fresh zero-skip reports. Core intake and the full end-to-end demo remain unwritten; this is a recoverable source-relay checkpoint, not completed P0.3.
+
+The bounded duplication is deliberate: keep independent service lifecycle/credentials and reuse each existing canonicalizer without creating a shared domain framework. Further extraction is optional later, not this milestone's task. Next: obtain real Payment/Warehouse results, then implement Core eventing inbox/quarantine, database idempotency and post-commit offsets, followed by the full demonstration. No push/deployment, destructive cleanup, P0.4 or AI/recovery.
+
+Final owner-bean naming cleanup compiled at21:15:57IST,13.864s, exit0. Docs checker passed30 Markdown/20 required/124 links/7 Mermaid/1 JSON/16 scenarios/45 Q&As/9 ADRs/0 issues; whitespace passed. Scoped source/tests/verifier/docs are checkpointed together; do not confuse24 skipped ITs with live acceptance.
+
 ## 2026-10-19 — close the real Order-to-Kafka host gate
 
 Owner's focused run on `a4a66de` passed all3 real delivery/fault tests with zero failures/errors/skips; BUILD SUCCESS20:57:40IST,1:34, verifier PASS. Independently checked saved XML and method times; no repeated test run. Acknowledged delivery, stopped-broker bounded retry/restart recovery, and actual-ack/local-rollback stable-ID duplicate delivery now have real PostgreSQL/Kafka evidence. Earlier permission and random-port failures remain recorded rather than erased.

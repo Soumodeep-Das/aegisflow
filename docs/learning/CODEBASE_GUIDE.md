@@ -1,5 +1,48 @@
 # Codebase guide
 
+## Payment/Warehouse source relays (2026-10-19)
+
+Implemented, with38 new unit tests and2 boundary tests passed;24 new PostgreSQL/Kafka tests compiled but skipped here. This does not complete P0.3. Run `scripts/verify-simulator-relays.ps1` on the Docker-capable host; it never repeats the completed Order suite or targets existing Compose storage.
+
+Actual paths under each `simulators/<owner>-service/src/main/java/com/aegisflow/simulator/`:
+
+```text
+payment/persistence/internal/
+  PaymentOutboxStore.java, PaymentOutboxRelay.java, PaymentRelayConfiguration.java
+  KafkaOutboxPublisher.java, OutboxClaim.java, RelaySupport.java
+warehouse/reservation/
+  WarehouseOutboxStore.java, WarehouseOutboxRelay.java, WarehouseRelayConfiguration.java
+  KafkaOutboxPublisher.java, OutboxClaim.java, RelaySupport.java
+```
+
+Matching test packages contain `<Owner>OutboxRelayTests`, `KafkaOutboxPublisherTests`, `<Owner>OutboxRelayIT`, `<Owner>KafkaDeliveryIT`, `<Owner>KafkaFixture`. Application-postgres YAML and POMs supply opt-in settings and Boot-managed Kafka clients, with no schema change. Worker code remains owner-local rather than introducing a deployable-to-deployable dependency. `RelaySupport` delegates sorting to each existing canonicalizer; raw SHA256 is applied to its canonical output, never raw JSONB formatting.
+
+Flow: Payment `PaymentCreation.recordInitialOutcome` / Warehouse `ReservationApplicationService.createReservation` commits aggregate/replay/outbox through existing JPA/JDBC local transaction → relay short JDBC claim commits → canonical identity/source/type/tenant checks → own-topic authenticated send outside DB transaction → broker ack → tenant/owner/fence/live-lease completion transaction. Outbox failures retain intent and back off1..60seconds. Supported catalog: PaymentAuthorized/PaymentDeclined and InventoryReserved/InventoryRejected. No later financial/stock transitions added.
+
+Set owner-specific `PAYMENT_OUTBOX_RELAY_ENABLED` or `WAREHOUSE_OUTBOX_RELAY_ENABLED` only with the matching `<OWNER>_KAFKA_BOOTSTRAP_SERVERS`, `KAFKA_<OWNER>_PASSWORD`, and complete `<OWNER>_OUTBOX_ALLOWED_TENANTS`. Defaults remain off; max-per-poll defaults10, range1..100. Excluded tenants become retained FAILED intents. Never load another service's DB/Kafka credentials into the application. Tests use disposable generated credentials, not private env files.
+
+Debug exercise: compare each owner's `acceptsBothExistingOwnerOutcomesWithOriginalCanonicalDigest` fixture to its event factory, then inspect `unconfirmedSendRetainsIntentAndSchedulesBoundedRetry`. Expected: the original event/key survives; no PUBLISHED update on timeout; a fixed error category and retry time are persisted. For live debugging use only the owned test resources in the host verifier. Its Core-identity observer is NOT the still-unwritten durable Core inbox.
+
+### Q41. Why reuse the algorithm without importing Order's classes?
+
+Each simulator remains independently deployable. Importing another application artifact would couple release/runtime boundaries; small owner-local worker copies reuse the verified mechanics while keeping credentials, factories and lifecycle separate.
+
+### Q42. Why reuse two different canonicalizer implementations?
+
+The existing owners already persist digests from their own factories. Changing that format would risk rejecting historical intents. RelaySupport delegates to the owner implementation; factory-based tests check both allowed outcome types against the unchanged stored digest contract.
+
+### Q43. Why do no new database migrations appear in this relay checkpoint?
+
+V1 already has status, attempts, retry time, lease owner/expiry and fencing token, with runtime column-scoped UPDATE privileges. The relay needs only those fields; immutable business intent and least-privilege grants remain unchanged.
+
+### Q44. Why are24 skipped integration tests not evidence of correct delivery?
+
+Compilation and discovery prove source wiring, not PostgreSQL locking or broker behavior. The host script requires all expected reports fresh and zero skips; only actual execution can close the live gate.
+
+### Q45. What remains between successful source delivery and a reliable whole system?
+
+Core needs a committed, unique inbox receipt for each tenant/source/event identity, canonical duplicate comparison, fail-closed quarantine and offsets committed only after that local DB transaction. A read-only test consumer cannot substitute for these crash/replay guarantees.
+
 ## Verified Order outbox-to-Kafka gate (2026-10-19)
 
 **Current evidence:** the host ran `verify-order-kafka.ps1` on `a4a66de` successfully at20:57:40IST:3 passed,0 failures/errors/skips, independently confirmed in Failsafe XML. The real flow below now works under manual polling: commit state/intent → claim → Order-authenticated broker acknowledgement → DB completion → Core-identity observer. Outage/restart and ack-before-completion-rollback redelivery also pass. Earlier repair notes below explain the failures leading here; their pending-rerun statements are superseded. No rerun needed now. Extend Payment/Warehouse next, then implement actual Core inbox; a test observer is not that inbox.

@@ -1,7 +1,9 @@
 # AegisFlow System Architecture
 
-**Status:** P0.2 and P0.3-A infrastructure are host-verified. P0.3-B Order-only relay passed27default+17PostgreSQL tests on2026-10-19. Actual DB→Kafka relay delivery/faults and enabled-profile startup remain next; Payment/Warehouse relays and Core inbox are unwritten. P0.3 is incomplete; P0.4 is not approved.
+**Status:** P0.2/P0.3-A and Order's database plus3 real Kafka delivery/fault tests are host-verified. Payment/Warehouse owner-local relays now exist with38 new unit+2 boundary checks passed; their24 live DB/Kafka tests compiled but skipped here and await host verification. Core inbox/ingestion and full simulator→Core demo remain unwritten. P0.3 incomplete; P0.4 unapproved.
 **Audience:** implementers, reviewers, and students continuing without the original conversation.
+
+**Current transport flow:** each simulator's internal application service atomically commits business state/replay/outbox to only its own PostgreSQL database. Its opt-in owner-local worker claims one due row in a short transaction, validates canonical identity/source/type/tenant, publishes with its fixed source Kafka principal/topic outside the DB transaction, then performs fenced completion after acknowledgement. All three use this pattern; only Order's live gate is passed so far. Kafka Core-identity test observers are NOT Core application ingestion. Owner-local worker copies intentionally avoid importing another deployable or sharing domain entities. No simulator Kafka consumer/choreography or P0.4 projection is added by this checkpoint.
 
 ## 1. Purpose and scope
 

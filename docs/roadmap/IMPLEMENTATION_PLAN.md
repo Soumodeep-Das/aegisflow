@@ -4,7 +4,7 @@
 **Current authorization:** P0.2 verified; P0.3 approved. P0.3-A infrastructure and Order's27default+17PostgreSQL host gate passed. The3 real Order DB→Kafka delivery/fault tests also passed on `a4a66de` at2026-10-19 20:57:40IST. Next: remaining source relays B, Core inbox C, final end-to-end D.
 **Next approval gate:** stop after P0.3; P0.4 and product P1 recovery are not authorized. New remote pushes/deployments are not authorized.
 
-**Exact continuation checkpoint (2026-10-19):** extend the verified Order relay pattern to Payment/Warehouse, maintaining owner-specific validation/credentials/topics and local transactions. Then Core durable inbox/quarantine with trusted source/tenant binding and post-commit offsets, then one full end-to-end demonstration/final reactor. Order's real gate passed3/0/0/0; do not repeat it merely to resume. Manual polls do not replace packaged/scheduled startup verification. No immediate owner command needed.
+**Exact continuation checkpoint (2026-10-19):** Payment/Warehouse relays now implemented;38 new unit+2 boundary tests passed,24 DB/Kafka ITs compiled but skipped locally. Next run `scripts/verify-simulator-relays.ps1` on host for40+24 zero-skip results. Then Core durable inbox/quarantine with trusted source/tenant binding and post-commit offsets, then one actual simulator→Core end-to-end demonstration/fault replay and final reactor. Order's real gate passed3/0/0/0; no repeat merely to resume. Manual polls do not replace packaged/scheduled startup verification. Core remains unwritten; P0.3 incomplete.
 
 ## Delivery principles
 
@@ -102,7 +102,7 @@ Acceptance:
 
 ### P0.3 Kafka delivery and control-plane inbox
 
-**Approved; incomplete.** P0.3-A gates passed. Order-only source `b0f1a16` passed its2026-10-19 host gate:27default+17PostgreSQL tests with zero failures/errors/skips. Next add/execute actual Order DB→Kafka outage/ack-crash and enabled-profile tests before Payment/Warehouse equivalents. Core inbox is unwritten. Local SASL/PLAIN has no TLS. Preserve V1 migrations, volumes and evidence; no completed infrastructure/Order database rerun is needed merely to resume.
+**Approved; incomplete.** P0.3-A and Order database/real-Kafka gates passed. Payment/Warehouse relay source and tests now exist, with38 unit+2 boundary passes and24 live tests skipped pending host execution. Core inbox is unwritten. Local SASL/PLAIN has no TLS. Preserve V1 migrations, volumes and evidence; no completed infrastructure/Order rerun is needed merely to resume.
 
 Use `(tenantId, businessTransactionId)` as the Kafka key for per-transaction partition ordering, while remaining correct when producers or topics create reordering. Reuse the ten-module Core's existing `eventing` package. Persist validated accepted inbox receipt in one Core transaction, deduplicated by `(tenantId, sourceSystem, eventId)` and canonical content. The owner's explicit P0.3 request supersedes the older projection wording here: correlation/projection/detection stays P0.4. When those consumers arrive, their derived effects must join the relevant local inbox transaction, not a best-effort later dual write.
 

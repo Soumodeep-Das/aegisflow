@@ -1,5 +1,24 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-19 — Payment/Warehouse relay source checkpoint from `c47edbb`
+
+Java21.0.12.1/Maven3.10, offline workspace `.cache/maven-repository`, TEMP/TMP=`.cache/tmp`. Existing Order source/tests and V1s unchanged. `M` below abbreviates `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl simulators/payment-service,simulators/warehouse-service`.
+
+| Exact command | Observed outcome |
+|---|---|
+| `M '-Dtest=*OutboxRelayTests,KafkaOutboxPublisherTests' -l .cache/p03-sibling-relay-unit.log test` | exit0,21:11:47IST,45.655s;38 new tests passed,0 failures/errors/skips (16 relay+3 publisher each) |
+| `M -Pinfrastructure-tests '-Dtest=*ArchitectureTest' '-Dit.test=*OutboxRelayIT,*KafkaDeliveryIT' -l .cache/p03-sibling-relay-available.log test failsafe:integration-test failsafe:verify` | exit0,21:13:01IST,36.356s;2 module-boundary tests passed;**24 ITs skipped**,0 executed, because Docker access denied |
+| Bundled PowerShell7 `-NoProfile -File .\scripts\verify-simulator-relays.ps1` with Java21 | exit1 at Docker pipe denial; does not claim success |
+| PowerShell parser for new verifier |0 syntax errors |
+
+Unit coverage includes each owner's actual factory for both initial outcome types, existing canonical hash/JSONB representation, wrong owner/tenant/event ID/hash/schema rejection, fixed owner SASL principal/topic, acknowledgement before completion, bounded retries, stale completion, ambient transaction rejection, interruption and disabled profiles. Boundary checks prove no production dependency on Core/sibling implementation packages. Owner-local copies keep deployables independent; no shared database or shared domain artifact introduced.
+
+Written/compiled but NOT passed here:9 DB cases per owner for committed claims, concurrency, expiry/fence/tenant/worker guards, immutable payload/identity and synthetic acknowledged-send replay;3 Kafka cases per owner for positive-outcome actual publication, broker stop/restart and actual ack/local-completion rollback redelivery. Tests use each actual application service and owner runtime role; broker observer has Core read identity but is not a durable inbox. Existing verified Order fixtures were adapted with the permission/explicit-port fixes intact. Negative outcome wire delivery is not separately live-tested by these3 cases.
+
+`verify-simulator-relays.ps1` targets only these new paths plus boundaries and requires40 unit/boundary +24 live tests, fresh reports and zero failures/errors/skips. It never targets existing Compose volumes or completed Order tests. Current host result remains pending; no full reactor or completed P0.3 claim. Core inbox and full simulator→Core demonstration are still unwritten.
+
+After owner-specific bean-method naming cleanup, `M -l .cache/p03-sibling-relay-final-compile.log test-compile` exited0 at21:15:57IST,13.864s. Both modules and all test sources compile. Bundled PowerShell7 `scripts/verify-docs.ps1` exited0:30 Markdown/20 required/124 links/7 Mermaid/1 JSON/16 scenarios/45 Q&As/9 ADRs/0 issues; whitespace passed. No Kafka/PostgreSQL result inferred from these closing checks.
+
 ## 2026-10-19 — real Order PostgreSQL-to-Kafka host gate passed on `a4a66de`
 
 Owner ran, with Java21 selected, from the repository:
