@@ -19,7 +19,10 @@ import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,6 +52,7 @@ import tools.jackson.databind.json.JsonMapper;
         "aegisflow.order.relay.max-per-poll=1"})
 @Import(OrderKafkaDeliveryIT.ManualPolling.class)
 @Timeout(value = 150, unit = TimeUnit.SECONDS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class OrderKafkaDeliveryIT {
     private static final String TENANT = "relay-kafka-it";
     private static final String DATABASE = "aegisflow_order_kafka";
@@ -100,7 +104,7 @@ class OrderKafkaDeliveryIT {
         jdbc.update("UPDATE aegisflow.outbox_event SET status='FAILED',lease_owner=NULL,lease_until=NULL,last_error_code='TEST_RESET' WHERE status='PENDING'");
     }
 
-    @Test void committedOutboxReachesRealKafkaBeforeDurablePublishedCompletion() throws Exception {
+    @Test @Order(1) void committedOutboxReachesRealKafkaBeforeDurablePublishedCompletion() throws Exception {
         var event = create();
         assertThat(status(event.id())).isEqualTo("PENDING");
         try (var consumer = observerAtEnd()) {
@@ -121,7 +125,8 @@ class OrderKafkaDeliveryIT {
         }
     }
 
-    @Test void brokerOutagePreservesCommittedIntentAndRecoversWithSameIdentityAfterRestart() throws Exception {
+    // Last because all three methods share this disposable broker, not because an outage is optional.
+    @Test @Order(3) void brokerOutagePreservesCommittedIntentAndRecoversWithSameIdentityAfterRestart() throws Exception {
         // This marker proves broker storage survived the restart, independently of the later retry.
         var beforeRestart = create();
         try (var consumer = observerAtEnd()) {
@@ -129,6 +134,7 @@ class OrderKafkaDeliveryIT {
             var durableMarker = receive(consumer, beforeRestart, 1).getFirst();
             var pending = create();
             KAFKA.stopBrokerForOutage();
+            Throwable primaryFailure = null;
             try {
                 var beforeAttempt = jdbc.queryForObject("SELECT clock_timestamp()", java.time.OffsetDateTime.class);
                 long start = System.nanoTime();
@@ -146,7 +152,16 @@ class OrderKafkaDeliveryIT {
                 for (int i = 0; i < 3; i++) assertThat(configuredRelay.poll()).isZero();
                 assertThat(jdbc.queryForObject("SELECT publish_attempts FROM aegisflow.outbox_event WHERE event_id=?", Integer.class, pending.id())).isEqualTo(1);
                 assertOneStateAndIntent(pending);
-            } finally { KAFKA.restartSameBroker(); }
+            } catch (RuntimeException | Error failure) {
+                primaryFailure = failure;
+                throw failure;
+            } finally {
+                try { KAFKA.restartSameBroker(); }
+                catch (RuntimeException restartFailure) {
+                    if (primaryFailure != null) primaryFailure.addSuppressed(restartFailure);
+                    else throw restartFailure;
+                }
+            }
             consumer.seek(new TopicPartition(durableMarker.topic(), durableMarker.partition()), durableMarker.offset());
             assertThat(receive(consumer, beforeRestart, 1).getFirst().value()).isEqualTo(durableMarker.value());
             jdbc.update("UPDATE aegisflow.outbox_event SET next_attempt_at=clock_timestamp()-interval '1 second' WHERE event_id=?", pending.id());
@@ -158,7 +173,7 @@ class OrderKafkaDeliveryIT {
         }
     }
 
-    @Test void actualKafkaAckThenLocalCompletionFailureRedeliversOriginalEvent() throws Exception {
+    @Test @Order(2) void actualKafkaAckThenLocalCompletionFailureRedeliversOriginalEvent() throws Exception {
         var event = create();
         try (var consumer = observerAtEnd()) {
             var crashAfterAck = new OrderOutboxStore(jdbc, transactions) {

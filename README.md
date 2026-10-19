@@ -1,5 +1,7 @@
 # AegisFlow
 
+**Newest host result:** Kafka startup now succeeds. The outage test exposed a changing random host port on restart; the test fixture now requests one explicit loopback port for its lifetime. Two focused unit checks pass; rerun the same `scripts/verify-order-kafka.ps1` command for actual verification. All3 delivery tests must pass; the latest host run had3 errors, not success.
+
 **Latest focused gate:** the first real Order-to-Kafka run failed before delivery tests because startup appended authentication settings to a read-only private configuration copy. That ordering is repaired and2 source-level regression checks pass; actual repaired Kafka startup remains unverified. Rerun `scripts/verify-order-kafka.ps1` (command in handoff), not the completed database suite. Existing storage and credentials need no changes.
 
 > **Status:** P0.2 and P0.3-A infrastructure gates are verified. P0.3-B's Order-only relay passed its host database gate on2026-10-19:27default +17real PostgreSQL tests, zero failures/errors/skips. Actual Order DB→Kafka delivery/fault tests remain next; Payment/Warehouse relays and Core inbox are unwritten. P0.3 remains incomplete; P0.4/recovery/AI and remote pushes remain unapproved.

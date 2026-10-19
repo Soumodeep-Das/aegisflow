@@ -1,5 +1,7 @@
 # Known Limitations
 
+**Newest 2026-10-19 host result:** startup/mode/provisioning and enabled producer initialization succeeded on `2834b47`; same-container broker restart changed its randomly allocated port, causing3 test errors. Explicit test-only loopback binding now replaces the empty/random HostPort, with2 passing unit checks. Live repaired restart and the complete3-test gate remain unverified. Selecting then releasing a free port has a small bind-race window; collision fails safely. No production listener change or existing volume is involved.
+
 **2026-10-19 focused host failure:** real Order Kafka startup failed on `24df774` before delivery tests (1 class-level error). Read-only copied-config permission ordering is now repaired, with2 passing source-level tests; actual fixed startup and all3 delivery scenarios await host rerun. No successful live delivery is implied by the repair. The host Docker engine itself worked.
 
 **Status:** P0.2 host-verified; P0.3 approved/incomplete; P0.3-A persistence and Kafka infrastructure host gates passed

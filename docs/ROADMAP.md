@@ -2,6 +2,8 @@
 
 **Last reviewed:** 2026-10-19
 
+**Newest gate result:** host run on `2834b47` confirms Kafka startup/permission repair but failed restart endpoint stability, then two cascading timeouts (3 errors,0 passed). Test fixture now explicitly binds a selected loopback port;2 new unit checks pass. Rerun the same focused Order Kafka verifier next; do not revisit credentials/startup permissions or completed database tests. Full3-test acceptance still required before widening the relay pattern.
+
 **Latest blocking gate:** first real Order-to-Kafka run on `24df774` failed at Kafka startup (1 class-level error, no delivery methods reached). Read-only template/private-copy chmod ordering is repaired;2 new source-level regressions pass. Rerun only `scripts/verify-order-kafka.ps1` to verify real startup and the3 delivery/fault tests before extending other services. Existing44-test host evidence remains valid; no database rerun is required.
 **Observed product state:** P0.2 and P0.3-A infrastructure are complete. P0.3-B Order source `b0f1a16` passed the2026-10-19 host gate:27default +17PostgreSQL tests, zero failures/errors/skips. Real Order DB→Kafka delivery/faults, Payment/Warehouse relays and Core inbox remain unfinished. P0.3 is incomplete; P0.4 remains unapproved.
 

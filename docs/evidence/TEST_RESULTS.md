@@ -1,5 +1,15 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-19 — host startup repair confirmed; restart port instability repaired in test fixture
+
+On `2834b47`, owner's same focused verifier reached Docker29.8.2, Kafka startup (12.532s), private/source mode assertions, topic/ACL provisioning, PostgreSQL18.6 migration and enabled Spring producer startup. It then failed:3 tests/0 assertion failures/**3 errors**/0 skips, Maven BUILD FAILURE20:50:16IST,1:55. Saved Failsafe text/XML agree. The outage method failed the exact-port check after same-container restart; two later methods timed out against the old bootstrap endpoint. A pre-outage actual marker round trip necessarily completed before the failing restart path, but no whole test passed. Do not infer that every outage assertion passed: the old finally block could mask a prior failure.
+
+Cause boundary: Docker was given an empty HostPort (random allocation), which did not retain the expected mapping across restart. Test-only fix chooses a free local loopback port, explicitly requests it in Docker config, and supplies the same advertised port before startup. This retains same broker/storage/clients and does not weaken the restart assertion. Rare selection-to-bind collision remains a safe startup failure. Outage runs last; earlier runtime/assertion failures are preserved with restart failure suppressed. Production relay/SQL/Compose and existing storage unchanged.
+
+Exact local check with Java21/TEMP/TMP workspace cache: `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl simulators/order-service '-Dtest=OrderKafkaFixtureTests' -l .cache/p03-kafka-restart-port.log test` exited0 at20:53:54IST,23.038s. **2 unit checks passed**,0 failures/errors/skips;11 test sources compiled. These inspect Docker binding configuration/invalid-port rejection, not live port allocation or restart. No full/default/database rerun. Next host command remains `scripts/verify-order-kafka.ps1`; real repaired restart and all3 delivery/fault methods remain unverified.
+
+Closing bundled-PowerShell7 `scripts/verify-docs.ps1` exited0:30 Markdown/20 required/124 local links/7 Mermaid/1 JSON/16 scenarios/40 Q&As/9 ADRs/0 issues; whitespace passed.
+
 ## 2026-10-19 — real host startup failure and read-only configuration repair
 
 Owner ran bundled PowerShell7 `-NoProfile -File .\scripts\verify-order-kafka.ps1` on `24df774`, Java21/Docker29.8.2. Docker discovery/Ryuk succeeded. Kafka exited1 and its90s health wait expired; Maven BUILD FAILURE at03:07:54IST,1:46 total. Actual XML confirms `tests=1 failures=0 errors=1 skipped=0` (class initialization, none of the3 delivery methods reached). Outer-shell numeric exit not supplied; verifier threw. The first logged failure is inability to append `/tmp/aegisflow-kafka/server.properties`; later missing controller JAAS is a consequence. Nonfatal metadata401 warnings are unrelated; no credentials were added.

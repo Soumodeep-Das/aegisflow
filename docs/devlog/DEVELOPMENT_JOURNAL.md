@@ -1,5 +1,11 @@
 # Development journal
 
+## 2026-10-19 — stabilize the disposable Kafka endpoint across restart
+
+Entry clean `2834b47`. Latest host output/saved report proves the previous config-mode repair reached Kafka, provisioning, migration and enabled producer startup. Pre-outage marker delivery was reached, but the shared broker restart changed its randomly requested host port. The exact-endpoint guard failed and later methods timed out;3 errors, no passed methods. Kept this partial evidence distinct from complete acceptance.
+
+Changed only test networking: select a free loopback port, give Docker an explicit HostPort and advertise it before startup; keep same-container/storage restart and endpoint verification. Remove the now-unneeded port handoff file. The selection/bind race fails startup safely; no unrelated listener is stopped. Order outage last to prevent its failure obscuring earlier independent checks; preserve primary runtime/assertion failure on failed restoration. Two focused binding unit tests pass,11 sources compile (20:53:54IST,23.038s); no completed database or infrastructure suite rerun. Host must rerun the same focused command. No live repaired restart claimed, production change, push/deployment, volume cleanup or expanded scope.
+
 ## 2026-10-19 — fix the observed Kafka private-copy permission ordering
 
 From clean `24df774`, inspected the owner's failed focused run and matching Failsafe XML. Docker works on the host; broker startup failed before delivery tests because the0444 template copy was appended before chmod. Missing JAAS was downstream. Moved private-copy0600 setup before the append and made copy/chmod/append explicitly fail closed; retained UID1000, read-only source, ACLs, listener design and all existing volumes. No broader redesign or repeat audit.

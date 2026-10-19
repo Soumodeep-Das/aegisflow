@@ -4,6 +4,9 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -14,7 +17,6 @@ import java.util.UUID;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -35,29 +37,40 @@ final class OrderKafkaFixture extends GenericContainer<OrderKafkaFixture> {
         passwords.forEach((principal, password) -> withEnv("KAFKA_" + principal.toUpperCase(java.util.Locale.ROOT) + "_PASSWORD", password));
         for (String file : new String[]{"common.sh", "startup.sh", "healthcheck.sh", "provision.sh", "server.properties"})
             withCopyFileToContainer(MountableFile.forHostPath(scriptDirectory().resolve(file), 0444), "/opt/aegisflow/kafka/" + file);
-        // Docker chooses the host port first; containerIsStarting supplies it before broker bootstrap.
-        // This fixture has no /tmp tmpfs: the file survives restart of this SAME container.
-        withCommand("-ec", """
-                n=0
-                until [ -r /tmp/aegisflow-test-host-port ]; do
-                  n=$((n+1)); [ "$n" -lt 120 ] || exit 1; sleep 1
-                done
-                export KAFKA_HOST_PORT=$(cat /tmp/aegisflow-test-host-port)
-                exec /bin/sh /opt/aegisflow/kafka/startup.sh
-                """);
+        withCommand("/opt/aegisflow/kafka/startup.sh");
         withCreateContainerCmdModifier(cmd -> {
             cmd.withEntrypoint("/bin/sh").withUser("1000:1000");
-            cmd.getHostConfig().withPortBindings(new PortBinding(Ports.Binding.bindIp("127.0.0.1"), ExposedPort.tcp(19092)));
+            cmd.getHostConfig().withPortBindings(loopbackBinding(publishedPort));
         });
         waitingFor(Wait.forSuccessfulCommand("/bin/sh /opt/aegisflow/kafka/healthcheck.sh")
                 .withStartupTimeout(Duration.ofSeconds(90)));
     }
 
-    @Override protected void containerIsStarting(InspectContainerResponse response) {
+    @Override protected void configure() {
+        super.configure();
         if (!getHost().equals("localhost") && !getHost().equals("127.0.0.1"))
             throw new IllegalStateException("This isolated fixture requires local Docker, not a remote daemon");
-        publishedPort = getMappedPort(19092);
-        copyFileToContainer(Transferable.of(Integer.toString(publishedPort), 0444), "/tmp/aegisflow-test-host-port");
+        // Select a free local port, then request that exact binding for this container's lifetime.
+        // A blank HostPort lets Docker choose again on restart. A selection/bind race fails startup;
+        // we never stop a foreign listener to reclaim the port.
+        try (var socket = new ServerSocket()) {
+            socket.setReuseAddress(false);
+            socket.bind(new InetSocketAddress("127.0.0.1", 0));
+            publishedPort = socket.getLocalPort();
+        } catch (IOException failure) {
+            throw new IllegalStateException("Cannot select isolated Kafka loopback port", failure);
+        }
+        withEnv("KAFKA_HOST_PORT", Integer.toString(publishedPort));
+    }
+
+    static PortBinding loopbackBinding(int port) {
+        if (port < 1024 || port > 65535) throw new IllegalArgumentException("Explicit unprivileged host port required");
+        return new PortBinding(Ports.Binding.bindIpAndPort("127.0.0.1", port), ExposedPort.tcp(19092));
+    }
+
+    @Override protected void containerIsStarting(InspectContainerResponse response) {
+        if (getMappedPort(19092) != publishedPort)
+            throw new IllegalStateException("Initial binding differs from the fixture's advertised port");
     }
 
     @Override protected void containerIsStarted(InspectContainerResponse response) {
