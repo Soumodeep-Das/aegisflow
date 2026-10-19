@@ -1,5 +1,11 @@
 # Development journal
 
+## 2026-10-19 — close the real Order-to-Kafka host gate
+
+Owner's focused run on `a4a66de` passed all3 real delivery/fault tests with zero failures/errors/skips; BUILD SUCCESS20:57:40IST,1:34, verifier PASS. Independently checked saved XML and method times; no repeated test run. Acknowledged delivery, stopped-broker bounded retry/restart recovery, and actual-ack/local-rollback stable-ID duplicate delivery now have real PostgreSQL/Kafka evidence. Earlier permission and random-port failures remain recorded rather than erased.
+
+Entry clean `main`, ahead11. Documentation-only evidence/current status/learning/handoff checkpoint; no Java/config/migration/volume mutation or push. Next implementation is Payment/Warehouse source-owned relay extension using this verified pattern, then Core durable inbox and one full end-to-end demonstration. Manual-poll tests do not prove packaged scheduling or actual process kill. P0.3 remains incomplete, P0.4 unapproved. No immediate owner command or credentials required; do not rerun completed gates merely to resume.
+
 ## 2026-10-19 — stabilize the disposable Kafka endpoint across restart
 
 Entry clean `2834b47`. Latest host output/saved report proves the previous config-mode repair reached Kafka, provisioning, migration and enabled producer startup. Pre-outage marker delivery was reached, but the shared broker restart changed its randomly requested host port. The exact-endpoint guard failed and later methods timed out;3 errors, no passed methods. Kept this partial evidence distinct from complete acceptance.

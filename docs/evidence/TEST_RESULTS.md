@@ -1,5 +1,27 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-19 — real Order PostgreSQL-to-Kafka host gate passed on `a4a66de`
+
+Owner ran, with Java21 selected, from the repository:
+
+```powershell
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-order-kafka.ps1
+```
+
+BUILD SUCCESS finished20:57:40IST /15:27:40Z; Maven1:34. Final verifier PASS and independently read saved Failsafe XML agree: **3 passed,0 failures/errors/skips**, suite80.913s. Numeric outer-shell exit not supplied. No test rerun performed to record this evidence.
+
+| Actual test method | Seconds | Result |
+|---|---:|---|
+| committedOutboxReachesRealKafkaBeforeDurablePublishedCompletion |2.388|PASS|
+| actualKafkaAckThenLocalCompletionFailureRedeliversOriginalEvent |0.782|PASS|
+| brokerOutagePreservesCommittedIntentAndRecoversWithSameIdentityAfterRestart |16.0|PASS|
+
+This proves actual Order aggregate/outbox commit, real acknowledged publication, independent database completion visibility, consumer identity/hash/key/offset checks, retained intent and bounded retry while broker is stopped, stable endpoint/data across same-container restart, eventual retry delivery, and duplicate unchanged content after actual broker ack plus injected DB-completion rollback. Startup permissions and explicit port fixes are exercised. These3 tests are separate from the previously passed27default+17PostgreSQL tests, not a new47-test reactor run.
+
+Limits: manual polling with real enabled Spring configuration, not packaged scheduled startup; rollback injection, not process kill; single broker, not replicated failover; Core-identity observer, not durable inbox. Payment/Warehouse relays, Core inbox and full P0.3 acceptance remain next. Prior failures/skips below remain historical; host success does not alter restricted-session Docker access. No existing Compose volumes were targeted and no cleanup/push was requested.
+
+Documentation-only closing check: bundled PowerShell7 `scripts/verify-docs.ps1` exited0:30 Markdown/20 required/125 local links/7 Mermaid/1 JSON/16 scenarios/40 Q&As/9 ADRs/0 issues. Whitespace passed; no test rerun.
+
 ## 2026-10-19 — host startup repair confirmed; restart port instability repaired in test fixture
 
 On `2834b47`, owner's same focused verifier reached Docker29.8.2, Kafka startup (12.532s), private/source mode assertions, topic/ACL provisioning, PostgreSQL18.6 migration and enabled Spring producer startup. It then failed:3 tests/0 assertion failures/**3 errors**/0 skips, Maven BUILD FAILURE20:50:16IST,1:55. Saved Failsafe text/XML agree. The outage method failed the exact-port check after same-container restart; two later methods timed out against the old bootstrap endpoint. A pre-outage actual marker round trip necessarily completed before the failing restart path, but no whole test passed. Do not infer that every outage assertion passed: the old finally block could mask a prior failure.

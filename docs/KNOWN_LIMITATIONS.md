@@ -1,5 +1,7 @@
 # Known Limitations
 
+**Current 2026-10-19 status:** the real Order PostgreSQL-to-Kafka host gate PASSED on `a4a66de` at20:57:40IST:3 tests,0 failures/errors/skips. Read-only-template startup, stable restart endpoint, acknowledged publication, outage/retry recovery and ack/local-rollback duplicate delivery are now exercised. Remaining: Payment/Warehouse relays, Core inbox/quarantine, packaged scheduling, actual process-kill/replicated-failover checks and final P0.3 end-to-end acceptance. No immediate owner action. Historical unverified/failure statements below are superseded by this evidence, not deleted.
+
 **Newest 2026-10-19 host result:** startup/mode/provisioning and enabled producer initialization succeeded on `2834b47`; same-container broker restart changed its randomly allocated port, causing3 test errors. Explicit test-only loopback binding now replaces the empty/random HostPort, with2 passing unit checks. Live repaired restart and the complete3-test gate remain unverified. Selecting then releasing a free port has a small bind-race window; collision fails safely. No production listener change or existing volume is involved.
 
 **2026-10-19 focused host failure:** real Order Kafka startup failed on `24df774` before delivery tests (1 class-level error). Read-only copied-config permission ordering is now repaired, with2 passing source-level tests; actual fixed startup and all3 delivery scenarios await host rerun. No successful live delivery is implied by the repair. The host Docker engine itself worked.

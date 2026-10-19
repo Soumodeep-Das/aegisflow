@@ -1,6 +1,8 @@
 # Codebase guide
 
-## Next executable gate: real Order outbox to Kafka (2026-10-19)
+## Verified Order outbox-to-Kafka gate (2026-10-19)
+
+**Current evidence:** the host ran `verify-order-kafka.ps1` on `a4a66de` successfully at20:57:40IST:3 passed,0 failures/errors/skips, independently confirmed in Failsafe XML. The real flow below now works under manual polling: commit state/intent → claim → Order-authenticated broker acknowledgement → DB completion → Core-identity observer. Outage/restart and ack-before-completion-rollback redelivery also pass. Earlier repair notes below explain the failures leading here; their pending-rerun statements are superseded. No rerun needed now. Extend Payment/Warehouse next, then implement actual Core inbox; a test observer is not that inbox.
 
 **Next host finding:** private-copy repair succeeded, but same-container restart changed Docker's randomly assigned host port. `OrderKafkaFixture.configure` now selects an available loopback port and puts the explicit value in Docker's binding and KAFKA_HOST_PORT before startup. Clients retain their endpoint while the same broker/storage restarts. `OrderKafkaFixtureTests.java` adds2 passing binding/validation unit checks; real restart remains unverified. This test-local fixed binding is an exception to normal random mapping because restart stability is under test ([Testcontainers networking](https://java.testcontainers.org/features/networking/)). The probe socket must close before Docker binds, so a rare port collision fails startup safely. No foreign process is stopped. The old handoff-file design described in historical evidence is removed. Outage runs last to isolate cascading errors, with primary runtime/assertion failures preserved if restart also fails.
 
