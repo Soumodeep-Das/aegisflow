@@ -1,5 +1,7 @@
 # Known Limitations
 
+**2026-10-19 focused host failure:** real Order Kafka startup failed on `24df774` before delivery tests (1 class-level error). Read-only copied-config permission ordering is now repaired, with2 passing source-level tests; actual fixed startup and all3 delivery scenarios await host rerun. No successful live delivery is implied by the repair. The host Docker engine itself worked.
+
 **Status:** P0.2 host-verified; P0.3 approved/incomplete; P0.3-A persistence and Kafka infrastructure host gates passed
 
 **Latest test-tooling checkpoint, 2026-10-19, from `f6709fd`:** real Order-to-Kafka tests are written and compile; all3 skipped under this session's Docker denial. Run the focused `scripts/verify-order-kafka.ps1` on the host; no live success is claimed yet. It exercises real enabled configuration with manual polls, not separately packaged startup/scheduling; completion failure is an injected real DB rollback after a real ack, not a process kill. Disposable single-broker restart is not replicated-cluster failover/disk-loss coverage. Payment/Warehouse relays and Core inbox remain unwritten. This supersedes older "no owner action" / "tests next to implement" statements below without changing prior44-test successes.

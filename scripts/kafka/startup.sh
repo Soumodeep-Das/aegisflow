@@ -24,7 +24,10 @@ esac
 [ "${#KAFKA_HOST_PORT}" -le 5 ] && [ "$KAFKA_HOST_PORT" -ge 1024 ] && [ "$KAFKA_HOST_PORT" -le 65535 ] || fail 'KAFKA_HOST_PORT must be a port from 1024 through 65535.'
 
 server_config=/tmp/aegisflow-kafka/server.properties
-cp /opt/aegisflow/kafka/server.properties "$server_config"
+cp /opt/aegisflow/kafka/server.properties "$server_config" || fail 'Cannot copy Kafka configuration template.'
+# A read-only template produces a read-only copy. Make ONLY the private copy
+# owner-writable before appending secrets; never chmod the mounted source.
+chmod 600 "$server_config" || fail 'Cannot secure writable Kafka configuration.'
 {
     printf 'advertised.listeners=INTERNAL://kafka:9092,HOST://127.0.0.1:%s\n' "$KAFKA_HOST_PORT"
     # Controller/inter-broker authentication never falls back to anonymous access.
@@ -33,8 +36,7 @@ cp /opt/aegisflow/kafka/server.properties "$server_config"
         printf 'listener.name.%s.plain.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="broker" password="%s"' "$listener_name" "$KAFKA_BROKER_PASSWORD"
         printf ' user_broker="%s" user_admin="%s" user_order="%s" user_payment="%s" user_warehouse="%s" user_core="%s";\n' "$KAFKA_BROKER_PASSWORD" "$KAFKA_ADMIN_PASSWORD" "$KAFKA_ORDER_PASSWORD" "$KAFKA_PAYMENT_PASSWORD" "$KAFKA_WAREHOUSE_PASSWORD" "$KAFKA_CORE_PASSWORD"
     done
-} >> "$server_config"
-chmod 600 "$server_config"
+} >> "$server_config" || fail 'Cannot write Kafka listener/authentication configuration.'
 write_admin_properties 127.0.0.1:9092
 
 # --ignore-formatted retains storage. Reject accidental identity changes before it

@@ -1,5 +1,7 @@
 # AegisFlow
 
+**Latest focused gate:** the first real Order-to-Kafka run failed before delivery tests because startup appended authentication settings to a read-only private configuration copy. That ordering is repaired and2 source-level regression checks pass; actual repaired Kafka startup remains unverified. Rerun `scripts/verify-order-kafka.ps1` (command in handoff), not the completed database suite. Existing storage and credentials need no changes.
+
 > **Status:** P0.2 and P0.3-A infrastructure gates are verified. P0.3-B's Order-only relay passed its host database gate on2026-10-19:27default +17real PostgreSQL tests, zero failures/errors/skips. Actual Order DB→Kafka delivery/fault tests remain next; Payment/Warehouse relays and Core inbox are unwritten. P0.3 remains incomplete; P0.4/recovery/AI and remote pushes remain unapproved.
 
 **Owner action now:** run `scripts/verify-order-kafka.ps1` with Java21 and bundled PowerShell7 (exact command in [handoff](docs/HANDOFF.md)). Three focused delivery/outage/restart/ack-completion-rollback ITs are written and compile, but all3 skipped here because Docker is inaccessible. The verifier requires actual execution and zero skips, targets only new tests and uses disposable resources. Do not repeat the completed44-test database gate or Kafka infrastructure smoke merely to resume. Relay activation remains off by default; read [the guide](docs/learning/CODEBASE_GUIDE.md) before configuring credentials/allowed tenants.

@@ -1,5 +1,11 @@
 # Development journal
 
+## 2026-10-19 — fix the observed Kafka private-copy permission ordering
+
+From clean `24df774`, inspected the owner's failed focused run and matching Failsafe XML. Docker works on the host; broker startup failed before delivery tests because the0444 template copy was appended before chmod. Missing JAAS was downstream. Moved private-copy0600 setup before the append and made copy/chmod/append explicitly fail closed; retained UID1000, read-only source, ACLs, listener design and all existing volumes. No broader redesign or repeat audit.
+
+Added2 source-level regression tests (passed offline at20:45:58IST,13.475s,0 failures/errors/skips); all10 test sources compile. Fixture keeps the0444 template and checks real source/private modes when the host reruns. A Git Bash syntax attempt was prevented by Windows MSYS object permissions, recorded honestly. Actual Kafka repair remains unverified; no default/database rerun. Updated handoff/evidence/learning/current priorities and checkpointed locally only. Next action is the same focused host command; no new credentials, Docker reinstall, deletion, remote push or P0.4.
+
 ## 2026-10-19 — prepare the next real Order-to-Kafka gate from `f6709fd`
 
 Preserved the successful44-test host checkpoint; no broad audit or completed test rerun. Added three focused real-boundary ITs and an isolated pinned Kafka fixture reusing existing provisioning/authentication scripts. Tests exercise the existing relay/producer, committed state, ack ordering, broker outage and restart, and the ambiguity window after a real ack but before local completion commits. All immutable event identity/content must survive retry/redelivery. No production changes or broadened privileges were required.

@@ -2,6 +2,8 @@
 
 ## Next executable gate: real Order outbox to Kafka (2026-10-19)
 
+**Host failure and repair:** the first actual run failed before all3 delivery methods. `startup.sh` copied the fixture's0444 template and attempted to append JAAS settings before chmod; its private destination was not writable. It now sets that copy to0600 immediately after copying and explicitly stops on copy/chmod/append failure. The original template stays0444; the fixture verifies both modes at startup. `KafkaStartupScriptTests.java` in the test package below adds2 passing source-level guards, not Linux permission tests. Real repaired startup still needs the focused host verifier. Debug from the first `Permission denied`, not the later missing-JAAS message; do not change credentials or run as root to conceal it.
+
 Added actual paths:
 
 ```text

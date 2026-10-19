@@ -1,5 +1,23 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-19 — real host startup failure and read-only configuration repair
+
+Owner ran bundled PowerShell7 `-NoProfile -File .\scripts\verify-order-kafka.ps1` on `24df774`, Java21/Docker29.8.2. Docker discovery/Ryuk succeeded. Kafka exited1 and its90s health wait expired; Maven BUILD FAILURE at03:07:54IST,1:46 total. Actual XML confirms `tests=1 failures=0 errors=1 skipped=0` (class initialization, none of the3 delivery methods reached). Outer-shell numeric exit not supplied; verifier threw. The first logged failure is inability to append `/tmp/aegisflow-kafka/server.properties`; later missing controller JAAS is a consequence. Nonfatal metadata401 warnings are unrelated; no credentials were added.
+
+The fixture copies its template with mode0444. `startup.sh` previously applied chmod0600 only AFTER appending dynamic listener/JAAS settings. It now secures/makes writable only the private copy BEFORE that append, and copy/chmod/append each explicitly fail closed. The fixture retains0444 and adds real source/private mode assertions, so a future host pass exercises this condition. No root workaround,777 permissions, source chmod or auth weakening.
+
+Repair verification from repository root, Java21, workspace TEMP/TMP/cache:
+
+| Command | Actual outcome |
+|---|---|
+| `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl simulators/order-service '-Dtest=KafkaStartupScriptTests' -l .cache/p03-kafka-startup-permissions.log test` | exit0 at20:45:58IST,13.475s;2 new source-level checks pass,0 failures/errors/skips;10 test sources compile |
+| `& 'C:\Program Files\Git\bin\bash.exe' -n scripts/kafka/startup.sh` | exit-1073741502; MSYS `NtCreateDirectoryObject` access denied before syntax parsing; NOT a syntax pass or a shell-code failure |
+| `git diff --check` | exit0 |
+
+No live test rerun in the restricted session and no prior44-test rerun. The host must rerun the focused verifier; all3 real delivery/fault tests remain unverified. Source-level guards are not evidence of real Linux permission or Kafka behavior. Original host failure remains recorded rather than replaced with an inferred pass.
+
+Closing bundled-PowerShell7 `scripts/verify-docs.ps1` exited0:30 Markdown/20 required/124 links/7 Mermaid/1 JSON/16 scenarios/40 Q&As/9 ADRs/0 issues; whitespace passed.
+
 ## 2026-10-19 — focused real Order-to-Kafka test checkpoint, host execution pending
 
 Entry `f6709fd`; production source/SQL/Compose untouched. Same Java21.0.12.1/Maven3.10/workspace cache as the preceding gate; TEMP/TMP point to `.cache/tmp`. No completed44-test rerun. Here `M` means `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl simulators/order-service`.

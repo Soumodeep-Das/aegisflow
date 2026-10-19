@@ -1,6 +1,8 @@
 # Prioritized roadmap
 
 **Last reviewed:** 2026-10-19
+
+**Latest blocking gate:** first real Order-to-Kafka run on `24df774` failed at Kafka startup (1 class-level error, no delivery methods reached). Read-only template/private-copy chmod ordering is repaired;2 new source-level regressions pass. Rerun only `scripts/verify-order-kafka.ps1` to verify real startup and the3 delivery/fault tests before extending other services. Existing44-test host evidence remains valid; no database rerun is required.
 **Observed product state:** P0.2 and P0.3-A infrastructure are complete. P0.3-B Order source `b0f1a16` passed the2026-10-19 host gate:27default +17PostgreSQL tests, zero failures/errors/skips. Real Order DB→Kafka delivery/faults, Payment/Warehouse relays and Core inbox remain unfinished. P0.3 is incomplete; P0.4 remains unapproved.
 
 **Current first unfinished task:** execute `scripts/verify-order-kafka.ps1` on the Docker-capable host. Three real Order DB→Kafka delivery/outage/restart/ack-completion-rollback ITs now compile, but all3 skipped in this session. Require3 executed/0failures/errors/skips before extending to Payment/Warehouse. Real enabled Spring configuration is loaded by the tests with manual polling; packaged enabled startup/scheduler coverage remains separate. Core durable inbox/quarantine follows with enforced source/tenant binding, then one full end-to-end demonstration and final reactor. Preserve volumes/evidence; do not repeat completed infrastructure or Order database gates merely to resume.

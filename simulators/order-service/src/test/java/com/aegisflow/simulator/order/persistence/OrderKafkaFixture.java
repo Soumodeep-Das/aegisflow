@@ -62,6 +62,11 @@ final class OrderKafkaFixture extends GenericContainer<OrderKafkaFixture> {
 
     @Override protected void containerIsStarted(InspectContainerResponse response) {
         try {
+            // Retain the 0444 source fixture: real startup must repair only its private copy.
+            var modes = execInContainer("/bin/sh", "-ec",
+                    "test \"$(stat -c %a /opt/aegisflow/kafka/server.properties)\" = 444 && "
+                    + "test \"$(stat -c %a /tmp/aegisflow-kafka/server.properties)\" = 600");
+            if (modes.getExitCode() != 0) throw new IllegalStateException("Kafka fixture configuration mode check failed");
             var result = execInContainer("/bin/sh", "/opt/aegisflow/kafka/provision.sh");
             if (result.getExitCode() != 0) throw new IllegalStateException("Kafka fixture provisioning failed");
         } catch (Exception failure) {
