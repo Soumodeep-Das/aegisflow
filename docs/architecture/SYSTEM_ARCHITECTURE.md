@@ -1,5 +1,11 @@
 # AegisFlow System Architecture
 
+## Active P0.4-A architecture — 2026-10-21
+
+Implemented, database gate pending: accepted inbox → eventing public `ProjectionInbox` → correlation `CorrelationProjector` → one Core transaction for immutable fact + tenant transaction/deadline + APPLIED marker. The inbox and Kafka acknowledgement remain unchanged. V3 adds no cross-service access. The port owns eventing SQL; only correlation → eventing is allowed. Anti-join scanning backfills old/late-visible accepted rows; bounded transactions use a database advisory gate, not in-memory completion. BLOCKED work remains unsettled for future evaluation freshness. A has 43 focused passing tests and 16 skipped PostgreSQL checks, not database proof.
+
+The future B detector must share the gate, check unsettled accepted work before absence evaluation, and recover from persisted deadlines. C incidents/evidence and D full pipeline remain unimplemented. Historical statuses below refer to P0.3 or earlier.
+
 **Current verified architecture,2026-10-20:** P0.3 is complete. All3 simulator state/outbox transactions flow through owner-local acknowledged Kafka relays into Core's source/tenant-validated durable inbox/quarantine, with database idempotency and post-commit Kafka offsets. Real failure/replay/concurrency tests passed; final packaged scheduling/Core process restart passed on `860dbf9`. Core and simulators retain separate deployables, databases and migration/runtime roles. P0.4 projections/incidents and simulator choreography remain unimplemented.
 
 Older checkpoint status paragraphs below preserve implementation history; their pending/unwritten statements are superseded by current HANDOFF/TEST_RESULTS. Diagrams and later business/recovery flows remain design targets unless identified as implemented.

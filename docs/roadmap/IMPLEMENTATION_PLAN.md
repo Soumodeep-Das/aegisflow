@@ -1,6 +1,6 @@
 # Implementation plan
 
-**Current milestone status,2026-10-20:** P0.3 verified and stopped. Final packaged acceptance on `860dbf9` passed1/1,0 failures/errors/skips at19:17:57IST; earlier clean134 and Core50/source-relay gates remain passed. No repeat commands required. P0.4 requires explicit approval.
+**Current milestone status,2026-10-21:** P0.4 approved from completed P0.3 `d4d4b7c`. A durable projection implementation exists; 43 focused tests pass, 16 database tests skipped due to denied Docker access. Host `scripts/verify-projection.ps1` must pass before B detector/C incidents. B scheduler/backlog freshness must pass before C; D adds full event-to-incident verification. Historical pending/unapproved statuses below are superseded. No P0.5 or push.
 
 ## Historical continuation notes
 
@@ -118,7 +118,7 @@ Acceptance:
 
 **Implemented and verified,2026-10-20.** P0.3-A infrastructure, all3 owner relays, Core durable validated inbox/quarantine, fault/replay/concurrency/isolation checks and actual packaged scheduling/Core process restart passed. Final evidence combines the clean134-test reactor and later1-test packaged gate with earlier source/Core suites; no single combined-run total is claimed. Local SASL/PLAIN has no TLS. Preserve evidence and stop before P0.4.
 
-Use `(tenantId, businessTransactionId)` as the Kafka key for per-transaction partition ordering, while remaining correct when producers or topics create reordering. Reuse the ten-module Core's existing `eventing` package. Persist validated accepted inbox receipt in one Core transaction, deduplicated by `(tenantId, sourceSystem, eventId)` and canonical content. The owner's explicit P0.3 request supersedes the older projection wording here: correlation/projection/detection stays P0.4. When those consumers arrive, their derived effects must join the relevant local inbox transaction, not a best-effort later dual write.
+Use `(tenantId, businessTransactionId)` as the Kafka key while remaining correct across topics/reordering. Eventing commits immutable validated ACCEPTED intake, deduplicated by tenant/source/event and canonical content, before offset acknowledgement. P0.4 uses a separate transaction for fact, projection/deadline and durable progress marker; it never mutates intake or requires Kafka replay. ADR0010 supersedes the older same-intake-transaction requirement.
 
 P0.3 must enforce a trusted source/tenant mapping or block untrusted input; a payload tenant is not authenticated by topic ACL alone. Relay claims need short local transactions, expiry/fencing, bounded batches/backoff and post-Kafka-ack status updates. A broker acknowledgement followed by a relay crash can produce a duplicate with the same event ID. No cross-PostgreSQL/Kafka exactly-once guarantee is promised.
 

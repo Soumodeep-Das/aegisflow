@@ -98,7 +98,7 @@ class PackagedPipelineScenario {
             var migrationDb=new JdbcTemplate(new DriverManagerDataSource(
                     CORE.getJdbcUrl(),"aegisflow_core_migrator",PipelineApplications.PASSWORD));
             assertThat(migrationDb.queryForObject(
-                    "SELECT count(*) FROM aegisflow.flyway_schema_history WHERE success",Integer.class)).isEqualTo(2);
+                    "SELECT count(*) FROM aegisflow.flyway_schema_history WHERE success",Integer.class)).isEqualTo(3);
         } finally {
             Collections.reverse(owned);
             owned.forEach(PackagedApplicationProcess::close);

@@ -2,7 +2,7 @@
 
 **Current status,2026-10-20:** P0.3 is implemented and verified. Final packaged scheduled pipeline/Core process restart passed1/1 on `860dbf9` at19:17:57IST,0 failures/errors/skips. Clean reactor134 and earlier Core50/source-relay/infrastructure evidence remain passed across their separate runs. No verification rerun is needed now.
 
-**Next authorized action:** stop. P0.4 requires explicit approval before implementing tenant-scoped correlation/projection, the first clock-driven missing-warehouse invariant, and its incident/evidence timeline. Recovery/AI and remote pushes remain unapproved.
+**Next authorized action,2026-10-21:** P0.4 is approved. A facts/projection code is implemented; 43 focused tests passed, 16 PostgreSQL checks skipped (Docker pipe denied). Run `scripts/verify-projection.ps1` on the host and resolve failures before B clock-driven INV-002. Then prove B scheduler/backlog freshness, implement C durable incident/evidence, and D full pipeline/failure verification. A is not verified and P0.4 is not complete. Recovery/AI and remote pushes remain unapproved.
 
 ## Historical checkpoint notes
 
@@ -60,7 +60,7 @@ Priority order:
 3. **P0.3-B complete:** Order, Payment and Warehouse owner-local relays passed PostgreSQL/Kafka commit, retry, outage/restart and stable-ID ambiguous-completion tests. Publication metadata commits only after successful broker acknowledgement.
 4. **P0.3-C complete:** Core `eventing` validates bounded schemas/identities/source/tenant mappings, commits immutable inbox or quarantine, and then acknowledges offsets. Database uniqueness handles concurrent duplicates; fault/replay scenarios passed.
 5. **P0.3-D complete:** real three-source pipeline/failure tests, clean134-test reactor and separately packaged scheduled intake/Core process restart passed; learning/evidence/handoff preserved. Dedicated metrics/load/replicated-failover and operator quarantine UI remain documented limitations.
-6. **Unapproved P0.4:** correlation/projection, one clock-driven invariant and durable incident/evidence timeline.
+6. **Approved P0.4:** complete the A database gate, then B scheduler, C incident/evidence and D integration gates, in that order.
 7. Broader packaging/observability and recovery remain later work; preserve working thin slices rather than expand scope.
 
 P0 is not complete with compilation alone; its exit gate is in `docs/roadmap/IMPLEMENTATION_PLAN.md`.

@@ -104,7 +104,7 @@ Reference points were checked against official product documentation on 2026-10-
 | ID | Requirement | Acceptance signal |
 |---|---|---|
 | FR-001 | Accept only authenticated, allowlisted, versioned business events with the required envelope. | Invalid or unsupported input is quarantined with a reason and never mutates a transaction projection. |
-| FR-002 | Persist an inbox record and projection change atomically; deduplicate by database constraint within tenant/source/event identity. | Replaying the same event produces one logical effect and an observable duplicate count. |
+| FR-002 | Commit immutable ACCEPTED intake before Kafka acknowledgement; separately commit fact, projection/deadline and durable progress atomically (ADR0010). Deduplicate with tenant/source/event database constraints. | Replay/backfill cannot duplicate or lose projected facts; rollback leaves retryable work. Operational duplicate-count reporting remains a target, not a P0.4-A implementation claim. |
 | FR-003 | Correlate by `(tenantId, businessTransactionId)` and retain `correlationId` for tracing, never as the tenant boundary. | Identical business IDs in two tenants cannot share a projection, evidence, or incident. |
 | FR-004 | Evaluate versioned invariants using event time, configured deadlines, allowed lateness, and service-owned state. | Duplicate or reordered facts converge; time-based checks use a controllable clock. |
 | FR-005 | Create one active durable incident per tenant/transaction/invariant violation episode and enforce the documented transition graph. | Concurrent detection cannot create duplicate active incidents; terminal recurrence creates a linked successor; invalid transitions fail atomically. |

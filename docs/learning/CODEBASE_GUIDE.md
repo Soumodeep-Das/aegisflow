@@ -1,6 +1,56 @@
 # Codebase guide
 
-**Current status:** P0.3 passed its final host gate on2026-10-20. The sections below explain actual source and preserve dated implementation history; older pending/unwritten statements are superseded by this completion and current HANDOFF. No further verification command is required now.
+**Current status,2026-10-21:** P0.3 complete; approved P0.4-A implemented with43 focused tests passed but16 PostgreSQL checks skipped. Run the host projection gate before B/C. Older status paragraphs are history.
+
+## P0.4-A: from accepted message to durable projection
+
+Actual paths, relative to repository root:
+
+```text
+control-plane/src/main/
+  java/com/aegisflow/core/
+    eventing/ProjectionInbox.java
+    eventing/internal/JdbcProjectionInbox.java
+    eventing/internal/ProjectionInboxConfiguration.java
+    correlation/internal/ProjectionModel.java
+    correlation/internal/CorrelationProjector.java
+    correlation/internal/ProjectionConfiguration.java
+  resources/db/migration/V3__durable_projection.sql
+control-plane/src/test/java/com/aegisflow/core/correlation/internal/
+  ProjectionModelTests.java
+  DurableProjectionIT.java
+scripts/verify-projection.ps1
+```
+
+An accepted message is durable transport evidence; a fact extracts its business meaning without claiming fresh remote authority. `ProjectionModel` preserves aggregate version, order identity, quantities, hash and source/intake times. A projection summarizes the fact set by tenant/businessTransactionId, not tracing correlationId. Lower versions cannot replace higher ones; unsupported terminal changes and identity conflicts stay visible.
+
+Flow: existing `InboxStore` commits ACCEPTED and `KafkaInboxConsumer` acknowledges → `ProjectionConfiguration` schedules bounded polling every5 seconds when enabled → `CorrelationProjector` starts a REQUIRES_NEW transaction → `ProjectionInbox` adapter takes the transaction-scoped advisory gate and selects an unmarked inbox row → fact, projection/deadline and APPLIED progress commit together. Intake remains immutable. Failure before commit leaves all derived effects absent and the inbox eligible again. Late-visible old rows are found through an anti-join, not a timestamp cursor. Permanent shape/constraint/budget failures roll back and get a separate BLOCKED marker; they still count as unsettled evidence.
+
+This slice uses Spring JDBC and explicit `TransactionTemplate`, not JPA entities or `@Transactional` self-invocation. The database manager binds the same data source/connection to the thread; the eventing port refuses calls outside a transaction. Global advisory coordination is easy to reason about but serializes projector throughput. UUID facts and database unique/composite foreign keys preserve idempotency and tenant provenance. Runtime can append facts/progress but not change them; only projection result columns are mutable.
+
+Defaults: `CORE_PROJECTION_ENABLED=false`, `CORE_PROJECTION_CONFIG_VERSION=demo-v1`, `CORE_INVENTORY_DURATION_SECONDS=45`, `CORE_EVENT_LATENESS_SECONDS=15`, `CORE_PROJECTION_BATCH_SIZE=25` (maximum100). A projection freezes config when first created, even if Payment arrives before Order. `due_at=order occurredAt+duration`; `enforce_after=due_at+lateness`. Injected `Clock` controls processing timestamps. These dates schedule future B evaluation; INVENTORY_OBSERVED is not SATISFIED and no incident exists in A.
+
+Debugging exercise (after host gate passes): in the disposable `DurableProjectionIT` rollback case, break immediately after `inbox.applied` in the forwarding test port, then allow its injected exception. Query counts using that test's inspected connection: inbox1, facts0, projections0, progress0. Retry produces one of each derived row and keeps inbox status ACCEPTED. For a visible pending Warehouse message, `hasUnsettled` must be true until it is projected. A future detector must honor this flag under the same gate; simply seeing an expired deadline is insufficient. No simulator database or existing Compose volume is needed for this exercise.
+
+### Q56. Why not mark inbox rows PROCESSED?
+
+P0.3 promises immutable accepted evidence and already acknowledges Kafka. Separate durable progress records completion without changing that contract; projection can catch up even when Kafka will not replay.
+
+### Q57. Why can a timestamp cursor lose an inbox message?
+
+A transaction may obtain an early receive time but commit after a later row was processed. Advancing past the time skips that row permanently. The anti-join keeps every unmarked committed identity eligible.
+
+### Q58. What commits atomically in this projector?
+
+One observed fact, its transaction projection/deadline and APPLIED progress share a Core database transaction. A rollback removes them together; the accepted input persists. This is database idempotency, not universal exactly-once transport.
+
+### Q59. Why pin configuration and inject Clock?
+
+Pinned duration/lateness avoids changing an existing transaction's deadline after a deployment. Clock makes processing and future deadline decisions deterministic in tests; it does not change source occurrence or intake timestamps.
+
+### Q60. Why must future detection consider pending projection work?
+
+A valid Warehouse outcome may already be accepted but not projected. Declaring absence from the summary alone would be false. Pending/BLOCKED work suppresses definitive absence evaluation; later uncommitted or undelivered evidence cannot be known in advance.
 
 ## Final executable-JAR scheduling check (verified2026-10-20)
 
@@ -849,4 +899,4 @@ It uses several independent layers: Maven modules avoid compile-time implementat
 
 ## Honest next step
 
-P0.3 infrastructure, three source-owned relays, trusted durable Core inbox/quarantine, fault/replay tests and packaged scheduling/restart are verified. Stop here. After explicit P0.4 approval, the next slice is tenant-scoped projection and a clock-driven missing-warehouse incident with an explainable evidence timeline. Intake acceptance is not an incident or an authoritative cross-service business outcome. The handoff records the proposed acceptance criteria and remaining limits.
+P0.4-A now needs actual PostgreSQL proof through `verify-projection.ps1`;43 focused tests do not replace it. After that gate, implement B clock-driven INV-002 and prove restart/backlog freshness before C durable incidents/evidence, then D full integration. Intake acceptance is not an incident or an authoritative business outcome. Stop before P0.5.

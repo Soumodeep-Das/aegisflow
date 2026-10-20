@@ -1,5 +1,11 @@
 # Business and Safety Invariants
 
+## Active P0.4-A boundary — 2026-10-21
+
+No INV-002 evaluator or incident exists yet. New correlation code persists configurable 45-second inventory duration plus 15-second lateness exactly once, pinned to a configuration version per transaction. InventoryRejected is observed evidence, never automatically absence; mismatched quantities are retained for the future detector, not labelled SATISFIED. Unsupported changes between terminal source outcomes and identity conflicts stay CONFLICT. A's pure tests pass; actual PostgreSQL gate remains skipped/unverified.
+
+P0.4-B must check pending/BLOCKED inbox projection work under the shared transaction gate before concluding missing observed evidence. Event absence is not authoritative Warehouse failure. Durably stored deadlines must remain discoverable after crashes. The older dated unverified P0.3 snapshots below are historical; its gates have since passed.
+
 **Core P0.3 source update,2026-10-20:** IntakePolicy validates source/tenant authority, InboxStore uses a tenant/source/event composite unique key and immutable canonical comparison, and KafkaInboxConsumer acknowledges only after committed acceptance/quarantine. Core V2 grants append-only evidence writes and checks payload/relational identities.36 unit/boundary/port tests pass; real Core database/transport gates remain unverified here. SAFE-001/002/004 intake guards do not implement business invariant evaluation, projection or recovery. Source-relay live gates are already passed.
 
 **Status:** Phase 0 specification. Deadlines are configurable design assumptions until product values are chosen. No invariant engine or measured result exists yet.

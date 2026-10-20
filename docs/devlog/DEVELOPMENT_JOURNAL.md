@@ -1,5 +1,15 @@
 # Development journal
 
+## 2026-10-20/21 — P0.4-A resumable gate checkpoint
+
+Closing static checks: new verifier parses without errors; `scripts/verify-docs.ps1` exit0 (31 Markdown,60 Q&As,10 ADRs,0 issues); `git diff --check` passes. No Mermaid rendering claim. No expensive tests repeated during continuation.
+
+Resumed existing clean main at d4d4b7c with explicit P0.4 approval; no recreation or repeat P0.3 audit/suites. Implemented V3 immutable facts, tenant-scoped projections/deadlines and separate eventing completion markers via a narrow public port (ADR0010). Preserved ACCEPTED intake/acknowledgement and V1/V2. Chose anti-join discovery instead of a cursor, transaction-scoped global coordination instead of leases, pinned contract configuration and bounded fact reduction. Corrected superseded same-intake-transaction documentation and module allowlist.
+
+The exact two Maven commands/outcomes are recorded in TEST_RESULTS:43 focused tests passed, then16 real PostgreSQL checks all skipped due to Docker pipe denial despite Maven exit0. On continuation inspected existing log/Git rather than repeating suites. Added a host-only verifier rejecting skipped/stale reports. Hardened V3 BLOCKED reason CHECK against SQL NULL semantics; no production Java changed after the43-pass run. Mandatory architecture gate remains unverified: stop A, do not implement B/C incident logic yet.
+
+No PostgreSQL/Kafka Compose changes, existing volume mutation, remote push or deployment. Next: owner runs verify-projection.ps1, preserve its evidence, resolve first failure if any; only actual16/16 passes unlock B scheduler/freshness work.
+
 ## 2026-10-20 — close verified P0.3
 
 The owner's packaged-only rerun on `860dbf9` finished BUILD SUCCESS at19:17:57IST,2:40. Independently inspected fresh XML:1 passed,0 failures/errors/skips,148.296s. All4 real executable applications, scheduled source delivery/Core intake, actual Core process restart with offline backlog and the corrected migration/runtime inspection boundary passed. Successful reports are preserved beside the run's log; prior failures remain recorded.

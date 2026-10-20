@@ -1,5 +1,13 @@
 # Known Limitations
 
+## Active checkpoint — P0.4-A, 2026-10-21
+
+P0.4 is approved but incomplete. Facts/projection/deadline/progress implementation has 43 passing focused unit/boundary/intake-regression tests; 12 new projection and 4 Core PostgreSQL tests were all skipped due to this session's Docker named-pipe AccessDeniedException. No real V3 migration, rollback, concurrency or backfill success is claimed. Host command: `scripts/verify-projection.ps1`.
+
+The projector defaults disabled, globally serializes short Core transactions, caps batches at100 and facts per transaction at1000, and cannot automatically repair/requeue immutable BLOCKED progress. Those limits favor correctness over throughput; no SLO measured. No business detector, durable evaluation, incidents, query API or P0.4 end-to-end proof yet. Current packaged JARs predate production V3 changes and must be rebuilt for the later packaged regression. A passing P0.3 build does not verify these new inputs. P0.5/recovery/AI remain out of scope.
+
+The following P0.3 completion record is preserved history, not a claim that P0.4 needs no owner action.
+
 **Current status,2026-10-20:** P0.3 is verified. The final packaged scenario on `860dbf9` passed1 test,0 failures/errors/skips at19:17:57IST. All4 executable apps, automatic source/Core scheduling, real Core process restart/backlog and migration/runtime privilege checks passed. Earlier clean134, Core50 and all3 source-relay gates remain valid; no owner verification action remains.
 
 **Remaining limits:** the broker is single-node with plaintext local SASL; no load/SLO, replicated failover or abrupt OS/power-loss guarantee was measured. Source tenant allowlists trust each permitted producer within its configured tenant set. ACCEPTED inbox rows do not implement business correlation or incidents. Quarantine is database-inspectable metadata with no operator UI/replay/retention automation; no automatic failed-outbox requeue or dedicated operational metrics/alerting. Simulator-to-simulator choreography, P0.4 detection and later recovery/AI remain future work.

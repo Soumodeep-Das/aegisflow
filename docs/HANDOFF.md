@@ -1,4 +1,29 @@
-# Handoff — P0.3 verified; stopped before P0.4
+# Handoff — P0.4-A implemented; PostgreSQL gate pending
+
+**Snapshot:** 2026-10-20T18:40:35Z (local2026-10-21), Codex P0.4-A continuation. Baseline `d4d4b7c011d328d876d3e4458be289950a27ae3f`, branch main. All current changes are this A checkpoint, staged/committed in the following local commit; resolve closing hash/status with `git rev-parse HEAD` and `git status --short --branch`. No push, deployment or existing storage mutation. P0.3 is the last completed milestone; P0.4 is approved but incomplete.
+
+**Implemented:** V3 facts/projection/deadline/progress, bounded eventing `ProjectionInbox` API, correlation `ProjectionModel`/`CorrelationProjector` and opt-in `ProjectionConfiguration`. Atomic derived effects+APPLIED; anti-join backfill; tenant composite keys; frozen config; source-version conflicts; BLOCKED freshness. Main paths under `control-plane/src/main/java/com/aegisflow/core/{eventing,correlation}` and `resources/db/migration/V3__durable_projection.sql`. ADR0010 replaces obsolete PROCESSED/intake-projection wording. Only correlation → eventing module dependency added. No detector, incidents or recovery.
+
+**Actually verified:** Java21 offline focused command in TEST_RESULTS passed43 (architecture4/model11/validator23/consumer5), exit0 at2026-10-20 21:38:30IST. PostgreSQL attempt compiled but skipped all16 (12 new DurableProjectionIT +4 PostgresInfrastructureIT), exit0 at21:39:17IST: Docker named-pipe AccessDeniedException. This is NOT A gate success. Logs `.cache/p04a-unit.log` and `.cache/p04a-postgres-available.log`. Only subsequent production edit is V3 BLOCKED reason NULL-check hardening, still awaiting real SQL execution.
+
+**Single next task:** run the unverified gate on the Docker-capable Windows host, from this existing repository:
+
+Checkpoint checks: verifier parses; documentation validator reports31 Markdown/60 Q&As/10 ADRs/0 issues; whitespace check passes. Full host verifier execution remains pending.
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-projection.ps1
+```
+
+**Acceptance:**16 actual tests, zero failures/errors/skips. Script preserves reports/logs under `.cache/p04a/<id>`, rejects stale/skipped evidence, and does not repeat43 passing tests or P0.3 suites. Uses only ordinary Core infrastructure-tests profile, isolated PostgreSQL/dynamic ports (no combined simulator migration classpath or fixed ports). Tests cover V2 backfill, atomic rollback including marker, duplicates/retry, reordered and late-visible rows, concurrency, tenant FKs, runtime grants, frozen config and blocked-work freshness. Script's complete host execution is unverified.
+
+**Continuation after PASS:** record evidence and commit; then P0.4-B clock-driven INV-002 with injected Clock, persisted deadlines and same-gate unsettled-work suppression. Prove scheduler catch-up and no false missing-outcome incident from pending Warehouse input before C durable incidents/evidence, then D full pipeline. Do not implement B/C before actual A proof. No new approval needed within P0.4; no P0.5.
+
+**Limits/recovery:** default worker disabled; global serial gate/1000-fact limit; BLOCKED cannot auto-requeue. Existing source/intake evidence remains immutable and V1/V2 unchanged. Do not reset/delete history or volumes. Disable worker to stop processing; do not remove an applied V3 migration. Packaged artifacts now predate new production inputs: rebuild for later relevant packaged regression, never bypass freshness guard. Preserve previous ignored diagnostics and all user storage.
+
+---
+
+## Completed P0.3 handoff (historical)
 
 **Snapshot:** 2026-10-20T13:48:48Z, final evidence/continuity session. Entry branch `main`, commit `860dbf9`, clean and ahead21. This following local documentation-only commit closes P0.3; use `git rev-parse HEAD` and `git status --short --branch` for its closing hash/status. No source changes or tests rerun in this closing session. No push, deployment or existing Compose/storage mutation.
 

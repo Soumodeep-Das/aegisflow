@@ -55,7 +55,7 @@ class ControlPlaneArchitectureTests {
     }
 
     @Test
-    void foundationModulesExplicitlyDenyCrossModuleDependencies() throws ClassNotFoundException {
+    void modulesAllowOnlyTheDocumentedProjectionIntakeDependency() throws ClassNotFoundException {
         for (var moduleName : EXPECTED_MODULES) {
             var markerType = Class.forName("com.aegisflow.core." + moduleName + ".FoundationModule");
             var moduleMetadata = markerType.getPackage().getAnnotation(ApplicationModule.class);
@@ -64,13 +64,13 @@ class ControlPlaneArchitectureTests {
                     .as("%s must declare @ApplicationModule", moduleName)
                     .isNotNull();
             assertThat(moduleMetadata.allowedDependencies())
-                    .as("%s must explicitly deny dependencies during P0.1", moduleName)
-                    .isEmpty();
+                    .as("%s must expose only its documented dependencies", moduleName)
+                    .containsExactly(moduleName.equals("correlation") ? new String[]{"eventing"} : new String[]{});
         }
 
         MODULES.forEach(module -> assertThat(module.getAllowedDependencies(MODULES).isEmpty())
-                .as("%s must have no allowed application-module dependencies", module.getIdentifier())
-                .isTrue());
+                .as("%s has the expected dependency policy", module.getIdentifier())
+                .isEqualTo(!module.getIdentifier().toString().equals("correlation")));
     }
 
     @Test

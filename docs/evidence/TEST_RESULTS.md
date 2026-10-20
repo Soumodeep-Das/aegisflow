@@ -1,5 +1,24 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-20/21 — P0.4-A implemented; real PostgreSQL gate NOT verified
+
+Checkpoint static checks on continuation: PowerShell parser accepted verify-projection.ps1 with zero errors; `scripts/verify-docs.ps1` exit0:31 Markdown/20 required/126 local links/7 Mermaid/1 JSON/16 scenarios/60 answered interview questions/10 ADRs/0 issues. `git diff --check` passed. These are static checks, not host script or Mermaid rendering proof.
+
+Baseline `d4d4b7c`; new working-tree A source/tests. Java21.0.12.1, Maven wrapper3.10.0, offline workspace cache. JAVA_HOME set to the documented Temurin21 directory; TEMP/TMP set to repository `.cache/tmp`.
+
+Executed from repository root:
+
+```powershell
+.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane '-Dtest=ProjectionModelTests,ControlPlaneArchitectureTests,EventValidatorTests,KafkaInboxConsumerTests' -l .cache/p04a-unit.log test
+.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane -Pinfrastructure-tests '-Dit.test=DurableProjectionIT,PostgresInfrastructureIT' -l .cache/p04a-postgres-available.log test-compile failsafe:integration-test failsafe:verify
+```
+
+First: exit0, BUILD SUCCESS at2026-10-20 21:38:30IST,30.678s. Architecture4 + ProjectionModel11 + EventValidator23 + KafkaInboxConsumer5 =43 executed, zero failures/errors/skips. Pure reduction covers ordering/versions/conflicts/rejection/deadline math; this does not prove SQL durability.
+
+Second: exit0/BUILD SUCCESS at21:39:17IST,18.740s, but **0 executed /16 skipped** (DurableProjectionIT12, PostgresInfrastructureIT4). Testcontainers could not open `\\.\pipe\docker_engine`: AccessDeniedException. Maven's green exit is NOT gate success. No real PostgreSQL proof exists for A. Source/test compilation succeeded. A subsequent migration-only hardening makes BLOCKED reason explicitly NOT NULL in its conditional CHECK; that SQL still awaits the same host gate.
+
+New `scripts/verify-projection.ps1` runs only these16 database checks, preserves prior/new reports and logs under `.cache/p04a/<id>`, requires fresh exact counts and rejects skips. It uses Testcontainers' disposable PostgreSQL/dynamic ports, no Kafka/pipeline combined classpath, no fixed HTTP port and no existing Compose volumes. Completed43 tests and old P0.3 live suites are not repeated. Require the actual host result before implementing B/C.
+
 ## 2026-10-20 — P0.3 final packaged acceptance PASSED on `860dbf9`
 
 Owner command from the existing repository, with JAVA_HOME=`C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot`:

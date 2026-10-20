@@ -3,5 +3,5 @@
  */
 @org.springframework.modulith.ApplicationModule(
         displayName = "Correlation",
-        allowedDependencies = {})
+        allowedDependencies = {"eventing"})
 package com.aegisflow.core.correlation;

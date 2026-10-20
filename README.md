@@ -1,10 +1,10 @@
 # AegisFlow
 
-> **Status:** P0.3 is implemented and verified as of2026-10-20. All three simulator outbox relays, durable Core inbox, failure/replay checks and the packaged scheduled pipeline/Core restart gate passed. P0.4/recovery/AI and remote pushes remain unapproved.
+> **Status,2026-10-21:** P0.3 is complete; P0.4 is explicitly approved. P0.4-A durable facts/projection code is implemented with 43 focused tests passed, but its 16 PostgreSQL checks were skipped because this coding session cannot access Docker. No invariant engine or incidents are implemented yet. Recovery/AI and remote pushes remain unapproved.
 
 **Latest verified checkpoint:** packaged acceptance on `860dbf9` passed1 test,0 failures/errors/skips at19:17:57IST. The final clean reactor on `7d8f473` previously passed134 tests and built the unchanged production artifacts; the final run deliberately did not repeat it. Earlier Core50/source-relay passes and failed attempts remain separately recorded in [test evidence](docs/evidence/TEST_RESULTS.md).
 
-**Owner action now:** none required for P0.3 verification. Preserve the repository and ignored evidence folders. The [handoff](docs/HANDOFF.md) records the completed checkpoint and the proposed P0.4 task, which requires new approval. Settings/flow and debugging are in [the guide](docs/learning/CODEBASE_GUIDE.md).
+**Owner action now:** run `scripts/verify-projection.ps1` under PowerShell7 with Java21 and Docker Desktop; require 16 actual passes, zero skips. See the exact command in [handoff](docs/HANDOFF.md). Do not repeat completed P0.3 suites. Core's opt-in `CORE_PROJECTION_ENABLED=true` enables the new worker in the postgres profile; leave it disabled until the database gate passes. Settings/flow and debugging are in [the guide](docs/learning/CODEBASE_GUIDE.md).
 
 Final P0.2 host evidence (2026-10-16, source `7a90c57`, completed checkpoint `86452ef`): **full clean reactor BUILD SUCCESS, 38 default tests + 29 real PostgreSQL ITs**, zero failures/errors/skips. All four packaged foundation JARs returned HTTP 200/UP; documentation checks passed. These remain preserved results, not a substitute for P0.3 verification. The current coding session cannot access Docker's engine pipe. See [current handoff](docs/HANDOFF.md) and [test evidence](docs/evidence/TEST_RESULTS.md).
 

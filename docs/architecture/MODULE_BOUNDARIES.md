@@ -1,6 +1,6 @@
 # P0.1 module boundaries
 
-**Implemented:** 2026-10-12. These are empty architectural boundaries, not completed business modules. See [system architecture](SYSTEM_ARCHITECTURE.md) for the future design and [test evidence](../evidence/TEST_RESULTS.md) for executed results.
+**Current,2026-10-21:** ten modules remain. Eventing implements verified P0.3 intake and the new projection port/adapter; correlation implements P0.4-A facts/projection (database gate pending). Detection/evidence and other business modules remain placeholders. See [system architecture](SYSTEM_ARCHITECTURE.md) and [test evidence](../evidence/TEST_RESULTS.md).
 
 ## Deployable boundaries versus Java modules
 
@@ -43,7 +43,7 @@ For example, [`eventing/package-info.java`](../../control-plane/src/main/java/co
 package com.aegisflow.core.eventing;
 ```
 
-The explicit empty `allowedDependencies` means **no dependency on another Core application module is permitted**. It is not the unrestricted annotation default. P0.1 deliberately introduces no invented APIs between placeholders. When a later milestone needs an interaction, name the allowed dependency, design a narrow exported API or typed event, and update tests and architecture in the same change. Internal repositories must remain inaccessible to other modules.
+The explicit empty `allowedDependencies` still forbids module dependencies in nine modules. P0.4-A allows only correlation → eventing, through public `ProjectionInbox` typed records and bounded transaction-required operations. Its implementation stays in eventing/internal; correlation never imports it. This is not an unrestricted annotation default. Any future detection dependency needs its own narrow API and explicit test/documentation change.
 
 ## Automated enforcement
 
@@ -51,7 +51,7 @@ The explicit empty `allowedDependencies` means **no dependency on another Core a
 
 1. `ApplicationModules.of(AegisFlowCoreApplication.class).verify()` checks cycles, access to module internals, and declared dependency rules.
 2. Discovery must return exactly the ten documented module identifiers; a missing/new package cannot silently change the architecture.
-3. Every module must declare an empty dependency allowlist, and the resolved Modulith model must also permit no application-module dependencies.
+3. Only correlation may declare `eventing`; all nine other allowlists remain empty. The resolved Modulith model must match that narrow dependency.
 4. ArchUnit imports compiled Core main classes and rejects references to simulator packages.
 
 Each simulator's `src/test/java/com/aegisflow/simulator/<name>/<Name>SimulatorArchitectureTest.java` also scans its compiled main classes for forbidden Core/sibling package references. For example, [`OrderSimulatorArchitectureTest.java`](../../simulators/order-service/src/test/java/com/aegisflow/simulator/order/OrderSimulatorArchitectureTest.java) rejects Core, Payment, and Warehouse references. This small bytecode check supplements the Maven artifact ban; it is not a complete runtime isolation or credential test.
