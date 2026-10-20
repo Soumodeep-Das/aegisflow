@@ -1,6 +1,8 @@
 # Data Model
 
-## P0.4-B V4 — implemented, PostgreSQL gate pending
+## P0.4-B V4 — implemented, PostgreSQL gate passed
+
+Host verification on892ac17 passed17 detection +4 Core migration/startup tests, zero failures/errors/skips. No incident schema or complete P0.4 acceptance is claimed.
 
 `invariant_evaluation` stores tenant/evaluation UUID PK, tenant/transaction FK, INV-002/v1, projection version, PENDING/ENFORCED phase, unsettled flag, result/reason, evaluated_at, frozen contract/config/duration/lateness/deadlines and the exact bounded observation snapshot. Unique tenant/transaction/rule/version/projection-version/phase/unsettled prevents repeated logical decisions. Runtime SELECT/INSERT only; no UPDATE/DELETE. Checks reject definite results on unsettled work, pre-enforcement violations and mismatched observation tenant/transaction.
 

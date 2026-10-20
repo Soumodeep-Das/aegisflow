@@ -1,6 +1,6 @@
 # ADR 0011: Clock-driven immutable invariant evaluations
 
-- **Status:** Accepted for P0.4-B implementation; real PostgreSQL gate pending
+- **Status:** Accepted; real PostgreSQL gate passed on892ac17 (2026-10-21), see TEST_RESULTS for scope
 - **Date:** 2026-10-21
 - **Builds on:** ADR0010 and verified P0.4-A; no intake or projection contract replacement
 

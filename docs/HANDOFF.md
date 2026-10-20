@@ -1,4 +1,16 @@
-# Handoff — P0.4-B implemented; real database gate pending
+# Handoff — P0.4-B database gate PASSED
+
+## Current checkpoint — 2026-10-20T19:02:20Z / 2026-10-21 00:32:20IST
+
+Owner ran verify-detection.ps1 on clean main/source `892ac17`, Java21/Docker29.8.2. Saved log confirms Maven BUILD SUCCESS, exit0,46.189s. Independently inspected selected XML: DeadlineDetectionIT17 (18.223s) + PostgresInfrastructureIT4 (10.954s), zero failures/errors/skips. Earlier18 focused tests passed separately; no combined39-test run claimed. Do not count other stale copied reports.
+
+Evidence: `.cache/p04b/0eacae6f641c4c51ba4e57178bc155c2/postgres.log` and selected reports. B's real database acceptance gate is satisfied. This following local docs commit records the result; resolve closing hash/status with Git. No source changes, repeated tests, push, deployment or existing storage mutation.
+
+**Exact next task:** approved P0.4-C durable incident/evidence creation from immutable evaluations. Preserve tenant identity, DETECTED lifecycle, database-enforced episode deduplication, exact evaluation/fact provenance and immutable late-evidence history. Make the evaluation-to-incident boundary restart-safe; do not assume evaluation commit means incident completion. Prove idempotent/concurrent creation and rollback/restart before D full pipeline verification. No owner command or new P0.4 approval needed. Full P0.4 remains incomplete; no P0.5/recovery/AI/push.
+
+**Verified scope limits remain:** PostgreSQL transactions and worker recreation, direct production scheduled callback and synthetic read failure; not physical database/process restart or packaged enabled-mode wiring. Those broader cases remain for relevant later integration. Paths/settings/recovery instructions in the historical implementation checkpoint remain applicable.
+
+## Historical implementation checkpoint — database gate then unavailable
 
 ## Current checkpoint — 2026-10-20T18:57:16Z / 2026-10-21 local, Codex
 

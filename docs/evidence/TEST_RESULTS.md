@@ -1,5 +1,15 @@
 # Test evidence — P0.4 and preserved completed milestones
 
+## 2026-10-21 — P0.4-B host gate PASSED on 892ac17
+
+Evidence-only closing checks: verify-docs.ps1 exit0 (32 Markdown/65 Q&As/11 ADRs/0 issues); git diff --check passed. No executable suite repeated.
+
+Owner command: Java21 JAVA_HOME followed by bundled PowerShell7 `-NoProfile -File .\scripts\verify-detection.ps1`. Docker29.8.2. Saved Maven log: BUILD SUCCESS at00:32:20IST (2026-10-20T19:02:20Z),46.189s, exit0. Independently inspected selected XML: DeadlineDetectionIT17/18.223s and PostgresInfrastructureIT4/10.954s,21 executed with zero failures/errors/skips. Script printed complete PASS; numeric outer-shell exit not supplied.
+
+Evidence: `.cache/p04b/0eacae6f641c4c51ba4e57178bc155c2/postgres.log` and the two selected reports. Other copied historical reports are excluded. Earlier18 focused tests were not rerun, and previous21 skips remain historical evidence, superseded by this actual host pass.
+
+This verifies the recorded B database scheduling/evaluation scenarios, V4 migration/startup, concurrency/idempotency, rollback, worker recreation, backlog/blocked suppression, late history and tenant/grant guards. Synthetic read outage/direct callback do not prove physical DB/process restart or packaged wiring. No incidents or full P0.4 completion claimed.
+
 ## 2026-10-21 — P0.4-B focused pass, PostgreSQL NOT verified
 
 Closing static checks: verify-detection.ps1 parses without errors; scripts/verify-docs.ps1 exit0 (32 Markdown/20 required/124 local links/7 Mermaid/1 JSON/16 scenarios/65 Q&As/11 ADRs/0 issues); git diff --check passes. No Mermaid rendering claim. V4's observation identity NULL check was hardened after the skipped attempt; SQL remains unverified, not a passed migration.

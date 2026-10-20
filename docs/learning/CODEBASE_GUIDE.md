@@ -1,5 +1,7 @@
 # Codebase guide
 
+**Latest verification,2026-10-21:** B's17 detection and4 Core PostgreSQL startup tests passed on892ac17 with zero failures/errors/skips; earlier18 focused tests passed separately. The B walkthrough/debug exercise below now has its recorded real SQL proof. Earlier pending/host-command statements are historical; no rerun needed. C incidents/evidence and D full integration remain next, not implemented.
+
 ## P0.4-B: time-driven decisions, not incidents
 
 B implementation has18 focused tests passed;21 PostgreSQL checks skipped due to this session's Docker denial. Run scripts/verify-detection.ps1 on the host. A remains verified; no completed A suite rerun. This section supersedes earlier pending A/current-next-B statements.

@@ -1,5 +1,11 @@
 # Development journal
 
+## 2026-10-21 — record B real PostgreSQL acceptance
+
+Owner's verify-detection.ps1 on892ac17 passed21 tests,0 failures/errors/skips at00:32:20IST,46.189s. Confirmed saved log and the selected17 detection/4 startup XML reports; excluded other historical reports. Earlier18 focused tests were not repeated. Evidence .cache/p04b/0eacae6f641c4c51ba4e57178bc155c2. Recorded exact outcomes and next task in TEST_RESULTS/HANDOFF, updated active status and guide. Source unchanged, no tests rerun or push.
+
+B architecture gate is complete within its recorded scope. Next approved work: C durable DETECTED incidents/evidence, idempotent recoverable consumption of evaluations, late-evidence preservation; then D integration. No owner command needed for this checkpoint.
+
 ## 2026-10-21 — P0.4-B implementation, stop at host SQL gate
 
 Closing static checks: verify-detection.ps1 parses without errors; scripts/verify-docs.ps1 exit0 (32 Markdown/20 required/124 local links/7 Mermaid/1 JSON/16 scenarios/65 Q&As/11 ADRs/0 issues); git diff --check passes. No Mermaid rendering claim. V4's observation identity NULL check was hardened after the skipped attempt; SQL remains unverified, not a passed migration.

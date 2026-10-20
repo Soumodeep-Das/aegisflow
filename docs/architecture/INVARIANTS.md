@@ -1,6 +1,6 @@
 # Business and Safety Invariants
 
-**Current P0.4-B checkpoint,2026-10-21:** A remains verified. B deterministic INV-002 and durable evaluation/sweep implementation has18 focused tests passed; all21 PostgreSQL checks skipped due to Docker pipe denial. Run `scripts/verify-detection.ps1` on the host; do not repeat A. Require21 actual passes before C incidents/evidence. B and full P0.4 are not yet verified; no P0.5/recovery/AI or push. Older dated statuses below are history.
+**Current P0.4-B checkpoint,2026-10-21:** B's host gate passed on `892ac17`:17 detection +4 Core PostgreSQL startup/migration tests, zero failures/errors/skips. Earlier18 focused tests passed separately; A remains verified. No owner rerun needed. Next approved task is C durable incidents/evidence, then D full integration. Full P0.4 is not complete; no P0.5/recovery/AI or push. Older pending statuses below are history.
 
 ## Active P0.4-A boundary — 2026-10-21
 
