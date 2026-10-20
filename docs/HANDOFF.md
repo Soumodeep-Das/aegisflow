@@ -1,4 +1,28 @@
-# Handoff — Core gate passed; final reactor and packaged scheduling next
+# Handoff — Core50 gate passed; final packaged acceptance ready
+
+**Latest checkpoint:** 2026-10-20T06:31:24Z, source/test continuation from clean `main` at `d8d0c51`, ahead18. This following local test/docs commit adds the final acceptance gate. Resolve closing hash/status with Git. Production Java, POMs, schemas, source relays and Compose are unchanged; no push or existing storage mutation.
+
+**Completed evidence preserved:**36 Core unit/boundary/port +10 actual pipeline cases on `c96dc5c`;4 ordinary Core migration/startup checks on `42b247d`, passed11:45:16IST. All50 have real passing results across separate runs; do not repeat those live gates. Evidence checkpoint `d8d0c51` records the last result. P0.3 final acceptance remains pending.
+
+**Added:** Core test `eventing/internal/{PackagedApplicationProcess,PackagedProcessTests,PackagedPipelineScenario}.java` and `scripts/verify-p03-final.ps1`. The live case uses existing actual service seeding with manual scheduling suppressed, proves all seed outboxes still PENDING, closes those contexts, then starts four executable JARs with real schedulers and own credentials. HTTP ports are OS-assigned via port0 and parsed only from each new process's log. All4 health endpoints and3 source deliveries must pass. A second Order intent is held with future retry metadata in its own test DB; Core process is stopped, intent released/published while Core is offline, then a new Core JAR resumes on the same database/group and must accept the backlog with4 total immutable inbox rows. Only owned Process handles are stopped; no foreign PID search/kill. All infrastructure is new Testcontainers-owned resources.
+
+**Actually checked:** four new pure process/env/port/health checks passed at11:54:54IST,16.850s,0 failures/errors/skips. Initial4 errors came from eager HttpClient selector initialization under this session's denied Java loopback; transport initialization is now lazy and actual HTTP remains required in the live case. New live Failsafe case compiled/discovered but1 skipped at11:58:09IST,21.012s,0 executed because Docker denied. Final test-compile passed12:00:28IST,7.547s after PENDING preconditions. Final script parses with0 errors and exits1 at Docker denial before any build/clean. No packaged scheduler/restart success or final clean reactor is claimed.
+
+**Single next action:** run the following on the Docker-capable host. The script backs up existing reports in ignored `.cache/p03-final/<id>/prior/`, runs the normal clean reactor/default unit+foundation HTTP checks and packages all4 JARs, then selects ONLY the new packaged scenario under pipeline-tests. Completed expensive relay/Core pipeline ITs are not repeated. Every selected report must be fresh and have0 failures/errors/skips. Preserve printed evidence directory, Maven logs and `.cache/packaged-pipeline/<id>/*.log` on failure.
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-p03-final.ps1
+```
+
+**Resume:** if the reactor passed but the new scenario failed, a test-only repair can use the same verifier with `-PackagedOnly` to avoid repeating the build; it requires existing JARs newer than their production inputs. Production changes require rebuilding. After actual full PASS, inspect reports/logs, record final counts and mark P0.3 complete. Then stop and require approval for P0.4. Never infer a pass from local skip/compile results.
+
+**Remaining limits:** the new packaged case is unverified here; it tests one three-source intake/restart sequence, not a coordinated business saga, load/SLO or replicated failover. Existing manual pipeline already covers duplicate/poison/rollback/ack-window semantics. Core quarantine/operator/retention limitations remain. Child processes receive only essential OS variables and their own generated DB/Kafka configuration. No private .env or existing Compose project is used. Stopping at this documented Docker-dependent gate.
+
+**Closing checks:** final script parser0 errors; production-input freshness scans passed for all4 module paths. Documentation checker exit0:30 Markdown/20 required/125 links/7 Mermaid/1 JSON/16 scenarios/55 Q&As/9 ADRs/0 issues. Whitespace passed. Final compile and4 new pure guards passed; no live success inferred.
+
+---
+
 
 **Latest host evidence checkpoint:** 2026-10-20T06:20:22Z, clean `main` at `42b247d`, ahead17. Owner ran bundled PowerShell7 `verify-core-inbox.ps1 -CoreStartupOnly` with Java21.0.12.1/Docker29.8.2; BUILD SUCCESS at11:45:16IST (06:15:16Z),24.232s. Saved XML independently confirms4 passed,0 failures/errors/skips,12.549s. Core V1/V2 migrated/validated, actual HTTP health and runtime-role/database boundaries passed without simulator migration contamination. Numeric outer-shell exit not printed. No tests rerun in this evidence checkpoint.
 

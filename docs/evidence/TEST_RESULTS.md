@@ -1,5 +1,23 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-20 — final packaged acceptance prepared after Core50 passed
+
+No production/relay/schema changes. Java21/Maven3.10 offline workspace cache; TEMP/TMP=`.cache/tmp`. `M` is `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository'`.
+
+| Exact command after M | Actual result |
+|---|---|
+| `-pl control-plane '-Dtest=PackagedProcessTests' -l .cache/p03-packaged-process-unit.log test` | exit1,11:53:21IST,14.015s;4 errors/0 failures/0 skips from eager HttpClient initialization requiring sandbox-denied loopback; corrected with lazy transport |
+| same selector `-l .cache/p03-packaged-process-unit-rerun.log test` | exit0,11:54:54IST,16.850s;4 passed,0 failures/errors/skips |
+| `-pl control-plane '-Pinfrastructure-tests,pipeline-tests' '-Dit.test=PackagedPipelineScenario' -l .cache/p03-packaged-available.log test-compile failsafe:integration-test failsafe:verify` | exit0,11:58:09IST,21.012s;1 skipped,0 executed under Docker denial; not a pass |
+| `-pl control-plane -Ppipeline-tests -l .cache/p03-packaged-final-compile.log test-compile` | exit0,12:00:28IST,7.547s after PENDING-source preconditions; compile only |
+
+New process unit checks cover owner-only child configuration, separate executable-JAR classpath/port0, extracting actual HTTP ports, and health UP with optional Actuator groups while rejecting malformed/duplicate/trailing/nested false positives. Live case targets actual packaged schedulers for3 source events and real Core process restart with a fourth committed intent published during its absence. The seed helper only creates real business/outbox transactions and never invokes relay polling; preconditions require PENDING outboxes and empty Core inbox.
+
+Bundled PowerShell7 `scripts/verify-p03-final.ps1` with Java21 exited1 at Docker pipe denial before Maven/clean; its parser reports0 errors. Final reactor and packaged scenario remain unverified. Host script backs up existing reports, builds normal default reactor/JARs (no infrastructure profile), checks every fresh default report, then requires1 actual packaged pass. It does not rerun completed source relay or Core manual pipeline ITs. Detailed Maven logs are under ignored `.cache/p03-final/<id>`; child logs under `.cache/packaged-pipeline/<id>`. `-PackagedOnly` resumes only the new scenario with fresh-enough existing production JARs after a successful build. Earlier Core50 evidence remains passed separately.
+
+Closing parser0 errors; runtime production-input enumeration/freshness setup passed for all4 modules. Documentation checker exit0:30 Markdown/20 required/125 links/7 Mermaid/1 JSON/16 scenarios/55 Q&As/9 ADRs/0 issues. Whitespace passed. No final reactor/live packaged result is claimed by static checks.
+
+
 ## 2026-10-20 — ordinary Core startup gate passed on `42b247d`
 
 Owner ran bundled PowerShell7 `-NoProfile -File .\scripts\verify-core-inbox.ps1 -CoreStartupOnly`, JAVA_HOME=Temurin21.0.12.1, Docker29.8.2. BUILD SUCCESS at11:45:16IST /06:15:16Z;24.232s. Final verifier PASS and saved XML agree: **4 passed,0 failures/errors/skips**,12.549s. Numeric outer-shell exit not printed. No test rerun.

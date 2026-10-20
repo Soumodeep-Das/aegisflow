@@ -1,5 +1,40 @@
 # Codebase guide
 
+## Final executable-JAR scheduling check (2026-10-20; live run pending)
+
+New actual paths are `control-plane/src/test/java/com/aegisflow/core/eventing/internal/{PackagedApplicationProcess,PackagedProcessTests,PackagedPipelineScenario}.java` and `scripts/verify-p03-final.ps1`. Existing Core50 and source-relay gates are passed. The remaining check executes packaged processes instead of manually invoking worker polls.
+
+PackagedPipelineScenario starts fresh PostgreSQL instances/broker, uses existing real service contexts to seed3 initial business/outbox events plus a held Order intent, then closes those contexts. It asserts all source intents remain PENDING and Core inbox empty. Four separate `java -jar` processes use their real postgres profile and schedulers. Each receives essential OS variables plus only its own generated DB/Kafka configuration; no inherited Spring/JVM/private owner configuration or .env is loaded. Source schedulers must mark3 intents PUBLISHED and Core must durably accept them. Core is then stopped; owner-runtime retry metadata releases the held intent, its source scheduler publishes while Core is offline, and a new Core process with the same DB/group must accept that fourth event.
+
+Each process requests HTTP port0, reads its actual bound port from its own fresh log and proves health200/UP. Strict health parsing accepts optional Actuator groups, preserving the earlier readiness-parser lesson. Kafka retains its verified explicit loopback endpoint; PostgreSQL uses mapped URLs. Cleanup holds only Process objects created by this test and never enumerates foreign PIDs or deletes existing volumes. Child logs survive in `.cache/packaged-pipeline/<id>`.
+
+The final script preserves prior reports under `.cache/p03-final/<id>/prior` before `clean verify`. This normal reactor runs default unit/foundation HTTP checks and builds current executable JARs; expensive completed relay/Core pipeline ITs are not selected. A separate pipeline-profile Maven invocation runs only PackagedPipelineScenario. `-PackagedOnly` can resume that final phase after a test-only repair if JARs are newer than main sources/resources/POMs. Actual counts come from fresh XML; skips cannot pass.
+
+Debug exercise: inspect printed child log paths if the case fails. Expected source state before process launch is PENDING, first Core inbox count3, held intent still PENDING, then PUBLISHED while Core is stopped, then Core count4 after restart. If an application exited, inspect its own log before changing any port. A health response containing groups is valid; a root DOWN/nested UP response is not.
+
+Four new pure process/env/port/health guards pass; the live scenario is compiled but skipped here under Docker denial. Production components and previously verified behavior are unchanged.
+
+### Q51. Why verify executable JARs after a Spring-context integration test?
+
+An executable artifact has its own dependency/resource classpath and normal application lifecycle. It can expose packaging, profile, scheduler or migration-discovery problems that manual worker polls inside a shared test JVM do not exercise.
+
+### Q52. Why use HTTP port0 but an explicit Kafka advertised host port?
+
+The HTTP caller discovers the bound endpoint from its own process's startup log. Kafka clients also learn broker endpoints from metadata, so the advertised address must match the broker's bound endpoint and stay valid across restart.
+
+### Q53. How does the test prove schedulers published the seed events?
+
+It requires PENDING rows before JAR launch, closes the seed contexts, and never calls relay.poll afterward. Publication and Core acceptance can then occur only through the running applications' scheduled workers.
+
+### Q54. Why hold an outbox row instead of delaying the business transaction?
+
+The business change and intent are already committed atomically. Updating only test-owned retry metadata controls publication timing without altering authoritative state, payload or event ID. This creates a durable backlog while Core is stopped.
+
+### Q55. How does process cleanup avoid interfering with another project?
+
+The test retains only the Process handles it created, stops those boundedly and preserves their logs. It does not look up broad Java PIDs, reclaim occupied ports or stop unrelated Docker resources.
+
+
 ## Core ordinary startup verified (2026-10-20)
 
 The host `-CoreStartupOnly` run on `42b247d` passed4/4 checks, confirming that separating the ordinary Core JVM/classpath from pipeline-tests resolves sibling V1 discovery. Together with the prior36+10 passes, durable intake, failure/replay and normal Core startup now have real evidence. The remaining acceptance work is the final normal reactor build and separately packaged applications running their schedulers; the existing pipeline uses manual polls.

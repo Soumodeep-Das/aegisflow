@@ -1,5 +1,14 @@
 # Development journal
 
+## 2026-10-20 — prepare final packaged scheduler/restart acceptance
+
+After recording the successful final4 Core checks in `d8d0c51`, added one final live scenario for all4 executable JARs, real automatic source/Core scheduling and actual Core process restart with Kafka backlog. Existing seed services commit business/outbox state; PENDING preconditions prevent the seed harness from satisfying publication. A future-due second Order intent is released only after Core stops; same DB/group restart must receive it without duplicating the existing3 rows. Tests own all processes/containers, retain logs, use port0 for HTTP and the verified Kafka loopback fixture, and pass only each child's own credentials.
+
+Added4 pure process guards; first run errored because static HttpClient initialization touched sandbox-denied loopback. Lazy transport corrected that test coupling;4 checks then passed. New packaged live case compiled but skipped because Docker remains denied; final compile passed after stronger seed preconditions. No live packaged claim or repeated completed Core50/relay suites.
+
+Final verifier preserves reports before normal clean default reactor/packaging, selects only the new packaged scenario, rejects skips/stale JARs/reports and supports packaged-only continuation. Exact commands/results in TEST_RESULTS. Next: host final command, record actual default count+packaged result; then close P0.3 only on success. No P0.4, push or existing storage deletion.
+
+
 ## 2026-10-20 — close ordinary Core startup gate
 
 Host partial verifier on `42b247d` passed all4 Core migration/startup/role checks with0 failures/errors/skips at11:45:16IST,24.232s; independently checked XML12.549s. No repeat of the already-passed36+10. This closes the classpath contamination repair and combined50-case Core gate. The remaining authorized work is final clean packaging/regression and actual scheduled packaged applications with Core process restart, before P0.3 completion. No P0.4, push or existing storage mutation.
