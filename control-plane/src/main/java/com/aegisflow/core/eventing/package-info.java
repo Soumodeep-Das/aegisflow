@@ -1,5 +1,6 @@
 /**
- * Validates incoming event contracts and will own durable inbox and quarantine behavior.
+ * Validates incoming contracts and owns durable inbox/quarantine acceptance and Kafka offsets.
+ * Business correlation and detection remain separate later modules.
  */
 @org.springframework.modulith.ApplicationModule(
         displayName = "Eventing",

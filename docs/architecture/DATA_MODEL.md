@@ -1,5 +1,12 @@
 # Data Model
 
+**Core P0.3 implementation,2026-10-20 (live gate pending):** new `control-plane/.../V2__durable_event_inbox.sql` adds Core-only `inbox_message` and `quarantine_record`; V1s unchanged. Inbox composite PK is `(tenant_id,source_system,event_id)`; fields include broker coordinates/channel, canonical normalized envelope/hash/profile, raw hash, required identities/schema/time and DB receive time. Source/topic/type pairs and envelope-column identity are CHECK-constrained; transaction lookup index is tenant-first. Runtime grants are SELECT/INSERT only, so accepted content is immutable. A conflicting duplicate adds quarantine and never overwrites acceptance.
+
+P0.3 stores `status=ACCEPTED` in one local transaction: durable validated intake, with no derived facts/projection yet. The older PROCESSED/fact/projection model below is the P0.4 target and must not be inferred from intake status. Canonical profile is `aegisflow-inbox-json-v1`; source outbox profiles are unchanged. Quarantine is technical/non-tenant evidence with UUID PK and unique `(channel_identity,topic,partition_id,offset_id,raw_payload_hash)`, fixed reason, byte length, receive time and UNREVIEWED status. No raw invalid bytes, claimed tenant authority, automatic replay, security-signal workflow or business incident is introduced.
+
+The new migration/real Core behavior is compiled but unverified on PostgreSQL here because Docker access is denied. Earlier source-relay gates are passed. See current TEST_RESULTS.
+
+
 **P0.3 sibling relay update (2026-10-19):** PaymentOutboxStore and WarehouseOutboxStore now use the same existing V1 status/attempt/retry/lease/fencing metadata as Order, with owner-runtime column UPDATE grants unchanged. No schema migration, shared table or cross-service access was introduced. Separate REQUIRES_NEW claims/completion preserve immutable event payloads. Both source relays compile/unit-test;24 new live DB/Kafka tests are pending host execution, not passed. Core has no inbox tables yet; its approved next work needs a new migration rather than a V1 rewrite. Order's real3-test Kafka gate is passed.
 
 **Status:** P0.2 implemented subset verified on real PostgreSQL at the 2026-10-16 host gate. The logical future model below is preserved. Only the implemented subset in section 0 currently has migrations/code.

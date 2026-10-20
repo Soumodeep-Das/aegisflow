@@ -4,9 +4,9 @@
 
 **Latest gate passed:** Payment/Warehouse host verification on `c887490`,2026-10-20 10:57:43IST:40 unit/boundary +24 real PostgreSQL/Kafka tests passed, zero failures/errors/skips. The Flyway URL repair is live-verified. Earlier failure is retained in TEST_RESULTS; no repeat needed.
 
-**Observed product state:** P0.2 and P0.3-A infrastructure are complete. Order's27default+17PostgreSQL and3 real Kafka tests passed; Payment/Warehouse source relay gates now also passed. Core inbox is unfinished. P0.3 is incomplete; P0.4 remains unapproved.
+**Observed product state:** P0.2/P0.3-A and all three source-relay gates passed. Core durable intake and the actual three-owner pipeline test are now implemented;36 unit/boundary/port tests pass, live Core gate is pending. P0.3 incomplete; P0.4 unapproved.
 
-**Current first unfinished gate:** implement Core durable inbox/quarantine with trusted topic/source/tenant binding, database uniqueness/canonical duplicate comparison and post-DB-commit offsets. Prioritize one complete actual simulator→outbox→Kafka→Core inbox demonstration and failure/replay cases, then final reactor. Core is still unwritten. Packaged scheduling remains separate from manual-poll tests; P0.3 incomplete. No owner command needed now.
+**Current first unfinished gate:** run `scripts/verify-core-inbox.ps1` on the Docker-capable Windows host. Require36 Core unit/boundary/port +14 real PostgreSQL/pipeline tests with no skips. Record and fix the first observed failure. Then final reactor/packaged scheduling acceptance. No repeat of completed source-relay suites merely to resume. Core V2 and durable pipeline are unverified here because Docker access is denied.
 
 **Final P0.2 result:** the full clean reactor succeeded at 19:45:47 IST (2:17), 38 default + 29 real PostgreSQL tests with zero failures/errors/skips, followed by four packaged foundation JARs returning HTTP 200/UP and a zero-issue documentation check. The report counter's incomplete glob is corrected using all four real XML reports; no business code changed after verification. The separate persistent-Compose prerequisite subsequently passed on 2026-10-17. Earlier dated failures below remain historical.
 

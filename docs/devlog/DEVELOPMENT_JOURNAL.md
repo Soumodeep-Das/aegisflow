@@ -1,5 +1,18 @@
 # Development journal
 
+## 2026-10-20 — Core durable acceptance and reproducible pipeline checkpoint
+
+Resumed clean `4cb4ee6` with all three source-relay gates already passed. Added Core eventing/internal policy, validation, JDBC transaction store, Kafka consumer and disabled-by-default wiring; V2 adds append-only inbox/quarantine tables and least-privilege grants. Core status ACCEPTED deliberately means durable intake only; correlation/facts/detection stay P0.4 under the existing approved boundary. Canonical consumer hash has its own version because it normalizes arbitrary supported input; producer hashes/V1s stay unchanged. Only fixed broker coordinates/hash/reason are kept for malformed receipts, avoiding storage of untrusted potentially sensitive raw bytes. This limits later forensic replay and is recorded.
+
+Added strict initial-event JSON Schema plus semantic validation, configured per-source tenant authority and DB-level duplicate/conflict handling. Poll one raw-byte record, commit Core transaction, then commit exact offset; transient processing or ambiguous acknowledgement rewinds. Core still uses only its own datasource. Test-only pipeline assembly starts actual owner service contexts/relays plus Core with isolated databases and broker; no deployable imports another implementation artifact. Added ten planned end-to-end/failure invocations and four changed Core migration/startup checks.
+
+Local tests: final36 checks passed (23 validation,5 consumer,4 boundaries,4 port/URL). Review added a poison guard for PostgreSQL-unsafe NUL/unpaired-surrogate text and extreme optional numbers, preventing permanent insertion failures from becoming endless transport retries. All modules compiled. New live tests were discovered but all12 reported cases skipped under this session's Docker denial (8 methods include a disabled unexpanded parameterized test; live target is10+4). Script rejects skips. Test lambda compilation and one PowerShell comma quoting error were fixed; exact commands/outcomes remain in TEST_RESULTS. No real inbox/migration/pipeline success inferred.
+
+Owner additionally requested learning from earlier recurring port failures. Reviewed the recorded causes only: explicit Kafka port must survive broker restart; both JDBC connections need mapped URLs; Compose output must be a single IPv4 binding; the old health false-negative was a response parser issue. Reused the verified Kafka mode/port fixes, passed four new guards, and kept pipeline contexts infrastructure-only/web NONE with port0 fallback. Rare port selection/bind races fail safely; no foreign listener is stopped. No completed relay/Compose gate rerun.
+
+Next: host `verify-core-inbox.ps1`, fix only the first observed failure, record36+14 actual zero-skip results. Then finish final reactor/packaged scheduling acceptance before declaring P0.3 complete. No P0.4 or push. This source/docs checkpoint is local and leaves precise continuation if access ends.
+
+
 ## 2026-10-20 — close Payment/Warehouse real relay gate
 
 Owner reran the unchanged focused verifier on `c887490`: BUILD SUCCESS at10:57:43IST,3:43;40 unit/boundary and24 real PostgreSQL/Kafka tests passed, zero failures/errors/skips. Independently checked ten fresh saved XML reports without rerunning anything. Both Flyway URL fixes now have real startup/migration evidence. Both sibling relays pass claim/fencing/concurrency, acknowledged delivery, broker outage/restart and ack-before-completion-rollback redelivery tests.

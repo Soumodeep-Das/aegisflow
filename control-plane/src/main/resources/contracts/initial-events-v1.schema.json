@@ -1,0 +1,281 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:aegisflow:initial-event:1",
+  "title": "AegisFlow initial simulator events, major 1",
+  "type": "object",
+  "required": [
+    "tenantId",
+    "eventId",
+    "sourceSystem",
+    "businessTransactionId",
+    "schemaVersion",
+    "occurredAt",
+    "correlationId",
+    "eventType",
+    "details"
+  ],
+  "properties": {
+    "tenantId": {
+      "$ref": "#/$defs/id"
+    },
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "sourceSystem": {
+      "enum": [
+        "order-service",
+        "payment-service",
+        "warehouse-service"
+      ]
+    },
+    "businessTransactionId": {
+      "$ref": "#/$defs/id"
+    },
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]{1,4}$"
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "correlationId": {
+      "$ref": "#/$defs/id"
+    },
+    "eventType": {
+      "type": "string"
+    },
+    "details": {
+      "type": "object"
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "sourceSystem": {
+          "const": "order-service"
+        },
+        "eventType": {
+          "const": "OrderCreated"
+        },
+        "details": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/order"
+            },
+            {
+              "required": [
+                "amount",
+                "currency",
+                "lineItems"
+              ],
+              "properties": {
+                "amount": {
+                  "$ref": "#/$defs/amount"
+                },
+                "currency": {
+                  "$ref": "#/$defs/currency"
+                },
+                "lineItems": {
+                  "$ref": "#/$defs/items"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "sourceSystem": {
+          "const": "payment-service"
+        },
+        "eventType": {
+          "enum": [
+            "PaymentAuthorized",
+            "PaymentDeclined"
+          ]
+        },
+        "details": {
+          "type": "object",
+          "required": [
+            "orderId",
+            "paymentId",
+            "paymentVersion",
+            "amount",
+            "currency"
+          ],
+          "properties": {
+            "orderId": {
+              "$ref": "#/$defs/id"
+            },
+            "paymentId": {
+              "$ref": "#/$defs/id"
+            },
+            "paymentVersion": {
+              "$ref": "#/$defs/version"
+            },
+            "amount": {
+              "$ref": "#/$defs/amount"
+            },
+            "currency": {
+              "$ref": "#/$defs/currency"
+            }
+          }
+        }
+      },
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "PaymentDeclined"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "required": [
+              "reasonCode"
+            ],
+            "properties": {
+              "reasonCode": {
+                "enum": [
+                  "INSUFFICIENT_FUNDS",
+                  "PAYMENT_METHOD_REJECTED",
+                  "RISK_REJECTED",
+                  "SIMULATED_DECLINE"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "properties": {
+        "sourceSystem": {
+          "const": "warehouse-service"
+        },
+        "eventType": {
+          "enum": [
+            "InventoryReserved",
+            "InventoryRejected"
+          ]
+        },
+        "details": {
+          "type": "object",
+          "required": [
+            "orderId",
+            "reservationId",
+            "reservationVersion"
+          ],
+          "properties": {
+            "orderId": {
+              "$ref": "#/$defs/id"
+            },
+            "reservationId": {
+              "$ref": "#/$defs/id"
+            },
+            "reservationVersion": {
+              "$ref": "#/$defs/version"
+            }
+          }
+        }
+      },
+      "if": {
+        "properties": {
+          "eventType": {
+            "const": "InventoryReserved"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "details": {
+            "required": [
+              "items"
+            ],
+            "properties": {
+              "items": {
+                "$ref": "#/$defs/items"
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "details": {
+            "required": [
+              "reasonCode"
+            ],
+            "properties": {
+              "reasonCode": {
+                "const": "OUT_OF_STOCK"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "amount": {
+      "type": "string",
+      "pattern": "^[0-9]{1,15}(\\.[0-9]{1,4})?$"
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9223372036854775807
+    },
+    "order": {
+      "type": "object",
+      "required": [
+        "orderId",
+        "orderVersion"
+      ],
+      "properties": {
+        "orderId": {
+          "$ref": "#/$defs/id"
+        },
+        "orderVersion": {
+          "$ref": "#/$defs/version"
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "required": [
+          "sku",
+          "quantity"
+        ],
+        "properties": {
+          "sku": {
+            "$ref": "#/$defs/id"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000
+          }
+        }
+      }
+    }
+  }
+}

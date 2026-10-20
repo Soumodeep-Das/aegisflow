@@ -1,5 +1,7 @@
 # Business and Safety Invariants
 
+**Core P0.3 source update,2026-10-20:** IntakePolicy validates source/tenant authority, InboxStore uses a tenant/source/event composite unique key and immutable canonical comparison, and KafkaInboxConsumer acknowledges only after committed acceptance/quarantine. Core V2 grants append-only evidence writes and checks payload/relational identities.36 unit/boundary/port tests pass; real Core database/transport gates remain unverified here. SAFE-001/002/004 intake guards do not implement business invariant evaluation, projection or recovery. Source-relay live gates are already passed.
+
 **Status:** Phase 0 specification. Deadlines are configurable design assumptions until product values are chosen. No invariant engine or measured result exists yet.
 
 **P0.3-B verified subset, 2026-10-19:** the opt-in Order relay's SAFE-005 claim/completion mechanism uses DB-clock leases and tenant/owner/fencing compare-and-set. All nine real PostgreSQL relay ITs now pass on the host, proving the recorded SQL concurrency/stale-completion cases. Actual Kafka replay and inbox idempotency remain unverified; no recovery worker or invariant engine was added. Older no-worker text below is superseded only for this Order transport worker.

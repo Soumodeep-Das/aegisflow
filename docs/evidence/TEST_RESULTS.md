@@ -1,5 +1,32 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-20 — Core inbox implementation from `4cb4ee6`; real pipeline pending
+
+Java21.0.12.1/Maven3.10, offline workspace cache, TEMP/TMP=`.cache/tmp`. `M` means `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository'`. Commands ran from the repository root. No completed source relay suites rerun.
+
+| Exact command after M | Log / observed outcome |
+|---|---|
+| `-pl control-plane -l .cache/p03-core-inbox-compile.log test-compile` | exit0,11:08:26IST,9.316s; Core implementation compiled |
+| `-pl control-plane '-Dtest=EventValidatorTests,KafkaInboxConsumerTests,ControlPlaneArchitectureTests' -l .cache/p03-core-inbox-unit.log test` | exit1,11:10:06IST,8.886s; three new-test lambda captures did not compile; corrected |
+| same selection `-l .cache/p03-core-inbox-unit-rerun.log test` | exit0,11:10:51IST,17.974s;30 tests passed,0 failures/errors/skips |
+| `-Ppipeline-tests -l .cache/p03-pipeline-compile.log test-compile` | exit0,11:13:10IST,11.331s; all five reactor modules compiled, no tests run |
+| `-pl control-plane -Ppipeline-tests '-Dtest=EventValidatorTests,KafkaInboxConsumerTests,ControlPlaneArchitectureTests' -l .cache/p03-core-inbox-final-unit.log test` | exit0,11:14:36IST,28.998s;31 passed:22 validation,5 consumer,4 boundaries;0 failures/errors/skips; includes exact-number regression |
+| `-pl control-plane '-Pinfrastructure-tests,pipeline-tests' '-Dit.test=CorePipelineScenario,PostgresInfrastructureIT' -l .cache/p03-core-pipeline-available.log test-compile failsafe:integration-test failsafe:verify` | exit0,11:16:49IST,32.148s; **12 skipped**,0 executed:8 disabled pipeline methods (parameterized method not expanded to3 cases without Docker),4 existing Core DB/HTTP checks; no live pass |
+| `-pl control-plane '-Dtest=PipelinePortTests' -l .cache/p03-core-port-regression.log test` | exit0,11:20:36IST,11.862s;4 port/URL checks passed,0 failures/errors/skips |
+
+A first unquoted comma-separated profile argument was rejected by PowerShell parsing before Maven started; rerun above quotes it. No test was disabled to resolve an assertion failure. Docker CLI/API probe and bundled PowerShell7 `scripts/verify-core-inbox.ps1` exit1 at named-pipe permission denial. Script parser reports0 errors; new JSON Schema parses as JSON. These results do not grant this session Docker access.
+
+Core unit coverage: required fields, initial schemas/reasons, major/minor handling, parser budgets/malformed UTF-8/duplicate keys/trailing JSON, key/source/tenant authority, canonical amount/time and exact numeric identity, DB-before-offset sequencing, failure rewind, ambiguous offset outcome and scoped consumer settings. Port tests verify explicit IPv4 host binding, rejected invalid ports and mapped JDBC URLs for BOTH runtime and Flyway in all four apps.
+
+Written/compiled live targets: actual simulator service transaction→own outbox→configured relay→real authenticated broker→Core PostgreSQL;3 positive sources,2 negative outcomes, equivalent/changed duplicates, consumer restart after commit-before-ack, actual DB trigger rollback/redelivery, malformed/unsupported/source-spoofed/other-source-only tenant claims, concurrent processing/DB uniqueness, immutable runtime evidence and quarantine receipt uniqueness. Ten expected pipeline invocations plus four relevant existing Core migration/startup tests; none passed locally. The broker fixture retains the verified permission and explicit stable-port fixes. Consumer restart uses a new consumer instance/same group; crash windows are injected exceptions rather than OS process kills. Scheduling is manual in the harness.
+
+Final reviewed unit command: `M -pl control-plane '-Dtest=EventValidatorTests,KafkaInboxConsumerTests,PipelinePortTests,ControlPlaneArchitectureTests' -l .cache/p03-core-reviewed-unit.log test` exited0 at11:25:31IST,18.929s: **36 passed,0 failures/errors/skips** (23 validator,5 consumer,4 boundaries,4 port). The added poison regression rejects NUL/unpaired-surrogate strings and extreme optional numbers before JSONB insertion. Earlier compile-only refinement `M -pl control-plane -Ppipeline-tests -l .cache/p03-core-checkpoint-compile.log test-compile` exited0 at11:26:27IST,9.580s. Subsequent concurrency harness refinement uses two actual Kafka clients in separate groups to race normal intake and replay; it is compile-checked, not live-verified.
+
+Host command: bundled PowerShell7 `scripts/verify-core-inbox.ps1` with Java21 and Docker Desktop. It first compiles all existing modules, then requires36 Core unit/boundary/port +14 actual live results with fresh reports and zero skips. It selects no completed relay tests or existing Compose volumes. P0.3 remains incomplete; final reactor/packaged scheduler acceptance remains after this gate.
+
+Closing refinement: `M -pl control-plane -Ppipeline-tests -l .cache/p03-core-closing-compile.log test-compile` exited0 at11:29:55IST,9.237s. This compiles the final two-real-consumer concurrency case and Core-only JDBC-manager guard; it executes no tests. Final verifier parser0 errors; documentation checker exit0 (30 Markdown/20 required/125 links/7 Mermaid/1 JSON/16 scenarios/50 Q&As/9 ADRs/0 issues). Whitespace passed. Source simulators, existing broker/Compose configuration and V1 migrations unchanged.
+
+
 ## 2026-10-20 — Payment/Warehouse live relay gate passed on `c887490`
 
 Owner ran bundled PowerShell7 `-NoProfile -File .\scripts\verify-simulator-relays.ps1` with JAVA_HOME set to Temurin21.0.12.1 and Docker29.8.2. BUILD SUCCESS at10:57:43IST /05:27:43Z, total3:43. Final verifier PASS: **40 unit/boundary +24 actual PostgreSQL/Kafka tests,0 failures/errors/skips**. Independently read all ten saved XML reports; no rerun. Outer-shell numeric exit not supplied.

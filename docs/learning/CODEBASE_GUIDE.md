@@ -1,5 +1,66 @@
 # Codebase guide
 
+## Core durable intake implementation (2026-10-20; live gate pending)
+
+Actual paths:
+
+```text
+control-plane/src/main/java/com/aegisflow/core/eventing/internal/
+  IntakePolicy.java        configured source-to-tenant authority
+  EventValidator.java      bounded parsing, initial schemas, canonical identity
+  InboxStore.java          independent Core transaction and unique-key arbitration
+  KafkaInboxConsumer.java  serial polling, durable processing, then offset commit
+  InboxConfiguration.java  opt-in postgres wiring and Core-only Kafka identity
+control-plane/src/main/resources/
+  db/migration/V2__durable_event_inbox.sql
+  contracts/initial-events-v1.schema.json
+control-plane/src/test/java/com/aegisflow/core/eventing/internal/
+  EventValidatorTests.java / KafkaInboxConsumerTests.java / PipelinePortTests.java
+  CoreKafkaFixture.java / PipelineApplications.java / CorePipelineScenario.java
+scripts/verify-core-inbox.ps1
+```
+
+The existing simulators use Spring Data JPA/Hibernate for their authoritative aggregates. Core intake uses JdbcTemplate and TransactionTemplate because the operation is an append with PostgreSQL `ON CONFLICT`, rather than a mutable ORM aggregate. InboxStore opens a five-second REQUIRES_NEW READ COMMITTED transaction. The primary key `(tenant_id,source_system,event_id)` decides concurrent acceptance; a loser waits for the winning insert, then compares canonical content in a subsequent statement. An equal duplicate returns without another insert. A changed duplicate writes quarantine in that transaction and preserves the original row. The runtime role has SELECT/INSERT and cannot update/delete either evidence table. V1 remains unchanged; Flyway alone applies V2 with the migrator role.
+
+Flow: actual owner service call → its business/replay/outbox transaction → its existing relay → authenticated own Kafka topic → Core topic/source plus operator tenant binding → strict schema/identity/key validation → committed Core inbox or technical quarantine → explicit Kafka offset commit. A failure before Core commit rolls back and rewinds the fetched position. A failure after DB commit but before confirmed offset commit permits redelivery; database idempotency handles it. Ingestion records `ACCEPTED`; facts, projections, deadlines and incidents remain P0.4.
+
+The consumer uses raw bytes so malformed UTF-8/JSON can be quarantined without a deserializer poison loop. Limits are256KiB,24 nesting levels,4096-character parsed strings,32-character JSON numbers,100 items and bounded identifiers/quantities. Duplicate JSON keys and trailing documents are rejected. Five existing initial event types are supported, including PaymentDeclined's four existing reason codes. Major1 minor extensions retain unknown optional fields; later event types/major versions quarantine. The JSON Schema is the structural contract; Java additionally checks currency precision, unique SKUs, trust, key binding, parser budgets and positive integral version tokens.
+
+Canonical profile `aegisflow-inbox-json-v1` sorts object keys, retains array order/extensions, normalizes supported amount strings and UTC timestamps, and represents numbers exactly instead of rounding through double. Raw SHA-256 is stored separately. Quarantine stores only receipt coordinates, digest, byte count and fixed reason; raw invalid content and claimed tenant fields are not stored. Reviewing/replaying those bytes needs a separately approved protected capture mechanism. There is no automatic quarantine replay.
+
+Enable only in postgres with `CORE_INBOX_ENABLED=true`, `CORE_KAFKA_BOOTSTRAP_SERVERS`, `KAFKA_CORE_PASSWORD`, explicit `CORE_INBOX_ORDER_TENANTS`, `CORE_INBOX_PAYMENT_TENANTS`, `CORE_INBOX_WAREHOUSE_TENANTS`, and optional `CORE_INBOX_GROUP` / `CORE_INBOX_CHANNEL`. Default group is `aegisflow-core-inbox-v1`; group names must stay in the broker's `aegisflow-core-` ACL prefix. Empty bindings deny that source; all empty fails startup. Headers do not authorize a tenant. A source trusted for several tenants is still trusted to emit for that set; this local model does not attest each aggregate against a compromised authorized producer.
+
+Polling processes one record at a time and commits only its exact partition/offset+1. This deliberately trades throughput for a small, reviewable failure boundary. Polling and close are serialized; transient failures are rate-bounded by the one-second scheduler and retain the offset. It does not infer business state from event absence.
+
+The pipeline profile adds simulator target/classes only to the integration-test runtime and adds JPA as a test dependency. PipelineApplications uses reflection to start separate owner Spring contexts with separate PostgreSQL containers, own migration locations and explicit runtime/migration credentials; production artifacts keep their existing dependencies. Contexts instantiate the real enabled configurations but mock scheduling for deterministic manual polls. CorePipelineScenario is explicitly selected by the verifier; normal Surefire/Failsafe naming does not select this expensive scenario. Its target is10 live invocations, including all three positive source flows and both negative outcomes.
+
+Port lessons carried forward: CoreKafkaFixture uses one selected IPv4 loopback port as both explicit Docker binding and advertised host port, checks the initial binding, and preserves the same endpoint on owned-broker restart. Both datasource and Flyway receive each container's mapped JDBC URL. Pipeline contexts use web NONE with port0 as a fallback; the separate existing HTTP integration test uses RANDOM_PORT. No fixed development database/application port is required. Port selection releases its socket before Docker binds; a rare competing bind still fails safely. Earlier readiness failures also included a valid Actuator groups field rejected by an old probe, fixed separately; increasing timeouts would not have fixed that parser.
+
+Debug exercise: run the host verifier and inspect Core Failsafe reports. The rollback case installs a test-owned AFTER INSERT trigger that raises an error for one UUID. Expected: zero inbox rows for that UUID, no acknowledged offset beyond it, then one accepted row after removing the trigger and restarting the consumer. The commit-before-ack case expects an already durable row, an unacknowledged offset, and DUPLICATE after restart. Preserve the first failure and do not alter development ports or delete volumes.
+
+Actual local results:36 final checks passed (23 validator,5 consumer,4 module boundaries,4 port/URL guards). PostgreSQL-unsafe NUL/surrogate and extreme-number inputs are rejected before insertion; exact optional numeric changes preserve different hashes. Pipeline/updated migration/startup cases compiled but were skipped under denied Docker access; no live success claimed. See TEST_RESULTS and HANDOFF for exact commands.
+
+### Q46. What authorizes an event's tenant?
+
+Core combines a fixed source-owned topic mapping with an operator-controlled tenant set for that source. Payload/header claims must match those bindings. The existing broker ACLs restrict source principals to their topics; they do not inspect tenants or provide a signed original-producer identity.
+
+### Q47. Why commit PostgreSQL before Kafka offsets?
+
+Kafka and PostgreSQL do not share a local transaction. Committing an offset first could permanently lose an event if the DB then fails. DB-first can repeat delivery after a crash; a stable identity and database uniqueness make that repetition safe for intake.
+
+### Q48. How does concurrent duplicate acceptance work without a cache?
+
+The unique composite primary key arbitrates inserts in PostgreSQL. ON CONFLICT waits for the winner; under READ COMMITTED the next statement observes that committed canonical hash. Equal content is duplicate; changed content is technical quarantine.
+
+### Q49. Why store a canonical digest and a raw digest?
+
+Equivalent key order, whitespace, supported decimal formatting and UTC representations should identify the same event. Canonical hashing normalizes those representations. The separate raw digest identifies the bytes actually received; exact number handling prevents accidental collision through floating-point rounding.
+
+### Q50. Why does poison handling use a separate table?
+
+Malformed input may have no trustworthy tenant or event ID. A broker-coordinate/digest receipt can be persisted without granting a payload claim tenant authority. Only after that transaction commits does Core acknowledge it; no business fact or incident is invented.
+
+
 ## Verified source-relay boundary (2026-10-20)
 
 The host gate on `c887490` passed40 Payment/Warehouse unit/boundary and24 real PostgreSQL/Kafka tests with zero failures/errors/skips. The four URL overrides described below are now live-verified. Each actual simulator service commits business state and its outbox; the source-owned relay claims, sends using its own Kafka principal, waits for acknowledgement, then records fenced completion. Kafka fault/rollback tests show why the same event can be delivered more than once.

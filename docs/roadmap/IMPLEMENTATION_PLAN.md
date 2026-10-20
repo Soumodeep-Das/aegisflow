@@ -1,5 +1,7 @@
 # Implementation plan
 
+**Current continuation,2026-10-20:** source-relay B is verified; Core durable intake C and end-to-end D scenarios are implemented with36 unit/boundary/port passes. Run `scripts/verify-core-inbox.ps1` for14 actual Core migration/pipeline cases, then record results/fix first failure and finish final reactor/packaged scheduling acceptance. Docker denial caused all local live discoveries to skip; no complete P0.3 claim. Older source checkpoints below are historical.
+
 **Latest continuation, 2026-10-20:** all three source-relay gates now passed; Payment/Warehouse on `c887490` passed40+24 tests with no failures/errors/skips. Proceed to Core inbox C and full end-to-end D. No owner command or repeat of completed B gates needed. Older checkpoints below are history; packaged scheduling/final acceptance remain.
 
 **Planning horizon:** preserve a useful, teachable repository even if assisted coding stops after 6–7 days.

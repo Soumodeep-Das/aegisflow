@@ -1,4 +1,15 @@
 # This application receives only its own database configuration.
+aegisflow:
+  core:
+    inbox:
+      enabled: ${CORE_INBOX_ENABLED:false}
+      bootstrap-servers: ${CORE_KAFKA_BOOTSTRAP_SERVERS:127.0.0.1:19092}
+      password: ${KAFKA_CORE_PASSWORD:}
+      group: ${CORE_INBOX_GROUP:aegisflow-core-inbox-v1}
+      channel: ${CORE_INBOX_CHANNEL:local-kafka-v1}
+      order-tenants: ${CORE_INBOX_ORDER_TENANTS:}
+      payment-tenants: ${CORE_INBOX_PAYMENT_TENANTS:}
+      warehouse-tenants: ${CORE_INBOX_WAREHOUSE_TENANTS:}
 spring:
   datasource:
     url: ${CORE_DB_URL:jdbc:postgresql://127.0.0.1:5433/aegisflow_core}
