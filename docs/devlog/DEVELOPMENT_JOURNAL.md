@@ -1,5 +1,11 @@
 # Development journal
 
+## 2026-10-21 — record P0.4-A actual host proof
+
+Owner ran verify-projection.ps1 on2b2e885; saved Maven log and selected XML independently confirm16 passes,0 failures/errors/skips at00:16:53IST,50.239s.12 new projection cases plus4 Core migration/startup regressions; previous43 focused tests were not rerun. Ignored evidence is under .cache/p04a/b69f72644f3a4835a25eab14af095e69. Copied stale packaged XML excluded from totals. Recorded exact command/results in TEST_RESULTS and updated active status/handoff without code changes or pushes.
+
+Next approved task is B clock-driven INV-002 and durable evaluation freshness/restart proof, then C incidents and D integration. No owner action needed at this checkpoint; P0.4 overall remains incomplete.
+
 ## 2026-10-20/21 — P0.4-A resumable gate checkpoint
 
 Closing static checks: new verifier parses without errors; `scripts/verify-docs.ps1` exit0 (31 Markdown,60 Q&As,10 ADRs,0 issues); `git diff --check` passes. No Mermaid rendering claim. No expensive tests repeated during continuation.

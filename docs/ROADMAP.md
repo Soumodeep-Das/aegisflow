@@ -1,5 +1,7 @@
 # Prioritized roadmap
 
+**Latest checkpoint,2026-10-21:** P0.4-A's real PostgreSQL gate passed on `2b2e885`:12 projection +4 Core migration/startup tests, zero failures/errors/skips. Earlier43 focused tests passed separately. This supersedes the pending/owner-command statements below; no rerun is needed. Next approved work is B clock-driven INV-002 with backlog freshness and restart proof, then C incidents and D full integration. P0.4 overall is incomplete. See HANDOFF/TEST_RESULTS for exact saved evidence.
+
 **Current status,2026-10-20:** P0.3 is implemented and verified. Final packaged scheduled pipeline/Core process restart passed1/1 on `860dbf9` at19:17:57IST,0 failures/errors/skips. Clean reactor134 and earlier Core50/source-relay/infrastructure evidence remain passed across their separate runs. No verification rerun is needed now.
 
 **Next authorized action,2026-10-21:** P0.4 is approved. A facts/projection code is implemented; 43 focused tests passed, 16 PostgreSQL checks skipped (Docker pipe denied). Run `scripts/verify-projection.ps1` on the host and resolve failures before B clock-driven INV-002. Then prove B scheduler/backlog freshness, implement C durable incident/evidence, and D full pipeline/failure verification. A is not verified and P0.4 is not complete. Recovery/AI and remote pushes remain unapproved.

@@ -1,5 +1,7 @@
 # AegisFlow
 
+**Latest checkpoint,2026-10-21:** P0.4-A's real PostgreSQL gate passed on `2b2e885`:12 projection +4 Core migration/startup tests, zero failures/errors/skips. Earlier43 focused tests passed separately. This supersedes the pending/owner-command statements below; no rerun is needed. Next approved work is B clock-driven INV-002 with backlog freshness and restart proof, then C incidents and D full integration. P0.4 overall is incomplete. See HANDOFF/TEST_RESULTS for exact saved evidence.
+
 > **Status,2026-10-21:** P0.3 is complete; P0.4 is explicitly approved. P0.4-A durable facts/projection code is implemented with 43 focused tests passed, but its 16 PostgreSQL checks were skipped because this coding session cannot access Docker. No invariant engine or incidents are implemented yet. Recovery/AI and remote pushes remain unapproved.
 
 **Latest verified checkpoint:** packaged acceptance on `860dbf9` passed1 test,0 failures/errors/skips at19:17:57IST. The final clean reactor on `7d8f473` previously passed134 tests and built the unchanged production artifacts; the final run deliberately did not repeat it. Earlier Core50/source-relay passes and failed attempts remain separately recorded in [test evidence](docs/evidence/TEST_RESULTS.md).

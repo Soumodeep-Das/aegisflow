@@ -1,5 +1,7 @@
 # Data Model
 
+**Latest checkpoint,2026-10-21:** V3/P0.4-A database gate passed on `2b2e885`:12 projection +4 Core startup/migration tests, zero failures/errors/skips. Pending statuses below are historical. Continue approved B clock-driven INV-002/freshness/restart proof before C incidents and D full integration; P0.4 is not complete. No owner rerun needed.
+
 **Current verification,2026-10-20:** P0.3 source outbox publication metadata, Core V2 immutable inbox/quarantine, unique identities, rollback/concurrent replay and least-privilege boundaries are verified on real PostgreSQL/Kafka. Final packaged delivery/Core restart passed on `860dbf9`; Core runtime remains denied SELECT on Flyway history while the migration identity can inspect it. No production schema/grant changed during final verification repairs. ACCEPTED still denotes intake only; future facts/projections/incidents remain P0.4.
 
 Earlier checkpoint paragraphs below retain historical pending statements; current status is this paragraph and HANDOFF/TEST_RESULTS. The logical future model is not a claim that every planned table exists.

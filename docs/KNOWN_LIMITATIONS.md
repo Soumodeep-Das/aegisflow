@@ -1,5 +1,7 @@
 # Known Limitations
 
+**Latest checkpoint,2026-10-21:** P0.4-A's real PostgreSQL gate passed on `2b2e885`:12 projection +4 Core migration/startup tests, zero failures/errors/skips. Earlier43 focused tests passed separately. This supersedes the pending/owner-command statements below; no rerun is needed. Next approved work is B clock-driven INV-002 with backlog freshness and restart proof, then C incidents and D full integration. P0.4 overall is incomplete. See HANDOFF/TEST_RESULTS for exact saved evidence.
+
 ## Active checkpoint — P0.4-A, 2026-10-21
 
 P0.4 is approved but incomplete. Facts/projection/deadline/progress implementation has 43 passing focused unit/boundary/intake-regression tests; 12 new projection and 4 Core PostgreSQL tests were all skipped due to this session's Docker named-pipe AccessDeniedException. No real V3 migration, rollback, concurrency or backfill success is claimed. Host command: `scripts/verify-projection.ps1`.

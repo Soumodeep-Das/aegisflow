@@ -1,5 +1,7 @@
 # AegisFlow System Architecture
 
+**Latest checkpoint,2026-10-21:** P0.4-A's real PostgreSQL gate passed on `2b2e885`:12 projection +4 Core migration/startup tests, zero failures/errors/skips. Earlier43 focused tests passed separately. This supersedes the pending/owner-command statements below; no rerun is needed. Next approved work is B clock-driven INV-002 with backlog freshness and restart proof, then C incidents and D full integration. P0.4 overall is incomplete. See HANDOFF/TEST_RESULTS for exact saved evidence.
+
 ## Active P0.4-A architecture — 2026-10-21
 
 Implemented, database gate pending: accepted inbox → eventing public `ProjectionInbox` → correlation `CorrelationProjector` → one Core transaction for immutable fact + tenant transaction/deadline + APPLIED marker. The inbox and Kafka acknowledgement remain unchanged. V3 adds no cross-service access. The port owns eventing SQL; only correlation → eventing is allowed. Anti-join scanning backfills old/late-visible accepted rows; bounded transactions use a database advisory gate, not in-memory completion. BLOCKED work remains unsettled for future evaluation freshness. A has 43 focused passing tests and 16 skipped PostgreSQL checks, not database proof.

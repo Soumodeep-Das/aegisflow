@@ -1,4 +1,16 @@
-# Handoff — P0.4-A implemented; PostgreSQL gate pending
+# Handoff — P0.4-A database gate PASSED
+
+## Current checkpoint — 2026-10-20T18:46:53Z / 2026-10-21 00:16:53IST
+
+Owner ran `scripts/verify-projection.ps1` on source checkpoint `2b2e885`, Java21/Docker29.8.2. Saved log confirms Maven BUILD SUCCESS, exit0,50.239s. Inspected the two selected XML reports: DurableProjectionIT12 (11.927s) + PostgresInfrastructureIT4 (9.241s), zero failures/errors/skips. Earlier43 focused tests passed separately; no combined59-test run claimed. The copied reports folder also contains an OLD packaged test report; it was not selected or rerun and is not counted.
+
+Evidence: `.cache/p04a/b69f72644f3a4835a25eab14af095e69/postgres.log` and `reports/`. P0.4-A's actual database architecture gate is satisfied. No source changes or repeated tests in this evidence checkpoint. Entry main clean, HEAD2b2e885; this following local docs commit records the result (resolve closing hash with `git rev-parse HEAD`). No push/deployment/storage mutation.
+
+**Exact next task:** P0.4-B clock-driven INV-002 evaluation with injected Clock, durable deadlines and same-gate unsettled-work suppression. Test deadline boundaries, supported rejection/quantity/order outcomes, pending Warehouse backlog, concurrent/repeated evaluations and crash/restart catch-up before P0.4-C durable incidents/evidence. No new approval needed within P0.4. No owner command needed now. Full P0.4 is NOT complete; no B/C/D implementation or verification is claimed.
+
+The earlier pending snapshot below is preserved history, superseded by this passing host evidence. Source paths, default-disabled worker, bounded global gate and recovery cautions below remain applicable.
+
+## Historical implementation checkpoint — PostgreSQL then unavailable
 
 **Snapshot:** 2026-10-20T18:40:35Z (local2026-10-21), Codex P0.4-A continuation. Baseline `d4d4b7c011d328d876d3e4458be289950a27ae3f`, branch main. All current changes are this A checkpoint, staged/committed in the following local commit; resolve closing hash/status with `git rev-parse HEAD` and `git status --short --branch`. No push, deployment or existing storage mutation. P0.3 is the last completed milestone; P0.4 is approved but incomplete.
 

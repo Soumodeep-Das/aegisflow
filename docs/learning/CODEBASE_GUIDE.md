@@ -1,5 +1,7 @@
 # Codebase guide
 
+**Latest checkpoint,2026-10-21:** P0.4-A's real PostgreSQL gate passed on `2b2e885`:12 projection +4 Core migration/startup tests, zero failures/errors/skips. Earlier43 focused tests passed separately. This supersedes the pending/owner-command statements below; no rerun is needed. Next approved work is B clock-driven INV-002 with backlog freshness and restart proof, then C incidents and D full integration. P0.4 overall is incomplete. See HANDOFF/TEST_RESULTS for exact saved evidence.
+
 **Current status,2026-10-21:** P0.3 complete; approved P0.4-A implemented with43 focused tests passed but16 PostgreSQL checks skipped. Run the host projection gate before B/C. Older status paragraphs are history.
 
 ## P0.4-A: from accepted message to durable projection

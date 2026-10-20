@@ -1,4 +1,14 @@
-# Test evidence — P0.3 checkpoint and preserved completed milestones
+# Test evidence — P0.4 and preserved completed milestones
+
+## 2026-10-21 — P0.4-A host PostgreSQL gate PASSED on 2b2e885
+
+Documentation-only closing checks: verify-docs.ps1 exit0 (31 Markdown,60 Q&As,10 ADRs,0 issues); git diff --check passed. No executable tests repeated for this evidence update.
+
+Owner used the documented Java21/bundled PowerShell7 command `scripts/verify-projection.ps1`; Docker29.8.2. Maven BUILD SUCCESS at00:16:53IST (2026-10-20T18:46:53Z),50.239s, exit0. Independently inspected selected XML: DurableProjectionIT12/11.927s and PostgresInfrastructureIT4/9.241s;16 executed, zero failures/errors/skips. Script printed complete PASS. Numeric outer PowerShell exit not supplied.
+
+Evidence: `.cache/p04a/b69f72644f3a4835a25eab14af095e69/postgres.log` and selected `reports/TEST-*.xml`. The copied old PackagedPipelineScenario XML is not part of this run; do not count it. No43-test repeat or completed P0.3 live suite repeat. Prior Docker-denied16 skips remain historical evidence, superseded by this actual host pass.
+
+Real V2-to-V3 backfill, atomic derived-state/progress rollback, retry/idempotency, concurrency, tenant/provenance constraints, late-visible input, runtime grants, pinned config and BLOCKED freshness now have passing database tests. This meets the A architecture gate, not B scheduling/C incident/D end-to-end acceptance.
 
 ## 2026-10-20/21 — P0.4-A implemented; real PostgreSQL gate NOT verified
 
