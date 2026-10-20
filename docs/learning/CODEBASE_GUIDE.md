@@ -2,6 +2,10 @@
 
 ## Final executable-JAR scheduling check (2026-10-20; live run pending)
 
+Latest host run passed timestamp validation and completed scheduling/Core restart observations, then errored at its final migration-history assertion. `PackagedPipelineScenario.java` now uses its runtime connection to assert absence of history SELECT, and a separate Core-migrator connection to inspect migration history. Business inbox/outbox observations continue using runtime identities. The correction is test-only; the complete packaged rerun is still pending.
+
+Debugging lesson: `BadSqlGrammarException` is Spring's exception category here; its underlying PostgreSQL message was `permission denied for table flyway_schema_history`. Inspect that cause and the connection identity before changing SQL or grants. Runtime applications need their domain tables, while migration metadata belongs to the migration role. The test must respect the same separation.
+
 New actual paths are `control-plane/src/test/java/com/aegisflow/core/eventing/internal/{PackagedApplicationProcess,PackagedProcessTests,PackagedPipelineScenario}.java` and `scripts/verify-p03-final.ps1`. Existing Core50 and source-relay gates are passed. The remaining check executes packaged processes instead of manually invoking worker polls.
 
 PackagedPipelineScenario starts fresh PostgreSQL instances/broker, uses existing real service contexts to seed3 initial business/outbox events plus a held Order intent, then closes those contexts. It asserts all source intents remain PENDING and Core inbox empty. Four separate `java -jar` processes use their real postgres profile and schedulers. Each receives essential OS variables plus only its own generated DB/Kafka configuration; no inherited Spring/JVM/private owner configuration or .env is loaded. Source schedulers must mark3 intents PUBLISHED and Core must durably accept them. Core is then stopped; owner-runtime retry metadata releases the held intent, its source scheduler publishes while Core is offline, and a new Core process with the same DB/group must accept that fourth event.

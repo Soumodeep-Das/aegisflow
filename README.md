@@ -2,7 +2,7 @@
 
 > **Status:** P0.2, infrastructure, source relays, the full Core50-case gate and the final clean reactor (134 tests) are host-verified. Only packaged scheduler/process-restart acceptance remains. P0.3 remains incomplete; P0.4/recovery/AI and remote pushes remain unapproved.
 
-**Latest verified checkpoint:** the final clean reactor on `7d8f473` passed134 tests with zero failures/errors/skips and built all4 executable JARs. The verifier then incorrectly rejected Boot's normalized executable timestamp. The guard is repaired and checked against all4 existing archive pairs; the packaged scenario has not yet run. Earlier source-relay/Core50 passes remain preserved.
+**Latest checkpoint:** the final clean reactor on `7d8f473` passed134 tests with zero failures/errors/skips. Timestamp repair `c0e5423` passed on the host; the packaged run completed delivery/Core restart assertions but errored at its final Flyway-history query using the restricted runtime account. The test now checks that runtime restriction and inspects history using Core's migration account. Its rerun remains pending; earlier source-relay/Core50 passes remain preserved.
 
 **Owner action now:** run `scripts/verify-p03-final.ps1 -PackagedOnly` with Java21/bundled PowerShell7/Docker Desktop; exact command in [handoff](docs/HANDOFF.md). It reuses the verified JARs and runs only the remaining packaged acceptance case. Settings/flow and debugging are in [the guide](docs/learning/CODEBASE_GUIDE.md).
 

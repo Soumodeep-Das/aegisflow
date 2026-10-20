@@ -1,5 +1,11 @@
 # Development journal
 
+## 2026-10-20 — correct packaged-test migration inspection identity
+
+The host packaged-only run on `c0e5423` passed the timestamp guard and reached its last assertion after scheduled delivery and actual Core process restart. It errored because the test queried Flyway history using Core's runtime identity, which correctly cannot read migration metadata. Saved Failsafe result remains1 test/1 error/0 failures/0 skips,19:11:02IST. Preserved failing reports beside its Maven log and inspected all5 child logs.
+
+Changed only the test: explicitly assert runtime lacks SELECT on history, then use Core's migrator for the history count. Runtime grants, application configuration, production JARs and schemas remain unchanged. The existing134-test clean build stays valid; resume only `verify-p03-final.ps1 -PackagedOnly`. Corrected live assertions remain unverified until that host rerun. No P0.4, push or storage mutation.
+
 ## 2026-10-20 — retain134 passing tests and repair JAR freshness detection
 
 The owner's final clean reactor on `7d8f473` passed134 tests,0 failures/errors/skips, and all4 packages at12:08:57IST,51.820s. Saved reports independently confirm43/31/31/29 by module. The following script guard failed before the packaged test: it mistook Boot's reproducible executable mtime1980-02-01 for an old build. Maven's `.jar.original` retains the actual build time.

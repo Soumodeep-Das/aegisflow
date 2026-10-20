@@ -91,7 +91,14 @@ class PackagedPipelineScenario {
             assertThat(coreDb.queryForObject("SELECT count(*) FROM aegisflow.inbox_message",Integer.class)).isEqualTo(4);
             assertThat(coreDb.queryForObject("SELECT count(*) FROM aegisflow.quarantine_record",Integer.class)).isZero();
             for(var entry:apps.entrySet()) assertThat(entry.getValue().healthy()).as(entry.getKey()+" packaged health").isTrue();
-            assertThat(coreDb.queryForObject("SELECT count(*) FROM aegisflow.flyway_schema_history WHERE success",Integer.class)).isEqualTo(2);
+            // Runtime ingestion cannot inspect migration history; only the test's own migration identity can.
+            assertThat(coreDb.queryForObject(
+                    "SELECT has_table_privilege(current_user,'aegisflow.flyway_schema_history','SELECT')",
+                    Boolean.class)).isFalse();
+            var migrationDb=new JdbcTemplate(new DriverManagerDataSource(
+                    CORE.getJdbcUrl(),"aegisflow_core_migrator",PipelineApplications.PASSWORD));
+            assertThat(migrationDb.queryForObject(
+                    "SELECT count(*) FROM aegisflow.flyway_schema_history WHERE success",Integer.class)).isEqualTo(2);
         } finally {
             Collections.reverse(owned);
             owned.forEach(PackagedApplicationProcess::close);

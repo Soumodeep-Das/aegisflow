@@ -1,4 +1,20 @@
-# Handoff — 134-test reactor passed; JAR timestamp guard repaired
+# Handoff — packaged test migration-history identity corrected
+
+**Latest checkpoint:** 2026-10-20T13:44:17Z, continued clean `main` at `c0e5423`, ahead20. The following local test/docs commit corrects the final packaged test assertion; resolve its closing hash/status with Git. No production code, database grants, JARs, POMs or Compose changes.
+
+**Host outcome:** `verify-p03-final.ps1 -PackagedOnly` accepted all4 archive pairs, then Maven finished BUILD FAILURE at19:11:02IST /13:41:02Z,3:00. Failsafe:1 test,0 failures,1 error,0 skips; suite149.2s. The test reached its final assertion after all4 applications' health, three scheduled source deliveries, Core shutdown/offline backlog publication, restarted Core acceptance,4 inbox rows and0 quarantine records. Overall acceptance is still failed, not a passing packaged test.
+
+**Cause/fix:** `PackagedPipelineScenario.java` queried `flyway_schema_history` through its runtime-role `coreDb`. PostgreSQL correctly denied SELECT. The test now explicitly asserts runtime lacks that permission, then checks the two successful migrations with a separate Core-migrator JdbcTemplate. That identity stays in the test's inspection code; runtime permissions and child-process settings are unchanged.
+
+**Evidence retained:** `.cache/p03-final/70ac080a2361488380d7a7e83b466108/packaged.log`, copied failing XML/text under its `reports/`, and all5 child logs under `.cache/packaged-pipeline/287006c5-7885-491b-a1a8-0b3bfafc992b`. Initial/restarted Core logs show separate bound ports and existing schema up to date. No port or timestamp failure remains in this run. Numeric outer-shell exit was not supplied.
+
+**Local validation:** Java21 offline `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane -Ppipeline-tests -l .cache/p03-packaged-history-compile.log test-compile` exit0,19:12:49IST,16.871s; compilation only,0 tests executed. Docs checker exit0,30 Markdown/20 required/125 links/7 Mermaid/1 JSON/16 scenarios/55 Q&As/9 ADRs/0 issues; whitespace check passed.
+
+**Next action:** use the same `verify-p03-final.ps1 -PackagedOnly` command below. The verifier recompiles changed tests and reuses the134-test build's unchanged production artifacts. Require1 actual packaged pass with0 failures/errors/skips before documenting P0.3 completion. Do not rerun the clean reactor for this test-only fix. The corrected database assertions require host execution; compilation alone cannot verify them. Stop before P0.4 and do not push.
+
+---
+
+## Previous checkpoint — 134-test reactor passed; JAR timestamp guard repaired
 
 **Latest checkpoint:** 2026-10-20T13:34:17Z, resumed `main` at `7d8f473`, ahead19. Only the final verifier/helper/regression script and continuity docs changed. This following local commit records the repair; resolve its hash/status with `git rev-parse HEAD` and `git status --short --branch`. No production Java/POM/schema/Compose changes, push or existing storage mutation.
 

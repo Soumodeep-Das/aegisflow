@@ -1,5 +1,7 @@
 # Implementation plan
 
+**Current final gate,2026-10-20:** packaged scheduling/Core restart assertions ran on the host, but its final Flyway-history inspection used the wrong role and caused1 error. Test-only repair uses Core migrator for metadata and explicitly checks runtime cannot read it. Resume only `verify-p03-final.ps1 -PackagedOnly`; clean134 tests remain passed. Close P0.3 only after an actual complete packaged PASS; P0.4 remains unapproved.
+
 **Final acceptance continuation,2026-10-20:** source-relay/Core50 gates and the final clean reactor134 tests passed. The outer verifier then rejected Boot's normalized JAR timestamp before the packaged case started. Repaired freshness/content checks pass6 regressions and all4 existing artifact pairs. Run `scripts/verify-p03-final.ps1 -PackagedOnly` for the sole remaining scheduled pipeline/Core process restart case; no rebuild is needed for this script-only repair. Only after actual live PASS/documentation close P0.3; P0.4 requires approval.
 
 **Current continuation,2026-10-20:** source-relay B is verified; Core durable intake C and end-to-end D scenarios are implemented with36 unit/boundary/port passes. Run `scripts/verify-core-inbox.ps1` for14 actual Core migration/pipeline cases, then record results/fix first failure and finish final reactor/packaged scheduling acceptance. Docker denial caused all local live discoveries to skip; no complete P0.3 claim. Older source checkpoints below are historical.

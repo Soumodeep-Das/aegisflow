@@ -1,5 +1,17 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-20 — packaged pipeline reached final check; migration-history identity repair
+
+Owner ran bundled PowerShell7 `-NoProfile -File .\scripts\verify-p03-final.ps1 -PackagedOnly` on `c0e5423`, Java21/Docker29.8.2. All4 timestamp/content guards passed. Maven BUILD FAILURE at19:11:02IST /13:41:02Z,3:00; saved Failsafe XML/text: **1 test,0 failures,1 error,0 skips**, suite149.2s, test84.49s. Numeric outer-shell exit was not printed.
+
+The error was PostgreSQL `permission denied for table flyway_schema_history` at PackagedPipelineScenario.java:94. The test's preceding assertions completed: all4 healthy executable applications, three source intents PUBLISHED/accepted, held Order intent absent until Core stopped, publication while Core offline, restarted Core acceptance, inbox4/quarantine0 and final health. These are partial observations from a failed test, not a final acceptance PASS.
+
+The test now asserts `has_table_privilege(current_user,'aegisflow.flyway_schema_history','SELECT')` is false for Core runtime, then performs the existing two-successful-migrations assertion using a separate Core migration-role connection. No grants/production components changed. Retry only the packaged phase.
+
+Local Java21/Maven3.10 validation: `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane -Ppipeline-tests -l .cache/p03-packaged-history-compile.log test-compile` exited0 at19:12:49IST,16.871s. This compiled the correction and executed0 tests; corrected DB behavior remains unverified. `scripts/verify-docs.ps1` exit0:30 Markdown/20 required/125 links/7 Mermaid/1 JSON/16 scenarios/55 Q&As/9 ADRs/0 issues. Whitespace check passed.
+
+Preserved evidence: `.cache/p03-final/70ac080a2361488380d7a7e83b466108/packaged.log` and `reports/` (copied failing XML/text); `.cache/packaged-pipeline/287006c5-7885-491b-a1a8-0b3bfafc992b/{core,core-restart,order,payment,warehouse}.log`. Child logs confirm separate Core process startup and schema already up to date. No clean reactor or completed live suite repeated.
+
 ## 2026-10-20 — clean reactor134 passed; reproducible JAR timestamp guard repaired
 
 Owner ran bundled PowerShell7 `-NoProfile -File .\scripts\verify-p03-final.ps1`, JAVA_HOME=Temurin21.0.12.1, Docker29.8.2, source `7d8f473`. Its Maven `-B -ntp "-Dmaven.repo.local=<repo>/.cache/maven-repository" -l <evidence>/reactor.log clean verify` finished BUILD SUCCESS at12:08:57IST /06:38:57Z,51.820s. Saved XML independently sums Core43 +Order31 +Payment31 +Warehouse29 =**134 tests,0 failures/errors/skips**. The five-module reactor and all4 executable packages succeeded. Evidence directory: `.cache/p03-final/0cdf2d63e84f49fea1385e806effaf8b`.
