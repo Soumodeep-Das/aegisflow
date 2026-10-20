@@ -1,10 +1,10 @@
 # AegisFlow
 
-> **Status:** P0.2, P0.3-A infrastructure and all three source-relay gates are host-verified. Core durable intake is implemented with36 unit/boundary/port passes; actual Core migration and simulator-to-Core pipeline verification need the Docker-capable host. P0.3 remains incomplete; P0.4/recovery/AI and remote pushes remain unapproved.
+> **Status:** P0.2, infrastructure, all source-relay gates and all10 real simulator-to-Core pipeline cases are host-verified. Four standalone Core startup checks need rerunning after a verifier classpath fix. P0.3 remains incomplete; P0.4/recovery/AI and remote pushes remain unapproved.
 
-**Latest source checkpoint:** all three source-relay gates passed. Core durable inbox/quarantine and the actual three-owner pipeline suite are implemented with36 Core unit/boundary/port tests passed. Real Core PostgreSQL/Kafka cases remain pending under this session's Docker denial. P0.3 is incomplete.
+**Latest verified checkpoint:** all three source-relay gates and all10 real simulator-to-Core pipeline cases passed, alongside36 Core unit/boundary/port checks. Four ordinary Core startup checks need rerunning after a verifier classpath fix. P0.3 remains incomplete.
 
-**Owner action now:** run `scripts/verify-core-inbox.ps1` with Java21/bundled PowerShell7/Docker Desktop; exact command in [handoff](docs/HANDOFF.md). It requires36 Core unit/boundary/port +14 actual migration/pipeline cases. Relays and intake stay off by default; settings/flow and debugging are in [the guide](docs/learning/CODEBASE_GUIDE.md). Live tests poll deterministically; packaged scheduling remains a separate gate.
+**Owner action now:** run `scripts/verify-core-inbox.ps1 -CoreStartupOnly` with Java21/bundled PowerShell7/Docker Desktop; exact command in [handoff](docs/HANDOFF.md). It selects only the remaining4 checks. Settings/flow and debugging are in [the guide](docs/learning/CODEBASE_GUIDE.md); packaged scheduling remains a separate gate.
 
 Final P0.2 host evidence (2026-10-16, source `7a90c57`, completed checkpoint `86452ef`): **full clean reactor BUILD SUCCESS, 38 default tests + 29 real PostgreSQL ITs**, zero failures/errors/skips. All four packaged foundation JARs returned HTTP 200/UP; documentation checks passed. These remain preserved results, not a substitute for P0.3 verification. The current coding session cannot access Docker's engine pipe. See [current handoff](docs/HANDOFF.md) and [test evidence](docs/evidence/TEST_RESULTS.md).
 

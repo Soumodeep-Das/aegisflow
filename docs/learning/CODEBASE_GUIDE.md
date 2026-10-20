@@ -1,5 +1,14 @@
 # Codebase guide
 
+## Pipeline verification classpath isolation (2026-10-20)
+
+The host run on `c96dc5c` passed all36 Core unit/boundary/port checks and10 real pipeline cases. Actual three-source delivery, rollback/replay, poison/isolation and concurrent duplicate handling now have live evidence. The remaining4 ordinary Core startup cases failed because pipeline-tests places simulator target/classes on the test runtime classpath: all services legitimately have their own V1 migrations, and a general `classpath:db/migration` scan saw several version1 files.
+
+`scripts/lib/core-inbox-verification.ps1` now produces separate compile, pipeline and normal Core plans. `scripts/verify-core-inbox.ps1` invokes each Maven process and immediately checks that phase's fresh zero-skip reports. PipelineApplications retains explicit per-owner migration paths. Ordinary PostgresInfrastructureIT now runs without pipeline-tests, using Core's normal JDBC dependencies/resources. `scripts/test-core-inbox-verification.ps1` checks these selections without Docker (5 passed guard groups).
+
+Debug exercise: compare the saved Core startup report's offending Warehouse/Order V1 paths with `control-plane/target/classes/db/migration`, which contains Core V1/V2 only. The extra migrations were classpath entries, not files copied into Core or histories needing deletion. Resume with `verify-core-inbox.ps1 -CoreStartupOnly`; expected4 fresh passes. Do not repeat the successful pipeline or rename historical migrations. The prior implementation checkpoint below is preserved history; its local-only/unverified statements are superseded by this real pipeline evidence.
+
+
 ## Core durable intake implementation (2026-10-20; live gate pending)
 
 Actual paths:

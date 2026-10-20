@@ -6,7 +6,7 @@
 
 **Observed product state:** P0.2/P0.3-A and all three source-relay gates passed. Core durable intake and the actual three-owner pipeline test are now implemented;36 unit/boundary/port tests pass, live Core gate is pending. P0.3 incomplete; P0.4 unapproved.
 
-**Current first unfinished gate:** run `scripts/verify-core-inbox.ps1` on the Docker-capable Windows host. Require36 Core unit/boundary/port +14 real PostgreSQL/pipeline tests with no skips. Record and fix the first observed failure. Then final reactor/packaged scheduling acceptance. No repeat of completed source-relay suites merely to resume. Core V2 and durable pipeline are unverified here because Docker access is denied.
+**Current first unfinished gate:** real Core pipeline passed10/10 and36 unit/boundary/port checks passed on `c96dc5c`. Four ordinary Core startup checks failed from test-only simulator migrations on the classpath. Verifier phases are now isolated; run `scripts/verify-core-inbox.ps1 -CoreStartupOnly` for only those4 checks, then final reactor/packaged scheduling acceptance. Do not repeat the passed pipeline for this script-only fix. P0.3 incomplete.
 
 **Final P0.2 result:** the full clean reactor succeeded at 19:45:47 IST (2:17), 38 default + 29 real PostgreSQL tests with zero failures/errors/skips, followed by four packaged foundation JARs returning HTTP 200/UP and a zero-issue documentation check. The report counter's incomplete glob is corrected using all four real XML reports; no business code changed after verification. The separate persistent-Compose prerequisite subsequently passed on 2026-10-17. Earlier dated failures below remain historical.
 

@@ -1,5 +1,29 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-20 — real pipeline passed on `c96dc5c`; ordinary Core check classpath repair
+
+Host Java21.0.12.1/Docker29.8.2, bundled PowerShell7 `scripts/verify-core-inbox.ps1`; BUILD FAILURE at11:35:39IST /06:05:39Z,2:03. Independently read all six saved XML suites: **36 unit/boundary/port +10 real pipeline cases passed**,0 failures/errors/skips there;4 ordinary Core checks errored,0 failures/0 skips. Numeric outer shell exit not printed. No test rerun to record this.
+
+| Suite | Executed result | Seconds |
+|---|---|---:|
+| ControlPlaneArchitectureTests |4 passed|3.939|
+| EventValidatorTests |23 passed|0.872|
+| KafkaInboxConsumerTests |5 passed|1.084|
+| PipelinePortTests |4 passed|0.075|
+| CorePipelineScenario |10 passed|89.205|
+| PostgresInfrastructureIT |4 errors from common context failure|6.092|
+
+The passed pipeline proves actual three-owner business transactions/outboxes/relays → Kafka → Core inbox with both negative outcomes, duplicate/conflict, consumer restart/commit-before-ack, real DB rollback/retry, poison/schema/source/tenant rejection, real concurrent consumers across two groups, immutable grants/identity constraints and quarantine uniqueness. Core V2 is exercised through the real JDBC-manager context. This does not prove packaged scheduling, process kill, replication, or ordinary-profile startup.
+
+First ordinary Core failure: Flyway `Found more than one migration with version 1`, offenders include Warehouse/Order V1 resources. The special pipeline profile's additional classpath was incorrectly shared with the ordinary Core IT. The verifier now separates pipeline from normal Core invocations. Core migrations remain V1/V2; source V1s and production configurations are unchanged.
+
+New pure plan regression command: bundled PowerShell7 `-NoProfile -File .\scripts\test-core-inbox-verification.ps1`, exit0,5 guard groups passed. PowerShell parser across verifier/helper/test:0 errors. Bundled PowerShell7 `scripts/verify-core-inbox.ps1 -CoreStartupOnly` with Java21 exited1 at this session's Docker named-pipe denial before tests. Original failed and passed host reports remain preserved. No new live success claimed.
+
+Next host command uses `-CoreStartupOnly`, selecting only the remaining4 cases under `-Pinfrastructure-tests`, without pipeline-tests. Its partial PASS covers exactly4 fresh zero-skip reports; previous36+10 are preserved independent evidence, not relabeled as a new full run. Default verifier still requires all50 cases, checking each phase's reports immediately. Final reactor/packaged scheduler acceptance remains before P0.3 completion.
+
+Closing documentation checker exited0:30 Markdown/20 required/125 local links/7 Mermaid/1 JSON/16 scenarios/50 interview Q&As/9 ADRs/0 issues. Whitespace passed; scoped script/doc diff reviewed. No Java/build/database test rerun for this orchestration-only repair.
+
+
 ## 2026-10-20 — Core inbox implementation from `4cb4ee6`; real pipeline pending
 
 Java21.0.12.1/Maven3.10, offline workspace cache, TEMP/TMP=`.cache/tmp`. `M` means `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository'`. Commands ran from the repository root. No completed source relay suites rerun.

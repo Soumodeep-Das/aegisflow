@@ -1,5 +1,14 @@
 # Development journal
 
+## 2026-10-20 — record ten live pipeline passes and isolate ordinary Core verification
+
+Owner's run on `c96dc5c` passed all36 unit/boundary/port and10 real pipeline cases. Overall BUILD FAILURE at11:35:39IST came from4 ordinary Core startup errors: pipeline-tests added simulator migration resources, so Flyway's normal Core classpath scan found multiple V1s. The actual pipeline explicitly uses owner-specific migration locations and passed all scenarios. Independently inspected six XML suites without repeating tests.
+
+Fixed verification orchestration: pure helper plans separate compilation, special pipeline run and ordinary Core run in separate Maven processes/classpaths. Added `-CoreStartupOnly` to resume the unfinished4 checks. Existing expected counts, freshness and zero-skip gates remain; partial PASS says only what it executes. Five infrastructure-free plan regression groups passed, all scripts parse, and actual partial invocation still stops at this session's Docker permission denial. No production Java/migration change, source relay rerun, port adjustment, push or storage deletion.
+
+Next: owner runs only the Core startup command, then record results and complete final reactor/packaged scheduling acceptance. The three-source durable pipeline and failure/replay cases are now live-verified. P0.3 still incomplete; P0.4 unapproved.
+
+
 ## 2026-10-20 — Core durable acceptance and reproducible pipeline checkpoint
 
 Resumed clean `4cb4ee6` with all three source-relay gates already passed. Added Core eventing/internal policy, validation, JDBC transaction store, Kafka consumer and disabled-by-default wiring; V2 adds append-only inbox/quarantine tables and least-privilege grants. Core status ACCEPTED deliberately means durable intake only; correlation/facts/detection stay P0.4 under the existing approved boundary. Canonical consumer hash has its own version because it normalizes arbitrary supported input; producer hashes/V1s stay unchanged. Only fixed broker coordinates/hash/reason are kept for malformed receipts, avoiding storage of untrusted potentially sensitive raw bytes. This limits later forensic replay and is recorded.

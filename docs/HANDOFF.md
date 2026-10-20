@@ -1,4 +1,26 @@
-# Handoff — Core inbox implemented; host end-to-end gate pending
+# Handoff — real Core pipeline passed; standalone Core startup gate pending
+
+**Latest checkpoint:** 2026-10-20T06:11:29Z, resumed clean `main` at `c96dc5c`, ahead16. Owner's host verifier finished BUILD FAILURE at11:35:39IST (06:05:39Z),2:03, but **36 unit/boundary/port checks and all10 real Core pipeline cases passed**,0 failures/errors/skips in those suites. Four standalone Core PostgreSQL/HTTP cases errored from one shared context startup failure. Independently inspected all six saved XML suites. The following local fix/docs commit records this; resolve closing hash/clean state with Git. No production code/migration change, push or storage mutation.
+
+**Actually verified now:** actual Order/Payment/Warehouse application transactions → own outboxes → own real Kafka relays → Core JDBC durable inbox; both negative outcomes; equivalent/conflicting duplicates; consumer restart/commit-before-ack replay; DB trigger rollback and retry; malformed/unsupported/JSONB-unsafe poison and source/other-source-only tenant rejection; two real consumer groups racing the same identity; immutable grants, tenant/payload constraints and quarantine uniqueness. Pipeline XML:10/0 failures/0 errors/0 skips,89.205s. Tests use manual polling/client restart/injected exceptions; no packaged scheduler/process-kill claim.
+
+**Failure/cause and fix:** the special pipeline profile adds simulator classes/resources for the test harness. The old verifier also ran ordinary `PostgresInfrastructureIT` in that classpath, so its normal `classpath:db/migration` resolved sibling V1 files and Flyway rejected duplicate version1. Core target migration directory itself contains only Core V1/V2. This was verification orchestration contamination. The verifier now runs the pipeline and ordinary Core check in separate Maven/Failsafe invocations; the latter does not activate pipeline-tests. No V1 is renamed/removed and database histories remain untouched.
+
+**Tooling:** `scripts/lib/core-inbox-verification.ps1` builds separate compile/pipeline/core-startup plans; `scripts/test-core-inbox-verification.ps1` passes5 no-Docker guards covering selection, classpath isolation, resume-only mode and all50 expected counts. All3 changed/new scripts parse with0 errors. `verify-core-inbox.ps1 -CoreStartupOnly` runs only the remaining4 checks and rejects missing/stale/failing/skipped reports. It makes no claim of rerunning prior successful tests. Local invocation exits1 at denied Docker pipe before tests; repaired Core startup is still unverified.
+
+**Single next action:** run the following on the Docker-capable host. Preserve the first failure if any; require4 actual passes and0 failures/errors/skips. Completed10 pipeline and36 unit cases do not need repeating for this script-only repair.
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-core-inbox.ps1 -CoreStartupOnly
+```
+
+**After PASS:** record the standalone result, then final reactor and packaged scheduled acceptance before declaring P0.3 finished. Core production paths/flow/settings and limits remain in the prior checkpoint below and CODEBASE_GUIDE. Prior port/URL guards and explicit stable fixture endpoint are now exercised in the passed real pipeline. No port change or volume cleanup is needed. P0.4/AI/recovery unapproved. Stopping at this documented verification repair checkpoint.
+
+**Closing checks:**5 pure PowerShell plan guards passed; all3 scripts parse with0 errors. Documentation checker exited0:30 Markdown/20 required/125 links/7 Mermaid/1 JSON/16 scenarios/50 Q&As/9 ADRs/0 issues. Whitespace passed. Only verifier/helper/regression-script/docs changes; no Java, POM, SQL or successful-test rerun.
+
+---
+
 
 **Latest checkpoint:** 2026-10-20T06:01:02Z /2026-10-20 IST, resumed clean `main` at `4cb4ee6`, ahead15. This following local source/docs commit contains Core durable intake and its reproducible gate; resolve closing hash/status with `git rev-parse HEAD` and `git status --short --branch`. No push/deployment, existing Compose mutation or volume deletion. All source-relay gates remain passed; their completed tests were not repeated.
 
