@@ -1,5 +1,9 @@
 # Data Model
 
+**Current verification,2026-10-20:** P0.3 source outbox publication metadata, Core V2 immutable inbox/quarantine, unique identities, rollback/concurrent replay and least-privilege boundaries are verified on real PostgreSQL/Kafka. Final packaged delivery/Core restart passed on `860dbf9`; Core runtime remains denied SELECT on Flyway history while the migration identity can inspect it. No production schema/grant changed during final verification repairs. ACCEPTED still denotes intake only; future facts/projections/incidents remain P0.4.
+
+Earlier checkpoint paragraphs below retain historical pending statements; current status is this paragraph and HANDOFF/TEST_RESULTS. The logical future model is not a claim that every planned table exists.
+
 **Live Core evidence,2026-10-20:** Core V2, inbox/quarantine constraints, append-only grants, concurrency, duplicate conflict and rollback/replay passed the10-case real pipeline on `c96dc5c`. The4 remaining ordinary Core checks failed on test classpath contamination rather than SQL migration syntax; verifier isolation fix awaits host rerun. Prior unverified statements below are historical.
 
 **Core P0.3 implementation,2026-10-20 (live gate pending):** new `control-plane/.../V2__durable_event_inbox.sql` adds Core-only `inbox_message` and `quarantine_record`; V1s unchanged. Inbox composite PK is `(tenant_id,source_system,event_id)`; fields include broker coordinates/channel, canonical normalized envelope/hash/profile, raw hash, required identities/schema/time and DB receive time. Source/topic/type pairs and envelope-column identity are CHECK-constrained; transaction lookup index is tenant-first. Runtime grants are SELECT/INSERT only, so accepted content is immutable. A conflicting duplicate adds quarantine and never overwrites acceptance.

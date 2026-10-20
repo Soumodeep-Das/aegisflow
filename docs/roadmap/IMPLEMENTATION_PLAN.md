@@ -1,5 +1,11 @@
 # Implementation plan
 
+**Current milestone status,2026-10-20:** P0.3 verified and stopped. Final packaged acceptance on `860dbf9` passed1/1,0 failures/errors/skips at19:17:57IST; earlier clean134 and Core50/source-relay gates remain passed. No repeat commands required. P0.4 requires explicit approval.
+
+## Historical continuation notes
+
+Earlier dated status notes below are preserved history, superseded by this completion. The phase sections describe current boundaries and future acceptance.
+
 **Current final gate,2026-10-20:** packaged scheduling/Core restart assertions ran on the host, but its final Flyway-history inspection used the wrong role and caused1 error. Test-only repair uses Core migrator for metadata and explicitly checks runtime cannot read it. Resume only `verify-p03-final.ps1 -PackagedOnly`; clean134 tests remain passed. Close P0.3 only after an actual complete packaged PASS; P0.4 remains unapproved.
 
 **Final acceptance continuation,2026-10-20:** source-relay/Core50 gates and the final clean reactor134 tests passed. The outer verifier then rejected Boot's normalized JAR timestamp before the packaged case started. Repaired freshness/content checks pass6 regressions and all4 existing artifact pairs. Run `scripts/verify-p03-final.ps1 -PackagedOnly` for the sole remaining scheduled pipeline/Core process restart case; no rebuild is needed for this script-only repair. Only after actual live PASS/documentation close P0.3; P0.4 requires approval.
@@ -110,18 +116,18 @@ Acceptance:
 
 ### P0.3 Kafka delivery and control-plane inbox
 
-**Approved; incomplete.** P0.3-A and Order database/real-Kafka gates passed. Payment/Warehouse relay source and tests now exist, with38 unit+2 boundary passes and24 live tests skipped pending host execution. Core inbox is unwritten. Local SASL/PLAIN has no TLS. Preserve V1 migrations, volumes and evidence; no completed infrastructure/Order rerun is needed merely to resume.
+**Implemented and verified,2026-10-20.** P0.3-A infrastructure, all3 owner relays, Core durable validated inbox/quarantine, fault/replay/concurrency/isolation checks and actual packaged scheduling/Core process restart passed. Final evidence combines the clean134-test reactor and later1-test packaged gate with earlier source/Core suites; no single combined-run total is claimed. Local SASL/PLAIN has no TLS. Preserve evidence and stop before P0.4.
 
 Use `(tenantId, businessTransactionId)` as the Kafka key for per-transaction partition ordering, while remaining correct when producers or topics create reordering. Reuse the ten-module Core's existing `eventing` package. Persist validated accepted inbox receipt in one Core transaction, deduplicated by `(tenantId, sourceSystem, eventId)` and canonical content. The owner's explicit P0.3 request supersedes the older projection wording here: correlation/projection/detection stays P0.4. When those consumers arrive, their derived effects must join the relevant local inbox transaction, not a best-effort later dual write.
 
 P0.3 must enforce a trusted source/tenant mapping or block untrusted input; a payload tenant is not authenticated by topic ACL alone. Relay claims need short local transactions, expiry/fencing, bounded batches/backoff and post-Kafka-ack status updates. A broker acknowledgement followed by a relay crash can produce a duplicate with the same event ID. No cross-PostgreSQL/Kafka exactly-once guarantee is promised.
 
-Acceptance:
+Acceptance for the owner's approved P0.3 intake scope:
 
-- `AT-001`, `AT-002`, `AT-010`, `FM-001`, `FM-002`, and `FM-012` pass;
+- simulator state/outbox → Kafka → durable Core inbox, duplicates/reordering-safe receipt, restart/replay and bounded invalid-event handling are verified; broader `AT-001`, `AT-002`, `AT-010`, `FM-001`, `FM-002`, and `FM-012` business/projection outcomes remain subject to their later phase rather than being claimed wholesale;
 - offset acknowledgement occurs only after durable handling/quarantine;
-- poison/unsupported events have a bounded retry path and operator-visible quarantine;
-- no unbounded payload or high-cardinality metric label is accepted.
+- poison/unsupported events have bounded validation and durable quarantine inspectable in Core's database; an operator UI/replay workflow is deferred;
+- payload limits are enforced; dedicated metric labels/observability are not introduced in this milestone.
 
 ### P0.4 Correlation, clocked invariant, and incident
 

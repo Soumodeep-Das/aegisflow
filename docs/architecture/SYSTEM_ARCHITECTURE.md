@@ -1,5 +1,9 @@
 # AegisFlow System Architecture
 
+**Current verified architecture,2026-10-20:** P0.3 is complete. All3 simulator state/outbox transactions flow through owner-local acknowledged Kafka relays into Core's source/tenant-validated durable inbox/quarantine, with database idempotency and post-commit Kafka offsets. Real failure/replay/concurrency tests passed; final packaged scheduling/Core process restart passed on `860dbf9`. Core and simulators retain separate deployables, databases and migration/runtime roles. P0.4 projections/incidents and simulator choreography remain unimplemented.
+
+Older checkpoint status paragraphs below preserve implementation history; their pending/unwritten statements are superseded by current HANDOFF/TEST_RESULTS. Diagrams and later business/recovery flows remain design targets unless identified as implemented.
+
 **Live pipeline update,2026-10-20:** all10 actual three-owner simulator→outbox→Kafka→Core inbox/fault cases passed on `c96dc5c`. The verifier now runs ordinary Core startup separately from the pipeline's test-only combined classpath, avoiding sibling V1 discovery. Those4 startup checks and final packaged/reactor acceptance remain pending; prior unverified pipeline snapshots are history.
 
 **Core intake source checkpoint,2026-10-20:** all source-relay gates passed. Core `eventing/internal` now contains policy, bounded schema validation, JDBC inbox/quarantine transactions and an explicit-ack Kafka consumer. New V2 owns only Core tables.36 unit/boundary/port checks pass; the real three-owner pipeline is written/compiled but awaits host Docker execution. Older snapshots below are historical.

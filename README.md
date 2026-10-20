@@ -1,10 +1,10 @@
 # AegisFlow
 
-> **Status:** P0.2, infrastructure, source relays, the full Core50-case gate and the final clean reactor (134 tests) are host-verified. Only packaged scheduler/process-restart acceptance remains. P0.3 remains incomplete; P0.4/recovery/AI and remote pushes remain unapproved.
+> **Status:** P0.3 is implemented and verified as of2026-10-20. All three simulator outbox relays, durable Core inbox, failure/replay checks and the packaged scheduled pipeline/Core restart gate passed. P0.4/recovery/AI and remote pushes remain unapproved.
 
-**Latest checkpoint:** the final clean reactor on `7d8f473` passed134 tests with zero failures/errors/skips. Timestamp repair `c0e5423` passed on the host; the packaged run completed delivery/Core restart assertions but errored at its final Flyway-history query using the restricted runtime account. The test now checks that runtime restriction and inspects history using Core's migration account. Its rerun remains pending; earlier source-relay/Core50 passes remain preserved.
+**Latest verified checkpoint:** packaged acceptance on `860dbf9` passed1 test,0 failures/errors/skips at19:17:57IST. The final clean reactor on `7d8f473` previously passed134 tests and built the unchanged production artifacts; the final run deliberately did not repeat it. Earlier Core50/source-relay passes and failed attempts remain separately recorded in [test evidence](docs/evidence/TEST_RESULTS.md).
 
-**Owner action now:** run `scripts/verify-p03-final.ps1 -PackagedOnly` with Java21/bundled PowerShell7/Docker Desktop; exact command in [handoff](docs/HANDOFF.md). It reuses the verified JARs and runs only the remaining packaged acceptance case. Settings/flow and debugging are in [the guide](docs/learning/CODEBASE_GUIDE.md).
+**Owner action now:** none required for P0.3 verification. Preserve the repository and ignored evidence folders. The [handoff](docs/HANDOFF.md) records the completed checkpoint and the proposed P0.4 task, which requires new approval. Settings/flow and debugging are in [the guide](docs/learning/CODEBASE_GUIDE.md).
 
 Final P0.2 host evidence (2026-10-16, source `7a90c57`, completed checkpoint `86452ef`): **full clean reactor BUILD SUCCESS, 38 default tests + 29 real PostgreSQL ITs**, zero failures/errors/skips. All four packaged foundation JARs returned HTTP 200/UP; documentation checks passed. These remain preserved results, not a substitute for P0.3 verification. The current coding session cannot access Docker's engine pipe. See [current handoff](docs/HANDOFF.md) and [test evidence](docs/evidence/TEST_RESULTS.md).
 
@@ -23,7 +23,7 @@ This creates an isolated Kafka verification project, generates transient credent
 
 For an ordinary persistent local Kafka stack after verification, use bundled PowerShell 7 to run `scripts/start-kafka.ps1`. It creates ignored `.env.kafka` once with six distinct credentials and reuses it on later starts. Existing `.env` and PostgreSQL resources remain untouched. Host applications use `127.0.0.1:19092` (or `.env.kafka`'s `KAFKA_HOST_PORT`); container clients on `aegisflow-foundation_kafka-events` use `kafka:9092`. Both require SASL/PLAIN credentials. Controller port 9093 is unpublished. To stop only the ordinary broker while retaining data: `docker compose --env-file .env.kafka -f compose.kafka.yaml stop kafka`. Do not use broad pruning or delete volumes to diagnose startup problems.
 
-The three source topics each have 3 partitions, replication factor 1, min ISR 1 and seven-day retention. Source credentials can publish only to their own topic; Core can read the topics with its scoped consumer group. The plaintext local transport is for synthetic development on a trusted machine. Tenant provenance validation is still required before the later inbox accepts business events. [ADR 0009](docs/adr/0009-local-kafka-listeners-and-source-topics.md) records listener, retention, authentication and single-broker tradeoffs. No application relay/consumer is connected yet.
+The three source topics each have 3 partitions, replication factor 1, min ISR 1 and seven-day retention. Source credentials can publish only to their own topic; Core can read the topics with its scoped consumer group. The plaintext local transport is for synthetic development on a trusted machine. Core validates configured topic/source/tenant bindings before accepting events. All three relays and Core ingestion are implemented and tested; enabling them requires their explicit opt-in configuration. [ADR 0009](docs/adr/0009-local-kafka-listeners-and-source-topics.md) records listener, retention, authentication and single-broker tradeoffs.
 
 Infrastructure-free checks in PowerShell 7: `scripts/build-kafka-smoke.ps1`, `scripts/test-kafka-infrastructure.ps1`, and `scripts/verify-kafka.ps1 -StaticOnly`. These do not establish live Kafka connectivity. The root Maven application reactor and existing PostgreSQL migrations are unchanged.
 
@@ -65,7 +65,7 @@ flowchart LR
   AI[Optional AI provider] -. evidence-bounded advice .-> A
 ```
 
-This diagram is the intended product design. The current code adds internal `create` persistence operations and stored outbox envelopes to P0.1's four application shells. Core remains a modular deployment with its own database; simulators stay separate deployables/databases. Each owner's real PostgreSQL suite has passed on the host; this does not demonstrate the future Kafka flow shown above. See [System Architecture](docs/architecture/SYSTEM_ARCHITECTURE.md) and [the handoff](docs/HANDOFF.md).
+This diagram is the intended full product design. The implemented path is each simulator's internal business transaction → own PostgreSQL outbox → own Kafka relay/topic → Core's validated durable inbox. Core and each simulator retain separate databases and deployables. Simulator-to-simulator choreography, business correlation, incidents and recovery shown above remain future work. See [System Architecture](docs/architecture/SYSTEM_ARCHITECTURE.md) and [the handoff](docs/HANDOFF.md).
 
 ## Build and run the foundation
 

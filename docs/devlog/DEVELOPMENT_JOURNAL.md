@@ -1,5 +1,13 @@
 # Development journal
 
+## 2026-10-20 — close verified P0.3
+
+The owner's packaged-only rerun on `860dbf9` finished BUILD SUCCESS at19:17:57IST,2:40. Independently inspected fresh XML:1 passed,0 failures/errors/skips,148.296s. All4 real executable applications, scheduled source delivery/Core intake, actual Core process restart with offline backlog and the corrected migration/runtime inspection boundary passed. Successful reports are preserved beside the run's log; prior failures remain recorded.
+
+Combined with the unchanged134-test clean build, Core50 and three source-relay gates, this completes the approved P0.3 intake/delivery scope. No suites rerun merely to record completion; no production changes. Updated current README, architecture/data-model status, roadmap/implementation plan, learning guide, limitations and handoff. Older timestamped snapshots are history, not current continuation instructions.
+
+The next proposed milestone is P0.4 tenant-scoped projection/clocked invariant/incident, requiring explicit approval. No owner verification commands remain for P0.3. Save this documentation-only local checkpoint and stop; no push/deployment, existing volume deletion, recovery or AI work.
+
 ## 2026-10-20 — correct packaged-test migration inspection identity
 
 The host packaged-only run on `c0e5423` passed the timestamp guard and reached its last assertion after scheduled delivery and actual Core process restart. It errored because the test queried Flyway history using Core's runtime identity, which correctly cannot read migration metadata. Saved Failsafe result remains1 test/1 error/0 failures/0 skips,19:11:02IST. Preserved failing reports beside its Maven log and inspected all5 child logs.

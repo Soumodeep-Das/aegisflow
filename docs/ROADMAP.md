@@ -1,5 +1,13 @@
 # Prioritized roadmap
 
+**Current status,2026-10-20:** P0.3 is implemented and verified. Final packaged scheduled pipeline/Core process restart passed1/1 on `860dbf9` at19:17:57IST,0 failures/errors/skips. Clean reactor134 and earlier Core50/source-relay/infrastructure evidence remain passed across their separate runs. No verification rerun is needed now.
+
+**Next authorized action:** stop. P0.4 requires explicit approval before implementing tenant-scoped correlation/projection, the first clock-driven missing-warehouse invariant, and its incident/evidence timeline. Recovery/AI and remote pushes remain unapproved.
+
+## Historical checkpoint notes
+
+The dated intermediate statuses below preserve the path to completion; their retry commands and incomplete claims are superseded by the current status above.
+
 **Current next gate,2026-10-20:** host packaged-only run on `c0e5423` passed archive checks and reached the final assertion after delivery/Core restart; it errored reading Flyway history with the runtime account. The test now asserts that restriction and inspects history with the migration account. Rerun only `verify-p03-final.ps1 -PackagedOnly`; require1 pass/0 failures/errors/skips. Clean134 and Core50/source-relay evidence remain valid. P0.3 stays open; earlier entries below record preceding checkpoints.
 
 **Next gate,2026-10-20:** final clean reactor/JAR packaging on `7d8f473` passed134 tests,0 failures/errors/skips. A verifier timestamp error stopped before the packaged test; Boot's normalized executable dates are now handled using original-archive freshness and matching application content. Six regression groups and all4 actual artifact pairs pass. Run only `scripts/verify-p03-final.ps1 -PackagedOnly` for the actual scheduled pipeline/Core process restart case. Core50/source-relay results remain passed. P0.3 remains open until final live PASS; P0.4 unapproved. Older checkpoints below are history.
@@ -41,17 +49,17 @@ The role design is implemented in bootstrap SQL/Compose/profile configuration; t
 
 The final integrated root invocation passed 38 default and 29 PostgreSQL tests. Compose parsing and script syntax also passed locally. The outer cross-PowerShell quoted command emitted an initial `Stop` error; the actual build/startup/docs checks nevertheless completed successfully. Future instructions avoid nested command quoting. See evidence/handoff for the exact distinction and reporting correction.
 
-## Next — P0 functional detection slice
+## Completed P0.3; next proposed P0 functional detection slice
 
 The single highest-value outcome is one reproducible flow from a simulator's committed state, through durable event delivery and idempotent ingestion, to a correlated invariant incident.
 
 Priority order:
 
 1. **P0.3-A prerequisite complete:** real isolated fresh/restarted-volume Compose bootstrap/roles/JAR/history checks passed on the owner's host, 2026-10-17. Do not repeat merely to resume; coding-session pipe denial is separate.
-2. **P0.3-A complete:** the real Kafka host gate passed on 2026-10-17, including readiness, provisioning twice, both listener routes and explicit auth/ACL rejection. SASL/PLAIN is local-development-only and unencrypted; tenant provenance still needs explicit enforcement before intake. Ordinary persistent-stack restart and business crash/retry tests are not covered by this smoke.
-3. **P0.3-B in progress:** Order-only source and database gate passed27default+17PostgreSQL tests on the host. Real DB→Kafka fault tests and enabled-profile startup are next, then Payment/Warehouse equivalents. Do not infer business delivery from the standalone infrastructure smoke or the acknowledged test publisher.
-4. **P0.3-C:** existing Core `eventing` validation, durable inbox uniqueness and technical quarantine; offset acknowledgement after committed acceptance/quarantine only. No projection/invariant engine yet.
-5. **P0.3-D:** real end-to-end/failure tests, metrics where feasible, learning/evidence/handoff and final local commit; then stop for P0.4 approval.
+2. **P0.3-A complete:** real Kafka readiness, repeated provisioning, both listeners and explicit auth/ACL rejection passed. Local SASL/PLAIN remains unencrypted; Core independently enforces configured source/tenant trust.
+3. **P0.3-B complete:** Order, Payment and Warehouse owner-local relays passed PostgreSQL/Kafka commit, retry, outage/restart and stable-ID ambiguous-completion tests. Publication metadata commits only after successful broker acknowledgement.
+4. **P0.3-C complete:** Core `eventing` validates bounded schemas/identities/source/tenant mappings, commits immutable inbox or quarantine, and then acknowledges offsets. Database uniqueness handles concurrent duplicates; fault/replay scenarios passed.
+5. **P0.3-D complete:** real three-source pipeline/failure tests, clean134-test reactor and separately packaged scheduled intake/Core process restart passed; learning/evidence/handoff preserved. Dedicated metrics/load/replicated-failover and operator quarantine UI remain documented limitations.
 6. **Unapproved P0.4:** correlation/projection, one clock-driven invariant and durable incident/evidence timeline.
 7. Broader packaging/observability and recovery remain later work; preserve working thin slices rather than expand scope.
 

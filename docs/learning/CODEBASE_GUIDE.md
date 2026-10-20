@@ -1,8 +1,10 @@
 # Codebase guide
 
-## Final executable-JAR scheduling check (2026-10-20; live run pending)
+**Current status:** P0.3 passed its final host gate on2026-10-20. The sections below explain actual source and preserve dated implementation history; older pending/unwritten statements are superseded by this completion and current HANDOFF. No further verification command is required now.
 
-Latest host run passed timestamp validation and completed scheduling/Core restart observations, then errored at its final migration-history assertion. `PackagedPipelineScenario.java` now uses its runtime connection to assert absence of history SELECT, and a separate Core-migrator connection to inspect migration history. Business inbox/outbox observations continue using runtime identities. The correction is test-only; the complete packaged rerun is still pending.
+## Final executable-JAR scheduling check (verified2026-10-20)
+
+The final host run on `860dbf9` passed1/1,0 failures/errors/skips at19:17:57IST. `PackagedPipelineScenario.java` uses its runtime connection to assert absence of history SELECT, and a separate Core-migrator connection to inspect migration history. Business inbox/outbox observations use runtime identities. The earlier failed attempt and its correction remain in TEST_RESULTS.
 
 Debugging lesson: `BadSqlGrammarException` is Spring's exception category here; its underlying PostgreSQL message was `permission denied for table flyway_schema_history`. Inspect that cause and the connection identity before changing SQL or grants. Runtime applications need their domain tables, while migration metadata belongs to the migration role. The test must respect the same separation.
 
@@ -14,13 +16,13 @@ Each process requests HTTP port0, reads its actual bound port from its own fresh
 
 The final script preserves prior reports under `.cache/p03-final/<id>/prior` before `clean verify`. This normal reactor runs default unit/foundation HTTP checks and builds current executable JARs; expensive completed relay/Core pipeline ITs are not selected. A separate pipeline-profile Maven invocation runs only PackagedPipelineScenario. `-PackagedOnly` resumes that final phase after a test/script-only repair using existing verified artifacts. Actual counts come from fresh XML; skips cannot pass.
 
-The host clean build passed134 tests on2026-10-20, but the original freshness guard stopped before the live packaged case: Boot sets the executable archive's filesystem timestamp to1980-02-01 for reproducibility. `scripts/lib/packaged-artifact.ps1` now checks `.jar.original` against main sources/resources/POMs, then compares SHA256 application/resource/Maven metadata bytes with their repackaged entries. Boot rewrites the manifest and adds loader/dependency entries, so those are not equated to the plain archive. This is a local resume check, not full dependency provenance. All4 actual archive pairs and6 regression groups in `scripts/test-packaged-artifact.ps1` pass; run only `verify-p03-final.ps1 -PackagedOnly` next.
+The host clean build passed134 tests on2026-10-20, but the original freshness guard stopped before the live packaged case: Boot sets the executable archive's filesystem timestamp to1980-02-01 for reproducibility. `scripts/lib/packaged-artifact.ps1` now checks `.jar.original` against main sources/resources/POMs, then compares SHA256 application/resource/Maven metadata bytes with their repackaged entries. Boot rewrites the manifest and adds loader/dependency entries, so those are not equated to the plain archive. This is a local resume check, not full dependency provenance. All4 actual archive pairs and6 regression groups pass; the subsequent packaged-only acceptance also passed.
 
 Timestamp debugging exercise: inspect both archive mtimes, then run `scripts/test-packaged-artifact.ps1`. Expect an old normalized executable date to pass with a fresh matching original; changed production inputs, same-length changed bytes, missing/extra resources or a missing archive must fail. Do not touch timestamps or rebuild solely to make the old date appear current.
 
 Debug exercise: inspect printed child log paths if the case fails. Expected source state before process launch is PENDING, first Core inbox count3, held intent still PENDING, then PUBLISHED while Core is stopped, then Core count4 after restart. If an application exited, inspect its own log before changing any port. A health response containing groups is valid; a root DOWN/nested UP response is not.
 
-Four pure process/env/port/health guards and the final134-test host reactor pass; the live packaged scenario is still pending. The timestamp repair changes verification scripts only.
+Four pure process/env/port/health guards, the final134-test host reactor and the live packaged scenario pass across recorded runs. The timestamp and role-inspection repairs changed scripts/tests only.
 
 ### Q51. Why verify executable JARs after a Spring-context integration test?
 
@@ -847,4 +849,4 @@ It uses several independent layers: Maven modules avoid compile-time implementat
 
 ## Honest next step
 
-P0.2 and P0.3-A's persistent-PostgreSQL/Kafka host gates are complete. Next implement the approved source-owned bounded outbox relay, then validated durable Core inbox/quarantine and fault tests. Do not repeat completed infrastructure checks merely to resume. Source-topic ACLs do not establish payload tenant authority; intake must enforce trusted bindings. P0.4 remains unapproved. The handoff names precise acceptance criteria and environment limits.
+P0.3 infrastructure, three source-owned relays, trusted durable Core inbox/quarantine, fault/replay tests and packaged scheduling/restart are verified. Stop here. After explicit P0.4 approval, the next slice is tenant-scoped projection and a clock-driven missing-warehouse incident with an explainable evidence timeline. Intake acceptance is not an incident or an authoritative cross-service business outcome. The handoff records the proposed acceptance criteria and remaining limits.

@@ -1,5 +1,13 @@
 # Known Limitations
 
+**Current status,2026-10-20:** P0.3 is verified. The final packaged scenario on `860dbf9` passed1 test,0 failures/errors/skips at19:17:57IST. All4 executable apps, automatic source/Core scheduling, real Core process restart/backlog and migration/runtime privilege checks passed. Earlier clean134, Core50 and all3 source-relay gates remain valid; no owner verification action remains.
+
+**Remaining limits:** the broker is single-node with plaintext local SASL; no load/SLO, replicated failover or abrupt OS/power-loss guarantee was measured. Source tenant allowlists trust each permitted producer within its configured tenant set. ACCEPTED inbox rows do not implement business correlation or incidents. Quarantine is database-inspectable metadata with no operator UI/replay/retention automation; no automatic failed-outbox requeue or dedicated operational metrics/alerting. Simulator-to-simulator choreography, P0.4 detection and later recovery/AI remain future work.
+
+## Historical checkpoints and earlier limitations
+
+Prior pending/failure statements below are dated history and superseded where the final evidence above verifies the behavior. They do not instruct another rerun.
+
 **Current packaged checkpoint,2026-10-20:** timestamp repair passed on the host. The packaged scenario reached its final metadata assertion after source delivery/Core restart, then errored because runtime cannot SELECT Flyway history. The test now verifies that restriction and reads history with Core migrator; production grants are unchanged. Corrected live rerun remains pending via `verify-p03-final.ps1 -PackagedOnly`. This failed run does not close P0.3.
 
 **Final acceptance checkpoint,2026-10-20:** all50 Core cases passed across recorded runs; the clean reactor on `7d8f473` subsequently passed134 tests and packaged all4 applications. Boot's normalized JAR timestamp caused a verifier failure before the packaged case began. Repaired original-archive freshness/application-content checks pass6 regressions and all4 real artifact pairs; they are local resume checks, not full dependency provenance. Only `verify-p03-final.ps1 -PackagedOnly` remains for final host acceptance. P0.3 is incomplete. The packaged case covers a single local three-source intake and Core restart, not business correlation, load/SLO or replicated failover.

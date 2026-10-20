@@ -1,4 +1,28 @@
-# Handoff — packaged test migration-history identity corrected
+# Handoff — P0.3 verified; stopped before P0.4
+
+**Snapshot:** 2026-10-20T13:48:48Z, final evidence/continuity session. Entry branch `main`, commit `860dbf9`, clean and ahead21. This following local documentation-only commit closes P0.3; use `git rev-parse HEAD` and `git status --short --branch` for its closing hash/status. No source changes or tests rerun in this closing session. No push, deployment or existing Compose/storage mutation.
+
+**Completed milestone:** approved P0.3 reliable Kafka delivery and durable Core intake. All3 simulator business/outbox transactions, independent bounded relays with post-broker-ack completion, stable-ID retry/redelivery, trusted source/tenant intake validation, immutable idempotent Core inbox, durable technical quarantine and post-database-commit offset acknowledgement are implemented. Real PostgreSQL/Kafka failure/replay/isolation/concurrency tests and the separate packaged scheduling/Core restart gate passed. This is at-least-once transport with database idempotency, not universal exactly-once external effects.
+
+**Final actual result:** owner ran bundled PowerShell7 `verify-p03-final.ps1 -PackagedOnly` on `860dbf9` with Temurin21.0.12.1/Docker29.8.2. BUILD SUCCESS at19:17:57IST /13:47:57Z,2:40. Fresh XML independently confirms1 test,0 failures/errors/skips,148.296s. Four executable applications were healthy; three owner schedulers published into Core; Core stopped; a fourth committed Order event published while it was offline; restarted Core accepted it using the same database/group. Final inbox4/quarantine0, runtime denied history SELECT, migrator observed2 successful migrations. The earlier134-test clean build on `7d8f473` remains valid because subsequent fixes changed only tests/scripts/docs. These are separate runs, not a new135-test invocation.
+
+**Evidence:** successful `.cache/p03-final/8e10091e666a46bd90c77a5bb50d3844/packaged.log` and copied `reports/`; child logs `.cache/packaged-pipeline/8be2d159-8e6b-42c0-bfcd-e4122d70c3c8/`. Earlier clean134, combined Core50, Order and Payment/Warehouse gates are indexed in TEST_RESULTS. Previous failures below are preserved history, superseded by this passing rerun. The host script printed complete PASS and zero-issue docs; numeric outer-shell exit was not supplied.
+
+**Actual code/flow entry points:** simulator `OrderPersistenceService`, `PaymentCreation`, `ReservationApplicationService` commit state/outbox → owner `*OutboxRelay`/`*OutboxStore` → `compose.kafka.yaml` source topics → `control-plane/src/main/java/com/aegisflow/core/eventing/internal/{InboxConfiguration,KafkaInboxConsumer,EventValidator,IntakePolicy,InboxStore}.java` → `control-plane/src/main/resources/db/migration/V2__durable_event_inbox.sql`. Test entry: `control-plane/src/test/java/com/aegisflow/core/eventing/internal/PackagedPipelineScenario.java`. Exact paths/config/debug exercises and55 answered interview questions are in CODEBASE_GUIDE.
+
+**Environment/reproduction:** Windows Java21, bundled PowerShell7 and Docker Desktop are required for live verification. Current coding-tool Docker/loopback restrictions do not invalidate the host evidence. No repeat required now. For a future intentional full regression use `scripts/verify-p03-final.ps1`; after a test-only change, `-PackagedOnly` requires current matching original/executable artifacts. Neither command replaces the separately recorded fault suites when relevant production code changes.
+
+**Remaining limits:** local single-broker plaintext SASL, trusted source tenant allowlists, no load/SLO or replicated failover claim; inbox ACCEPTED means intake only. Quarantine is durable database evidence without an operator UI/replay/retention automation. No simulator choreography, projection, invariant detection, incident, recovery or AI implementation is claimed. Broader acceptance IDs describing those product outcomes remain future work.
+
+**Exact next task:** obtain explicit P0.4 approval, then implement tenant-scoped correlation/projection and the first clock-driven missing-warehouse invariant/incident slice. Proposed acceptance: no false incident on happy path, one deterministic invariant-labelled incident on the selected fault, duplicate/reordered facts converge, restart preserves deadline/incident state, and evidence explains the timeline. Do not begin it before approval. P0.3 needs no further owner commands.
+
+**Recovery/continuity:** preserve repository/history, ignored diagnostic evidence and existing volumes; inspect Git before edits, never reset or delete storage to resume. All checkpoint commits remain local. Work stops at the completed P0.3 boundary.
+
+**Closing checks:** documentation checker exit0:30 Markdown/20 required/126 local links/7 Mermaid/1 JSON/16 scenarios/55 Q&As/9 ADRs/0 issues. Whitespace check passed. Only10 documentation files changed; no application/test/config changes after the passing host gate.
+
+---
+
+## Historical checkpoint — packaged test migration-history identity corrected
 
 **Latest checkpoint:** 2026-10-20T13:44:17Z, continued clean `main` at `c0e5423`, ahead20. The following local test/docs commit corrects the final packaged test assertion; resolve its closing hash/status with Git. No production code, database grants, JARs, POMs or Compose changes.
 

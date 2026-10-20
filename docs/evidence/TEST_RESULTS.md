@@ -1,5 +1,23 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-20 — P0.3 final packaged acceptance PASSED on `860dbf9`
+
+Owner command from the existing repository, with JAVA_HOME=`C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot`:
+
+```powershell
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-p03-final.ps1 -PackagedOnly
+```
+
+Docker29.8.2; all4 artifact freshness/content checks passed. Maven BUILD SUCCESS at19:17:57IST /13:47:57Z,2:40. Fresh saved XML independently confirms **1 test,0 failures,0 errors,0 skips**,148.296s. Maven exit0 is enforced before the script prints PASS; the outer-shell numeric exit was not separately printed. Host docs checker:30 Markdown/20 required/125 links/7 Mermaid/1 JSON/16 scenarios/55 Q&As/9 ADRs/0 issues.
+
+The executed scenario proves all4 packaged postgres applications' HTTP health and real scheduling; Order/Payment/Warehouse committed intents published and were accepted into Core; a fourth Order intent remained held until Core stopped, published while Core was offline, then reached the restarted Core on its existing database/group. Final inbox4,quarantine0; Core runtime still lacks history SELECT and the migrator sees2 successful migrations. No existing Compose project/volume was targeted.
+
+Evidence: `.cache/p03-final/8e10091e666a46bd90c77a5bb50d3844/packaged.log`, copied fresh XML/text in `reports/`, child logs `.cache/packaged-pipeline/8be2d159-8e6b-42c0-bfcd-e4122d70c3c8/`. Prior failed identity/timestamp runs remain below; neither was silently relabelled.
+
+This closes P0.3 with the earlier clean reactor134, Core50 across recorded runs, and all3 source-relay/infrastructure gates. Counts overlap between suites/runs; they are not summed into an invented single-run total. The final packaged command did not rerun the default reactor. No production source changed after its build; later repairs were test/script-only. P0.4 business correlation/incidents and production load/replicated-failover claims remain outside this completion.
+
+Closing documentation-only session: `scripts/verify-docs.ps1` exit0,30 Markdown/20 required/126 local links/7 Mermaid/1 JSON/16 scenarios/55 interview Q&As/9 ADRs/0 issues. `git diff --check` passed. No Maven/Docker suites rerun.
+
 ## 2026-10-20 — packaged pipeline reached final check; migration-history identity repair
 
 Owner ran bundled PowerShell7 `-NoProfile -File .\scripts\verify-p03-final.ps1 -PackagedOnly` on `c0e5423`, Java21/Docker29.8.2. All4 timestamp/content guards passed. Maven BUILD FAILURE at19:11:02IST /13:41:02Z,3:00; saved Failsafe XML/text: **1 test,0 failures,1 error,0 skips**, suite149.2s, test84.49s. Numeric outer-shell exit was not printed.
