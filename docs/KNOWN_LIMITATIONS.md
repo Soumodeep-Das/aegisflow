@@ -1,5 +1,9 @@
 # Known Limitations
 
+B's bounded cyclic scan revisits all persisted projections: deadline latency scales with workload and no5-second target is measured. Database tests use worker recreation and injected read failure, not physical process/DB restart; direct scheduled callback testing is not packaged enabled-mode wiring proof. B real PostgreSQL gate remains blocked here; C incidents are intentionally absent. Detection defaults disabled; enable only with the verified pipeline after host acceptance.
+
+**Current P0.4-B checkpoint,2026-10-21:** A remains verified. B deterministic INV-002 and durable evaluation/sweep implementation has18 focused tests passed; all21 PostgreSQL checks skipped due to Docker pipe denial. Run `scripts/verify-detection.ps1` on the host; do not repeat A. Require21 actual passes before C incidents/evidence. B and full P0.4 are not yet verified; no P0.5/recovery/AI or push. Older dated statuses below are history.
+
 **Latest checkpoint,2026-10-21:** P0.4-A's real PostgreSQL gate passed on `2b2e885`:12 projection +4 Core migration/startup tests, zero failures/errors/skips. Earlier43 focused tests passed separately. This supersedes the pending/owner-command statements below; no rerun is needed. Next approved work is B clock-driven INV-002 with backlog freshness and restart proof, then C incidents and D full integration. P0.4 overall is incomplete. See HANDOFF/TEST_RESULTS for exact saved evidence.
 
 ## Active checkpoint — P0.4-A, 2026-10-21

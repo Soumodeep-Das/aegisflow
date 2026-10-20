@@ -1,4 +1,31 @@
-# Handoff — P0.4-A database gate PASSED
+# Handoff — P0.4-B implemented; real database gate pending
+
+## Current checkpoint — 2026-10-20T18:57:16Z / 2026-10-21 local, Codex
+
+Entry main clean at `b46e758`; P0.4-A remains complete (43 focused and16 host database passes across separate runs). This following local source/docs checkpoint implements B, not C. Resolve final commit/status with `git rev-parse HEAD` and `git status --short --branch`. No push/deployment/existing Compose or volume mutation.
+
+**Implemented:** INV-002/v1 deterministic InventoryInvariant, injected detection Clock, bounded cyclic DeadlineDetector, opt-in DetectionConfiguration. Correlation exports DetectionProjections/adapter; detection reads no correlation internals. V4 adds append-only invariant_evaluation plus durable detection_sweep cursor; transaction/gate/snapshot coordinates decisions, freshness and cursor. Existing45+15 config is pinned by A, never reinterpreted by B. Unknown backlog/ambiguity, distinct mismatch/contradiction/missing/late reasons, valid rejection and immutable late-evidence history. ADR0011 defines exact semantics and scaling limits.
+
+**Actual checks:**18 focused tests passed at00:25:20IST,27.059s, exit0: InventoryInvariantTests14 + ControlPlaneArchitectureTests4, zero failures/errors/skips. Database attempt at00:27:06IST,25.680s, Maven exit0 but ALL21 skipped: DeadlineDetectionIT17 + PostgresInfrastructureIT4. Docker CLI exit1/named-pipe permission denial; Testcontainers AccessDeniedException. No database/scheduler acceptance pass claimed. Logs `.cache/p04b-unit.log` and `.cache/p04b-postgres-available.log`; exact commands in TEST_RESULTS. No completed A or P0.3 test suite repeated.
+
+**Single next task:** owner runs the real PostgreSQL gate from this repo, with Docker Desktop running:
+
+Static closing checks pass: verifier parses; documentation checker32 Markdown/65 Q&As/11 ADRs/0 issues; whitespace clean. Host verifier execution and V4 SQL remain unverified.
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-detection.ps1
+```
+
+Require21 executed passes, zero failures/errors/skips; preserve printed `.cache/p04b/<id>/postgres.log` and reports. Script rejects skips/stale reports; runs only new17 plus V4 startup regression4. It uses isolated Testcontainers PostgreSQL and random ports, no Kafka/combined simulator classpath or existing Compose volumes. Host script itself is not yet executed end-to-end.
+
+**Paths:** `control-plane/src/main/java/com/aegisflow/core/detection/internal/{InventoryInvariant,DeadlineDetector,DetectionConfiguration}.java`, `correlation/DetectionProjections.java`, `correlation/internal/DetectionProjectionConfiguration.java`, `resources/db/migration/V4__invariant_evaluation.sql`; test `detection/internal/DeadlineDetectionIT.java` reuses production intake/projector through test-only `correlation/internal/DetectionFixture.java`. B default off: CORE_DETECTION_ENABLED=false; batch25/max100, callback1s. Worker state comes from database, not callback memory.
+
+**After host PASS:** record result and local checkpoint, then C durable incidents/evidence driven by immutable evaluations, recoverably/idempotently across the evaluation-to-incident transaction gap. Do not auto-resolve earlier violations on late facts. Then D complete event-to-incident tests/packaged regression. Do not start C before B's actual SQL gate. P0.5/recovery/AI/push remain unauthorized.
+
+**Limits/recovery:** full cyclic scan latency scales with transaction count; no latency SLO claimed. Tests use worker recreation, direct production callback and injected read failure, not physical process/database restart. B enabled-mode packaged wiring awaits later integration. Keep V1–V3 intact; V4 forward migration only, do not delete applied migrations/storage. Existing artifacts predate production changes and need rebuild for later packaged gates. Detection can be disabled independently; projections/inbox/evaluations stay durable.
+
+## Historical P0.4-A gate checkpoint
 
 ## Current checkpoint — 2026-10-20T18:46:53Z / 2026-10-21 00:16:53IST
 

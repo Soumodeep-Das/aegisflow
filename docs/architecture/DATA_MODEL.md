@@ -1,5 +1,11 @@
 # Data Model
 
+## P0.4-B V4 — implemented, PostgreSQL gate pending
+
+`invariant_evaluation` stores tenant/evaluation UUID PK, tenant/transaction FK, INV-002/v1, projection version, PENDING/ENFORCED phase, unsettled flag, result/reason, evaluated_at, frozen contract/config/duration/lateness/deadlines and the exact bounded observation snapshot. Unique tenant/transaction/rule/version/projection-version/phase/unsettled prevents repeated logical decisions. Runtime SELECT/INSERT only; no UPDATE/DELETE. Checks reject definite results on unsettled work, pre-enforcement violations and mismatched observation tenant/transaction.
+
+`detection_sweep` holds one durable cyclic tenant/transaction cursor; runtime can update only its cursor columns. Evaluations and cursor commit in one REPEATABLE_READ transaction holding the shared projector gate. Restart reuses the cursor; wrap revisits unchanged due work and earlier new keys. Scans are bounded but scan-latency grows with dataset size. No new inbox/projection privileges, cross-service tables or incident schema. ADR0011 specifies semantics and limitations.
+
 **Latest checkpoint,2026-10-21:** V3/P0.4-A database gate passed on `2b2e885`:12 projection +4 Core startup/migration tests, zero failures/errors/skips. Pending statuses below are historical. Continue approved B clock-driven INV-002/freshness/restart proof before C incidents and D full integration; P0.4 is not complete. No owner rerun needed.
 
 **Current verification,2026-10-20:** P0.3 source outbox publication metadata, Core V2 immutable inbox/quarantine, unique identities, rollback/concurrent replay and least-privilege boundaries are verified on real PostgreSQL/Kafka. Final packaged delivery/Core restart passed on `860dbf9`; Core runtime remains denied SELECT on Flyway history while the migration identity can inspect it. No production schema/grant changed during final verification repairs. ACCEPTED still denotes intake only; future facts/projections/incidents remain P0.4.

@@ -1,5 +1,54 @@
 # Codebase guide
 
+## P0.4-B: time-driven decisions, not incidents
+
+B implementation has18 focused tests passed;21 PostgreSQL checks skipped due to this session's Docker denial. Run scripts/verify-detection.ps1 on the host. A remains verified; no completed A suite rerun. This section supersedes earlier pending A/current-next-B statements.
+
+Actual new paths:
+
+```text
+control-plane/src/main/java/com/aegisflow/core/
+  correlation/DetectionProjections.java
+  correlation/internal/DetectionProjectionConfiguration.java
+  detection/internal/InventoryInvariant.java
+  detection/internal/DeadlineDetector.java
+  detection/internal/DetectionConfiguration.java
+control-plane/src/main/resources/db/migration/V4__invariant_evaluation.sql
+control-plane/src/test/java/com/aegisflow/core/
+  detection/internal/InventoryInvariantTests.java
+  detection/internal/DeadlineDetectionIT.java
+  correlation/internal/DetectionFixture.java
+scripts/verify-detection.ps1
+```
+
+Flow: persisted A projection/deadline → scheduled DetectionTick → DeadlineDetector's REQUIRES_NEW/REPEATABLE_READ transaction → shared advisory gate → bounded correlation snapshot API + unsettled inbox check → pure InventoryInvariant → immutable evaluation and durable sweep cursor commit together. No Kafka call, simulator write or incident creation happens here. The callback wakes work; PostgreSQL owns work and completion. Empty tail wraps the cursor so unchanged deadlines become due and earlier new keys are not lost.
+
+CORE_DETECTION_ENABLED defaults false; CORE_DETECTION_BATCH_SIZE defaults25, maximum100. Callback interval is1 second. The injected detectionClock supplies decision time; A's pinned45-second duration plus15-second lateness is read from each snapshot, not reloaded as a new rule. Public APIs preserve module boundaries; JDBC/TransactionTemplate makes the multi-table boundary explicit without self-invocation proxy surprises.
+
+SATISFIED means a matching observed on-time reservation or supported rejection, not current remote authority. UNKNOWN means pending enforcement or insufficient/unfinished evidence. At enforcement, missing/mismatched/contradictory or late-occurring outcomes have distinct VIOLATED reasons. An on-time event delivered later can yield a new SATISFIED evaluation, but the earlier violation remains. Future C must not equate this with incident resolution.
+
+Debug exercise after host SQL pass: run DeadlineDetectionIT.pendingWarehouseBacklogIsUnknownThenSatisfied with a breakpoint before fixture.project(). Intake already contains the Warehouse event but progress does not. Advance MutableClock to60 seconds and inspect invariant_evaluation: UNKNOWN/PROJECTION_UNSETTLED, zero violations. Project the backlog and advance to61: a new projection version yields SATISFIED while the original UNKNOWN remains. In failureAfterEvaluationInsertRollsBackCursorAndResult, the test-owned database trigger fails the cursor update; both evaluation and cursor progress roll back. Retry with a newly constructed worker succeeds. No actual60-second sleep.
+
+### Q61. Why can a scheduled method alone lose deadline work?
+
+An in-memory timer disappears on restart. Here projections retain deadlines and detection_sweep retains scan position; restarting a worker resumes and wraps the scan without needing a new business event.
+
+### Q62. Why use REPEATABLE_READ plus the shared gate?
+
+The gate serializes projection/detection effects; the snapshot keeps projection and intake-freshness observations consistent while intake continues. Serialization conflicts roll back and retry. Events committed after that snapshot are later evidence, not already-known facts.
+
+### Q63. How are repeated time-driven evaluations idempotent?
+
+A unique database key includes tenant, transaction, rule/version, projection version, deadline phase and unsettled flag. Repeated polling of the same state cannot append another logical decision; enforcement or new projected evidence permits a new one.
+
+### Q64. Does the15-second allowance extend the inventory operation deadline?
+
+No. dueAt is occurrence plus inventory duration. enforceAfter adds transport grace once. A business outcome occurring after dueAt is late; an on-time event delivered later can change observed evidence without rewriting the original evaluation.
+
+### Q65. Why keep a violated evaluation after later valid evidence arrives?
+
+It records what was known at its evaluatedAt and the checked fact snapshot. Replacing it would hide detection history. A later decision appends new evidence; future incident resolution still needs the separately authorized authoritative verification workflow.
+
 **Latest checkpoint,2026-10-21:** P0.4-A's real PostgreSQL gate passed on `2b2e885`:12 projection +4 Core migration/startup tests, zero failures/errors/skips. Earlier43 focused tests passed separately. This supersedes the pending/owner-command statements below; no rerun is needed. Next approved work is B clock-driven INV-002 with backlog freshness and restart proof, then C incidents and D full integration. P0.4 overall is incomplete. See HANDOFF/TEST_RESULTS for exact saved evidence.
 
 **Current status,2026-10-21:** P0.3 complete; approved P0.4-A implemented with43 focused tests passed but16 PostgreSQL checks skipped. Run the host projection gate before B/C. Older status paragraphs are history.

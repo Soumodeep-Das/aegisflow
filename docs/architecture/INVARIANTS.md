@@ -1,5 +1,7 @@
 # Business and Safety Invariants
 
+**Current P0.4-B checkpoint,2026-10-21:** A remains verified. B deterministic INV-002 and durable evaluation/sweep implementation has18 focused tests passed; all21 PostgreSQL checks skipped due to Docker pipe denial. Run `scripts/verify-detection.ps1` on the host; do not repeat A. Require21 actual passes before C incidents/evidence. B and full P0.4 are not yet verified; no P0.5/recovery/AI or push. Older dated statuses below are history.
+
 ## Active P0.4-A boundary — 2026-10-21
 
 No INV-002 evaluator or incident exists yet. New correlation code persists configurable 45-second inventory duration plus 15-second lateness exactly once, pinned to a configuration version per transaction. InventoryRejected is observed evidence, never automatically absence; mismatched quantities are retained for the future detector, not labelled SATISFIED. Unsupported changes between terminal source outcomes and identity conflicts stay CONFLICT. A's pure tests pass; actual PostgreSQL gate remains skipped/unverified.

@@ -65,12 +65,13 @@ class ControlPlaneArchitectureTests {
                     .isNotNull();
             assertThat(moduleMetadata.allowedDependencies())
                     .as("%s must expose only its documented dependencies", moduleName)
-                    .containsExactly(moduleName.equals("correlation") ? new String[]{"eventing"} : new String[]{});
+                    .containsExactly(moduleName.equals("correlation") ? new String[]{"eventing"}
+                        : moduleName.equals("detection") ? new String[]{"correlation","eventing"} : new String[]{});
         }
 
         MODULES.forEach(module -> assertThat(module.getAllowedDependencies(MODULES).isEmpty())
                 .as("%s has the expected dependency policy", module.getIdentifier())
-                .isEqualTo(!module.getIdentifier().toString().equals("correlation")));
+                .isEqualTo(!Set.of("correlation","detection").contains(module.getIdentifier().toString())));
     }
 
     @Test

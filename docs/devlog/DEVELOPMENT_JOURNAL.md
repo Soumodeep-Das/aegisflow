@@ -1,5 +1,15 @@
 # Development journal
 
+## 2026-10-21 — P0.4-B implementation, stop at host SQL gate
+
+Closing static checks: verify-detection.ps1 parses without errors; scripts/verify-docs.ps1 exit0 (32 Markdown/20 required/124 local links/7 Mermaid/1 JSON/16 scenarios/65 Q&As/11 ADRs/0 issues); git diff --check passes. No Mermaid rendering claim. V4's observation identity NULL check was hardened after the skipped attempt; SQL remains unverified, not a passed migration.
+
+Continued clean b46e758 without repeating A implementation/audit/tests. Added deterministic INV-002, typed correlation snapshots, immutable V4 evaluations and a durable bounded cyclic scheduler under the existing advisory gate and REPEATABLE_READ snapshot. Detection explicitly depends on correlation/eventing public APIs only. ADR0011 records deadline/transport-grace distinction, UNKNOWN conditions, immutable late evidence, concurrency and scan-latency tradeoffs.
+
+Focused command in TEST_RESULTS passed18 tests,0 failures/errors/skips at00:25:20IST,27.059s. Docker CLI denied (exit1); real SQL attempt compiled but skipped all21 at00:27:06IST,25.680s, Maven exit0 is not acceptance. Added verify-detection.ps1 for only the unverified17 B +4 V4 startup cases, with dynamic ports/disposable storage/fresh report enforcement. Preserve .cache/p04b-unit.log and .cache/p04b-postgres-available.log. No C or remote actions; owner host pass is the next gate.
+
+V1–V3 not changed; existing A test fixture/schema-count and packaged history count updated for V4 compatibility, not claimed rerun. Current default-disabled detection adds no simulator writes or inbox mutation. Documentation/learning/handoff record exact next action and limits.
+
 ## 2026-10-21 — record P0.4-A actual host proof
 
 Owner ran verify-projection.ps1 on2b2e885; saved Maven log and selected XML independently confirm16 passes,0 failures/errors/skips at00:16:53IST,50.239s.12 new projection cases plus4 Core migration/startup regressions; previous43 focused tests were not rerun. Ignored evidence is under .cache/p04a/b69f72644f3a4835a25eab14af095e69. Copied stale packaged XML excluded from totals. Recorded exact command/results in TEST_RESULTS and updated active status/handoff without code changes or pushes.

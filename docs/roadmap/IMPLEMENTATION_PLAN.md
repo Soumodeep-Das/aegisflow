@@ -1,5 +1,7 @@
 # Implementation plan
 
+**Current P0.4-B checkpoint,2026-10-21:** A remains verified. B deterministic INV-002 and durable evaluation/sweep implementation has18 focused tests passed; all21 PostgreSQL checks skipped due to Docker pipe denial. Run `scripts/verify-detection.ps1` on the host; do not repeat A. Require21 actual passes before C incidents/evidence. B and full P0.4 are not yet verified; no P0.5/recovery/AI or push. Older dated statuses below are history.
+
 **Latest checkpoint,2026-10-21:** V3/P0.4-A database gate passed on `2b2e885`:12 projection +4 Core startup/migration tests, zero failures/errors/skips. Pending statuses below are historical. Continue approved B clock-driven INV-002/freshness/restart proof before C incidents and D full integration; P0.4 is not complete. No owner rerun needed.
 
 **Current milestone status,2026-10-21:** P0.4 approved from completed P0.3 `d4d4b7c`. A durable projection implementation exists; 43 focused tests pass, 16 database tests skipped due to denied Docker access. Host `scripts/verify-projection.ps1` must pass before B detector/C incidents. B scheduler/backlog freshness must pass before C; D adds full event-to-incident verification. Historical pending/unapproved statuses below are superseded. No P0.5 or push.

@@ -1,5 +1,23 @@
 # Test evidence — P0.4 and preserved completed milestones
 
+## 2026-10-21 — P0.4-B focused pass, PostgreSQL NOT verified
+
+Closing static checks: verify-detection.ps1 parses without errors; scripts/verify-docs.ps1 exit0 (32 Markdown/20 required/124 local links/7 Mermaid/1 JSON/16 scenarios/65 Q&As/11 ADRs/0 issues); git diff --check passes. No Mermaid rendering claim. V4's observation identity NULL check was hardened after the skipped attempt; SQL remains unverified, not a passed migration.
+
+Source baseline b46e758 plus new B working tree, Temurin21.0.12.1, Maven3.10.0; JAVA_HOME set to documented Java21 and TEMP/TMP to repository .cache/tmp. Exact commands:
+
+```powershell
+.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane '-Dtest=InventoryInvariantTests,ControlPlaneArchitectureTests' -l .cache/p04b-unit.log test
+docker info --format '{{.ServerVersion}}'
+.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane -Pinfrastructure-tests '-Dit.test=DeadlineDetectionIT,PostgresInfrastructureIT' -l .cache/p04b-postgres-available.log test-compile failsafe:integration-test failsafe:verify
+```
+
+First exit0/BUILD SUCCESS at00:25:20IST,27.059s:14 evaluator +4 architecture =18 tests, zero failures/errors/skips. Proves controlled-time boundaries, reservation/rejection, mismatch/conflict/ambiguity/backlog decisions, late-event semantics and documented module dependencies. No real60-second sleeps.
+
+Docker CLI exit1, permission denied on dockerDesktopLinuxEngine. Third command compiled all tests but Testcontainers could not open docker_engine: AccessDeniedException. Maven exit0/BUILD SUCCESS at00:27:06IST,25.680s;17 DeadlineDetectionIT +4 PostgresInfrastructureIT =21 SKIPPED,0 executed. This is NOT B gate success.
+
+Host verifier `scripts/verify-detection.ps1` selects only these21, saves prior/current reports and log under .cache/p04b/<id>, checks freshness/exact counts/zero skips. Tests cover production intake/projector/reader/detector with real SQL: due threshold, worker recreation, repeated/concurrent processing, rollback after evaluation insert, cyclic scan, missing/backlogged/blocked/rejected/conflicting/wrong-order evidence, late-history preservation, tenant/immutable grants and snapshot/config. Synthetic read outage is not physical database shutdown; direct production scheduled callback is not a packaged-process test. No C incidents or final P0.4 proof. Old A suites were not rerun; migration count assertions and A fixture TRUNCATE list were mechanically updated for V4's additional FK.
+
 ## 2026-10-21 — P0.4-A host PostgreSQL gate PASSED on 2b2e885
 
 Documentation-only closing checks: verify-docs.ps1 exit0 (31 Markdown,60 Q&As,10 ADRs,0 issues); git diff --check passed. No executable tests repeated for this evidence update.

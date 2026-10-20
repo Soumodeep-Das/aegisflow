@@ -3,5 +3,5 @@
  */
 @org.springframework.modulith.ApplicationModule(
         displayName = "Detection",
-        allowedDependencies = {})
+        allowedDependencies = {"correlation", "eventing"})
 package com.aegisflow.core.detection;

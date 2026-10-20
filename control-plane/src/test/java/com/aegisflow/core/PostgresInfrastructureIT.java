@@ -76,7 +76,7 @@ class PostgresInfrastructureIT {
 
     @Test
     void independentMigrationHistoryValidates() {
-        assertThat(flyway.info().applied()).hasSize(3);
+        assertThat(flyway.info().applied()).hasSize(4);
         assertThat(flyway.validateWithResult().validationSuccessful).isTrue();
     }
 

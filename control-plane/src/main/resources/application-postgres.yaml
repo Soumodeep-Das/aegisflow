@@ -1,6 +1,9 @@
 # This application receives only its own database configuration.
 aegisflow:
   core:
+    detection:
+      enabled: ${CORE_DETECTION_ENABLED:false}
+      batch-size: ${CORE_DETECTION_BATCH_SIZE:25}
     projection:
       enabled: ${CORE_PROJECTION_ENABLED:false}
       configuration-version: ${CORE_PROJECTION_CONFIG_VERSION:demo-v1}
