@@ -1,5 +1,22 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-20 — clean reactor134 passed; reproducible JAR timestamp guard repaired
+
+Owner ran bundled PowerShell7 `-NoProfile -File .\scripts\verify-p03-final.ps1`, JAVA_HOME=Temurin21.0.12.1, Docker29.8.2, source `7d8f473`. Its Maven `-B -ntp "-Dmaven.repo.local=<repo>/.cache/maven-repository" -l <evidence>/reactor.log clean verify` finished BUILD SUCCESS at12:08:57IST /06:38:57Z,51.820s. Saved XML independently sums Core43 +Order31 +Payment31 +Warehouse29 =**134 tests,0 failures/errors/skips**. The five-module reactor and all4 executable packages succeeded. Evidence directory: `.cache/p03-final/0cdf2d63e84f49fea1385e806effaf8b`.
+
+The outer verifier then threw `Executable JAR is older than its production inputs: control-plane` before invoking the packaged scenario. No numeric outer-shell exit was printed. Inspection found executable mtime1980-02-01 versus Core `.jar.original` actual build time2026-10-20T06:38:24Z. Pinned Boot repackaging normalizes the executable timestamp; the guard was invalid for these reproducible artifacts. This was not a failed Maven build or a Kafka/port failure.
+
+The repaired `scripts/lib/packaged-artifact.ps1` uses the required original archive's build time and compares SHA256 for its application/resources/Maven metadata against the executable archive, rejecting missing/changed/extra application content. Production input freshness remains enforced. This local resume check does not independently establish dependency provenance.
+
+Actual repair checks with bundled PowerShell7 on2026-10-20:
+
+- `-NoProfile -File .\scripts\test-packaged-artifact.ps1`: exit0,6 regression groups passed (normalized executable timestamp, changed input, same-length byte mismatch, missing resource, extra resource, missing archive pair).
+- Dot-source `scripts/lib/packaged-artifact.ps1`; invoke `Assert-RepackagedJarCurrent -JarPath <module executable> -InputPaths <all module src/main files plus module/root pom.xml>` for each of the4 modules: exit0,4 existing host-built archive pairs passed.
+- No Maven/Java/Docker test suites repeated; all original reports and artifacts retained.
+- All3 changed/new PowerShell scripts parse with0 errors. `scripts/verify-docs.ps1` exit0:30 Markdown,20 required,125 links,7 Mermaid,1 JSON,16 scenarios,55 interview Q&As,9 ADRs,0 issues. `git diff --check` exit0.
+
+Next: `scripts/verify-p03-final.ps1 -PackagedOnly` must execute the remaining1 real packaged case with0 failures/errors/skips. That live result is still unverified, so P0.3 remains open.
+
 ## 2026-10-20 — final packaged acceptance prepared after Core50 passed
 
 No production/relay/schema changes. Java21/Maven3.10 offline workspace cache; TEMP/TMP=`.cache/tmp`. `M` is `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository'`.

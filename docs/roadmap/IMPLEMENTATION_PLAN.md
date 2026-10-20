@@ -1,6 +1,6 @@
 # Implementation plan
 
-**Final acceptance continuation,2026-10-20:** source-relay and Core50 gates passed; final normal reactor plus actual packaged scheduling/Core-process restart case is ready via `scripts/verify-p03-final.ps1`. New process guards4 pass; packaged live1 skipped under Docker denial, so final acceptance remains pending. Only after actual final PASS/documentation close P0.3; P0.4 requires approval.
+**Final acceptance continuation,2026-10-20:** source-relay/Core50 gates and the final clean reactor134 tests passed. The outer verifier then rejected Boot's normalized JAR timestamp before the packaged case started. Repaired freshness/content checks pass6 regressions and all4 existing artifact pairs. Run `scripts/verify-p03-final.ps1 -PackagedOnly` for the sole remaining scheduled pipeline/Core process restart case; no rebuild is needed for this script-only repair. Only after actual live PASS/documentation close P0.3; P0.4 requires approval.
 
 **Current continuation,2026-10-20:** source-relay B is verified; Core durable intake C and end-to-end D scenarios are implemented with36 unit/boundary/port passes. Run `scripts/verify-core-inbox.ps1` for14 actual Core migration/pipeline cases, then record results/fix first failure and finish final reactor/packaged scheduling acceptance. Docker denial caused all local live discoveries to skip; no complete P0.3 claim. Older source checkpoints below are historical.
 

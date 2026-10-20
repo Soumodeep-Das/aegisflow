@@ -1,5 +1,13 @@
 # Development journal
 
+## 2026-10-20 — retain134 passing tests and repair JAR freshness detection
+
+The owner's final clean reactor on `7d8f473` passed134 tests,0 failures/errors/skips, and all4 packages at12:08:57IST,51.820s. Saved reports independently confirm43/31/31/29 by module. The following script guard failed before the packaged test: it mistook Boot's reproducible executable mtime1980-02-01 for an old build. Maven's `.jar.original` retains the actual build time.
+
+Added `scripts/lib/packaged-artifact.ps1`: require both archives, check original freshness against production inputs, and compare application/resources/Maven metadata hashes across the pair, rejecting missing or extra application entries. This preserves normal stale-build detection without changing artifact timestamps or rebuilding passed code. It is a local resume guard, not full dependency provenance. `scripts/test-packaged-artifact.ps1` passed6 targeted regression groups, and the helper passed on all4 saved actual archive pairs. SHA256 uses APIs compatible with the scripts' PowerShell7 minimum.
+
+No production Java/POM/SQL changes or repeat Maven/live tests. Updated current instructions to `verify-p03-final.ps1 -PackagedOnly`. The scheduled executable pipeline/Core restart case remains the sole unfinished acceptance gate. Save the following local fix/docs commit; record actual live results before closing P0.3. No P0.4, push or storage deletion.
+
 ## 2026-10-20 — prepare final packaged scheduler/restart acceptance
 
 After recording the successful final4 Core checks in `d8d0c51`, added one final live scenario for all4 executable JARs, real automatic source/Core scheduling and actual Core process restart with Kafka backlog. Existing seed services commit business/outbox state; PENDING preconditions prevent the seed harness from satisfying publication. A future-due second Order intent is released only after Core stops; same DB/group restart must receive it without duplicating the existing3 rows. Tests own all processes/containers, retain logs, use port0 for HTTP and the verified Kafka loopback fixture, and pass only each child's own credentials.

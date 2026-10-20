@@ -8,11 +8,15 @@ PackagedPipelineScenario starts fresh PostgreSQL instances/broker, uses existing
 
 Each process requests HTTP port0, reads its actual bound port from its own fresh log and proves health200/UP. Strict health parsing accepts optional Actuator groups, preserving the earlier readiness-parser lesson. Kafka retains its verified explicit loopback endpoint; PostgreSQL uses mapped URLs. Cleanup holds only Process objects created by this test and never enumerates foreign PIDs or deletes existing volumes. Child logs survive in `.cache/packaged-pipeline/<id>`.
 
-The final script preserves prior reports under `.cache/p03-final/<id>/prior` before `clean verify`. This normal reactor runs default unit/foundation HTTP checks and builds current executable JARs; expensive completed relay/Core pipeline ITs are not selected. A separate pipeline-profile Maven invocation runs only PackagedPipelineScenario. `-PackagedOnly` can resume that final phase after a test-only repair if JARs are newer than main sources/resources/POMs. Actual counts come from fresh XML; skips cannot pass.
+The final script preserves prior reports under `.cache/p03-final/<id>/prior` before `clean verify`. This normal reactor runs default unit/foundation HTTP checks and builds current executable JARs; expensive completed relay/Core pipeline ITs are not selected. A separate pipeline-profile Maven invocation runs only PackagedPipelineScenario. `-PackagedOnly` resumes that final phase after a test/script-only repair using existing verified artifacts. Actual counts come from fresh XML; skips cannot pass.
+
+The host clean build passed134 tests on2026-10-20, but the original freshness guard stopped before the live packaged case: Boot sets the executable archive's filesystem timestamp to1980-02-01 for reproducibility. `scripts/lib/packaged-artifact.ps1` now checks `.jar.original` against main sources/resources/POMs, then compares SHA256 application/resource/Maven metadata bytes with their repackaged entries. Boot rewrites the manifest and adds loader/dependency entries, so those are not equated to the plain archive. This is a local resume check, not full dependency provenance. All4 actual archive pairs and6 regression groups in `scripts/test-packaged-artifact.ps1` pass; run only `verify-p03-final.ps1 -PackagedOnly` next.
+
+Timestamp debugging exercise: inspect both archive mtimes, then run `scripts/test-packaged-artifact.ps1`. Expect an old normalized executable date to pass with a fresh matching original; changed production inputs, same-length changed bytes, missing/extra resources or a missing archive must fail. Do not touch timestamps or rebuild solely to make the old date appear current.
 
 Debug exercise: inspect printed child log paths if the case fails. Expected source state before process launch is PENDING, first Core inbox count3, held intent still PENDING, then PUBLISHED while Core is stopped, then Core count4 after restart. If an application exited, inspect its own log before changing any port. A health response containing groups is valid; a root DOWN/nested UP response is not.
 
-Four new pure process/env/port/health guards pass; the live scenario is compiled but skipped here under Docker denial. Production components and previously verified behavior are unchanged.
+Four pure process/env/port/health guards and the final134-test host reactor pass; the live packaged scenario is still pending. The timestamp repair changes verification scripts only.
 
 ### Q51. Why verify executable JARs after a Spring-context integration test?
 

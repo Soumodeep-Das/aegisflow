@@ -3,6 +3,7 @@
 param([string]$JavaHome=$env:JAVA_HOME,[switch]$PackagedOnly)
 $ErrorActionPreference='Stop'
 $repositoryRoot=Split-Path -Parent $PSScriptRoot
+. (Join-Path $PSScriptRoot 'lib/packaged-artifact.ps1')
 if ([string]::IsNullOrWhiteSpace($JavaHome)) { throw 'Set JAVA_HOME to Java 21.' }
 $java=Join-Path $JavaHome 'bin/java.exe'
 if (-not (Test-Path -LiteralPath $java -PathType Leaf) -or
@@ -59,12 +60,11 @@ try {
     foreach($module in $modules) {
         $artifact=if($module -eq 'control-plane') { 'aegisflow-core' } else { Split-Path -Leaf $module }
         $jar=Join-Path $repositoryRoot "$module/target/$artifact-0.1.0-SNAPSHOT.jar"
-        if(-not (Test-Path -LiteralPath $jar -PathType Leaf)) { throw 'Build executable JARs with the full final verifier first.' }
         $inputs=@(Get-ChildItem -LiteralPath (Join-Path $repositoryRoot "$module/src/main") -Recurse -File)
         $inputs += Get-Item -LiteralPath (Join-Path $repositoryRoot "$module/pom.xml"), (Join-Path $repositoryRoot 'pom.xml')
-        $latest=($inputs | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1).LastWriteTimeUtc
-        if((Get-Item -LiteralPath $jar).LastWriteTimeUtc -lt $latest) { throw "Executable JAR is older than its production inputs: $module; run the full verifier." }
+        Assert-RepackagedJarCurrent -JarPath $jar -InputPaths $inputs.FullName
     }
+    Write-Output 'PASS: four current original archives match their executable application content; reproducible JAR timestamps are allowed.'
     $started=[DateTime]::UtcNow
     $packagedLog=Join-Path $evidence 'packaged.log'
     Write-Output 'Running the new packaged scheduler/Core-process-restart case; detailed output is retained in packaged.log.'

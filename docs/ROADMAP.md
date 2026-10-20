@@ -1,6 +1,6 @@
 # Prioritized roadmap
 
-**Final gate ready,2026-10-20:** Core50/source-relay evidence is complete. Run `scripts/verify-p03-final.ps1` for clean default reactor/JAR packaging plus the new actual packaged scheduler/Core process restart case. Four new process guards pass; live final case skipped locally under Docker denial. Do not repeat previous live gates. P0.3 remains open until final actual PASS; P0.4 unapproved.
+**Next gate,2026-10-20:** final clean reactor/JAR packaging on `7d8f473` passed134 tests,0 failures/errors/skips. A verifier timestamp error stopped before the packaged test; Boot's normalized executable dates are now handled using original-archive freshness and matching application content. Six regression groups and all4 actual artifact pairs pass. Run only `scripts/verify-p03-final.ps1 -PackagedOnly` for the actual scheduled pipeline/Core process restart case. Core50/source-relay results remain passed. P0.3 remains open until final live PASS; P0.4 unapproved. Older checkpoints below are history.
 
 **Current continuation,2026-10-20:** combined Core50-case gate passed across `c96dc5c` (36+10) and `42b247d` (4 normal startup checks,11:45:16IST). Do not rerun those completed live gates merely to resume. Next: final clean default reactor and packaged scheduled intake/Core process restart acceptance; P0.3 incomplete. Older checkpoints below are historical.
 

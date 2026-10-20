@@ -1,4 +1,29 @@
-# Handoff — Core50 gate passed; final packaged acceptance ready
+# Handoff — 134-test reactor passed; JAR timestamp guard repaired
+
+**Latest checkpoint:** 2026-10-20T13:34:17Z, resumed `main` at `7d8f473`, ahead19. Only the final verifier/helper/regression script and continuity docs changed. This following local commit records the repair; resolve its hash/status with `git rev-parse HEAD` and `git status --short --branch`. No production Java/POM/schema/Compose changes, push or existing storage mutation.
+
+**Actually verified:** owner ran `scripts/verify-p03-final.ps1` with Java21/Docker29.8.2. Clean reactor BUILD SUCCESS at12:08:57IST,51.820s; independently summed saved Surefire XML: Core43 +Order31 +Payment31 +Warehouse29 =134 tests,0 failures/errors/skips. All4 executable JARs were packaged. The outer script subsequently threw at its timestamp guard, so the packaged scenario did not start. Evidence: `.cache/p03-final/0cdf2d63e84f49fea1385e806effaf8b/reactor.log` and module Surefire reports. Outer numeric exit was not supplied.
+
+**Cause and repair:** Boot reproducible repackaging sets the executable JAR mtime to1980-02-01; its sibling `.jar.original` retains the actual Maven build time. `scripts/lib/packaged-artifact.ps1` now checks the original archive against current main sources/resources/root and module POMs, then SHA256-compares its application/resource/Maven metadata entries to the executable archive. It rejects missing/mismatched/extra application content. This is a local build-resume guard, not dependency provenance or protection against deliberately altered build outputs. The rewritten manifest and Boot loader/dependency entries are not byte-equated with the plain archive.
+
+**Repair checks:** bundled PowerShell7 `scripts/test-packaged-artifact.ps1` exit0:6 regression groups passed, including normalized timestamps, changed inputs, same-length changed bytes, missing/extra resources and missing archive pairs. The repaired helper independently passed against all4 existing host-built archive pairs, exit0. Java/Maven/Docker suites were not repeated; prior134/Core50/relay evidence is preserved.
+
+**Closing static checks:** all3 scripts parse without errors; documentation checker exit0,30 Markdown/20 required/125 links/7 Mermaid/1 JSON/16 scenarios/55 Q&As/9 ADRs/0 issues. Whitespace check passed. Stage only the11 repair/documentation paths; generated fixtures/artifacts/reports remain ignored.
+
+**Single next action:** run only the unfinished packaged scheduler/Core process restart case:
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-p03-final.ps1 -PackagedOnly
+```
+
+**Acceptance and continuation:** require1 executed packaged test,0 failures/errors/skips: all4 JARs healthy,3 scheduled source deliveries accepted, an additional Order intent published while Core is stopped, then accepted after Core process restart on the same database/group. Preserve printed `.cache/p03-final/<id>/packaged.log`, fresh Failsafe XML and `.cache/packaged-pipeline/<id>/*.log`. If it fails, fix that first cause without repeating the completed build for test/script-only changes. Production inputs changing require a new full build. Do not delete artifacts or adjust their timestamps to bypass checks.
+
+P0.3 remains incomplete until that actual live PASS and final evidence update. The coding environment's Docker/loopback restrictions remain distinct from the successful host runs. Prior failure/replay and source/tenant isolation tests passed; this final case establishes packaged scheduling/restart only. Stop after P0.3; P0.4 is unapproved.
+
+---
+
+## Previous checkpoint — Core50 gate passed; final packaged acceptance ready
 
 **Latest checkpoint:** 2026-10-20T06:31:24Z, source/test continuation from clean `main` at `d8d0c51`, ahead18. This following local test/docs commit adds the final acceptance gate. Resolve closing hash/status with Git. Production Java, POMs, schemas, source relays and Compose are unchanged; no push or existing storage mutation.
 
