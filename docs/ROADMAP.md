@@ -1,6 +1,8 @@
 # Prioritized roadmap
 
-**Last reviewed:** 2026-10-19
+**Last reviewed:** 2026-10-20
+
+**Latest gate repair:** host Payment run on `b78a2d3` failed12/12 with Flyway default-port connection errors; Warehouse was not run. Four new relay/Kafka ITs now override both datasource and migration URLs with their container URL. Both modules compile; the repaired live gate is still pending. Rerun the same focused verifier before Core inbox work; do not repeat completed Order tests.
 
 **Observed product state:** P0.2 and P0.3-A infrastructure are complete. Order's27default+17PostgreSQL host tests passed; now all3 real Order→Kafka delivery/fault tests also passed on `a4a66de`,2026-10-19 20:57:40IST,0 failures/errors/skips. Earlier startup/port failures remain in TEST_RESULTS. Payment/Warehouse relays and Core inbox are unfinished. P0.3 is incomplete; P0.4 remains unapproved.
 

@@ -1,5 +1,16 @@
 # Handoff — Payment/Warehouse relays implemented; host gate and Core inbox remain
 
+**Latest repair checkpoint:** 2026-10-20T05:22:00Z, resumed clean `main` at `b78a2d3`. The following local fix commit contains this handoff; resolve its hash/status with `git rev-parse HEAD` and `git status --short --branch`. No push, production changes, migrations, credentials or existing storage changes.
+
+**Host failure preserved:** owner's 2026-10-19 21:25:17IST verifier run failed: Payment12 tests/0 failures/12 errors/0 skips; Warehouse skipped by the reactor. Saved Payment reports identify Flyway connecting to default localhost5435, not the disposable database. Both owners' postgres profiles specify a separate Flyway URL. The four new relay/Kafka ITs overrode only the runtime datasource URL; existing persistence ITs already override both.
+
+**Repair and checks:** added `spring.flyway.url = POSTGRES::getJdbcUrl` to Payment/Warehouse `OutboxRelayIT` and `KafkaDeliveryIT`, retaining distinct migrator/runtime users. Java21 offline two-module `test-compile` exited0 at2026-10-20 10:51:15IST,17.139s. No tests executed by compilation; no live pass claimed. Docker API access remains denied in this session. Previous reports are preserved; completed Order tests were not repeated. See TEST_RESULTS for exact commands.
+
+**Single next action:** rerun the unchanged `scripts/verify-simulator-relays.ps1` command below on the Docker-capable host; require40 unit/boundary +24 live tests, zero failures/errors/skips. Preserve the first error if any. Do not start ordinary development databases to mask test configuration. After this gate passes, continue Core inbox and full simulator-to-Core demonstration as described below. Core remains unwritten; P0.3 incomplete; P0.4 unapproved. This is a documented test-wiring fix checkpoint, not completed relay acceptance.
+
+---
+
+
 **Latest checkpoint:** 2026-10-19T15:45:48Z /2026-10-19 IST, resumed clean `main` at `c47edbb`, ahead12. This following local checkpoint implements the remaining source relays; resolve its closing commit/status with `git rev-parse HEAD` and `git status --short --branch`. Order source/tests and all V1 migrations are untouched. No push/deployment, private credentials, existing Compose-container interruption or volume deletion.
 
 **Implemented:** Payment `persistence/internal/{PaymentOutboxStore,PaymentOutboxRelay,PaymentRelayConfiguration,KafkaOutboxPublisher,OutboxClaim,RelaySupport}`; Warehouse `reservation/{WarehouseOutboxStore,WarehouseOutboxRelay,WarehouseRelayConfiguration,KafkaOutboxPublisher,OutboxClaim,RelaySupport}` under their existing `src/main/java/com/aegisflow/simulator/<owner>/` paths. These reuse Order's short REQUIRES_NEW claims, DB-clock leases, tenant/owner/fencing completion, bounded poll/send/retry and stable event IDs. Fixed owner topic/principal and explicit tenant allowlists remain mandatory. Payment supports existing Authorized/Declined events; Warehouse Reserved/Rejected. Owner-local canonicalizers are reused. Both postgres configs opt out by default; Kafka client version remains Boot-managed. No shared deployable dependency or new migration needed.

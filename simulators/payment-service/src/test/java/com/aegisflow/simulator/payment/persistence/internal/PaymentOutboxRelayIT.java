@@ -56,6 +56,8 @@ class PaymentOutboxRelayIT {
             statement.execute("CREATE SCHEMA aegisflow AUTHORIZATION " + MIGRATOR);
         }
         properties.add("spring.datasource.url", POSTGRES::getJdbcUrl);
+        // The postgres profile has a separate Flyway URL; both must target this disposable database.
+        properties.add("spring.flyway.url", POSTGRES::getJdbcUrl);
         properties.add("spring.datasource.username", () -> RUNTIME);
         properties.add("spring.datasource.password", () -> PASSWORD);
         properties.add("spring.flyway.user", () -> MIGRATOR);

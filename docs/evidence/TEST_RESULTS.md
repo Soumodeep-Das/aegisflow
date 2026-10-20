@@ -1,5 +1,22 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-20 — repair separate Flyway test URLs after host failure
+
+Host run on `b78a2d3` using bundled PowerShell7 `scripts/verify-simulator-relays.ps1` failed at2026-10-19 21:25:17IST,1:47. Payment:12 tests,0 failures,12 errors,0 skips; Warehouse reactor skipped. Both saved Payment Failsafe text reports identify Flyway SQL state08001, connection refused at127.0.0.1:5435. Context-threshold errors are downstream; no relay assertion pass is inferred.
+
+Cause: the new tests set `spring.datasource.url` but not the profiles' independent `spring.flyway.url`. All four new Payment/Warehouse relay/Kafka ITs now explicitly point both URLs to their own Testcontainers PostgreSQL; runtime/migration credentials remain distinct. Existing persistence tests already use this pattern. No production profile, dependency, port, migration or volume change.
+
+With Java21 and TEMP/TMP=`.cache/tmp`, ran:
+
+```powershell
+.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl simulators/payment-service,simulators/warehouse-service -l .cache/p03-relay-flyway-url-compile.log test-compile
+```
+
+Exit0, BUILD SUCCESS,2026-10-20 10:51:15IST,17.139s; Payment10 and Warehouse11 test source files compiled. **Compile only: no new tests executed.** Existing deprecation/unchecked warnings remain nonfatal. Read-only `docker version --format '{{.Server.Version}}'` again returned Docker engine pipe permission denial; no new live run attempted and the failed host reports remain intact. Next: unchanged host verifier; require40+24 zero-skip passes before recording success.
+
+
+Closing checks: bundled PowerShell7 `scripts/verify-docs.ps1` exited0 (30 Markdown,20 required,124 links,7 Mermaid,1 JSON,16 scenarios,45 interview Q&As,9 ADRs,0 issues). `git diff --check` passed; four test URL overrides and continuity-only documentation reviewed. No completed database tests rerun.
+
 ## 2026-10-19 — Payment/Warehouse relay source checkpoint from `c47edbb`
 
 Java21.0.12.1/Maven3.10, offline workspace `.cache/maven-repository`, TEMP/TMP=`.cache/tmp`. Existing Order source/tests and V1s unchanged. `M` below abbreviates `.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl simulators/payment-service,simulators/warehouse-service`.

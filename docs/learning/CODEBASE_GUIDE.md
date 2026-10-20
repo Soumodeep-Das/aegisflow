@@ -1,5 +1,12 @@
 # Codebase guide
 
+## Relay test startup debugging (2026-10-20 repair)
+
+In Payment `persistence/internal/{PaymentOutboxRelayIT,PaymentKafkaDeliveryIT}` and Warehouse `reservation/{WarehouseOutboxRelayIT,WarehouseKafkaDeliveryIT}` under each simulator's `src/test/java/com/aegisflow/simulator/<owner>/`, the dynamic properties now bind **both** `spring.datasource.url` and `spring.flyway.url` to `POSTGRES::getJdbcUrl`. The production postgres profile has a separate migration URL; replacing the runtime datasource URL does not replace that independent value. Both connections target one disposable database but keep different runtime/migrator roles.
+
+Debug exercise: read the first `Caused by` in the preserved Payment Failsafe report from2026-10-19. Expected: Flyway SQL state08001 at fixed port5435 before relay assertions. Compare the existing Payment/Warehouse persistence-test URL registrations. On the corrected host rerun, Flyway must use the container's mapped URL; all24 live tests must execute without skips. Successful compilation alone does not prove this. Do not start a development database on5435 to hide the faulty test isolation.
+
+
 ## Payment/Warehouse source relays (2026-10-19)
 
 Implemented, with38 new unit tests and2 boundary tests passed;24 new PostgreSQL/Kafka tests compiled but skipped here. This does not complete P0.3. Run `scripts/verify-simulator-relays.ps1` on the Docker-capable host; it never repeats the completed Order suite or targets existing Compose storage.

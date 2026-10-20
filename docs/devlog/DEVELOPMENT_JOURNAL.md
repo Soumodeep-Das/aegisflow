@@ -1,5 +1,12 @@
 # Development journal
 
+## 2026-10-20 — repair relay integration-test migration connection
+
+Continued clean `b78a2d3` from the saved Payment host failure, without repeating completed architecture/database/Order work. Payment's12 errors share Spring/Flyway startup failure at default localhost5435; Warehouse never ran. Both profiles define independent Flyway URLs, so copying Order's datasource-only override was insufficient. Added the missing test-container Flyway URL in all four new sibling relay/Kafka ITs, following existing persistence tests. Kept role separation and all production settings unchanged.
+
+Exact compile command/results are in TEST_RESULTS: Java21 offline two-module `test-compile`, exit0,17.139s; no tests run. Docker version probe still cannot access the engine pipe, so live validation remains host-owned. Prior failed reports preserved. Next action is the same focused host verifier, not starting development Postgres or reinstalling Docker. Core inbox remains unwritten. Checkpoint locally; no push or storage deletion.
+
+
 ## 2026-10-19 — extend verified relay pattern to Payment and Warehouse
 
 Resumed clean `c47edbb` without rerunning the passed Order gate. Reused its source-local claim/publish/fenced-completion algorithm in both remaining owners, preserving transactions, fixed source topics/principals, explicit tenant allowlists, bounded retry and original event identity. Adapted to existing Payment Map canonicalization and Warehouse JsonNode canonicalization and their two initial outcome catalogs. Existing V1 schemas/grants already support the worker, so no migration/role widening or shared deployable dependency. Disabled by default in both postgres configs.
