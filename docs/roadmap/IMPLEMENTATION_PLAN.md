@@ -1,5 +1,7 @@
 # Implementation plan
 
+**Latest continuation, 2026-10-20:** all three source-relay gates now passed; Payment/Warehouse on `c887490` passed40+24 tests with no failures/errors/skips. Proceed to Core inbox C and full end-to-end D. No owner command or repeat of completed B gates needed. Older checkpoints below are history; packaged scheduling/final acceptance remain.
+
 **Planning horizon:** preserve a useful, teachable repository even if assisted coding stops after 6–7 days.
 **Current authorization:** P0.2 verified; P0.3 approved. P0.3-A infrastructure and Order's27default+17PostgreSQL host gate passed. The3 real Order DB→Kafka delivery/fault tests also passed on `a4a66de` at2026-10-19 20:57:40IST. Next: remaining source relays B, Core inbox C, final end-to-end D.
 **Next approval gate:** stop after P0.3; P0.4 and product P1 recovery are not authorized. New remote pushes/deployments are not authorized.

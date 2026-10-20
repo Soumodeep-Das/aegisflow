@@ -1,5 +1,12 @@
 # Codebase guide
 
+## Verified source-relay boundary (2026-10-20)
+
+The host gate on `c887490` passed40 Payment/Warehouse unit/boundary and24 real PostgreSQL/Kafka tests with zero failures/errors/skips. The four URL overrides described below are now live-verified. Each actual simulator service commits business state and its outbox; the source-owned relay claims, sends using its own Kafka principal, waits for acknowledgement, then records fenced completion. Kafka fault/rollback tests show why the same event can be delivered more than once.
+
+The consumer in these tests is only a Core-identity observer. There is no durable Core inbox yet: that is the exact next implementation boundary, including database idempotency and offsets only after durable acceptance/quarantine. Do not rerun these completed source tests merely to resume. Older local skipped-test statements below describe their original checkpoint, not the current host result.
+
+
 ## Relay test startup debugging (2026-10-20 repair)
 
 In Payment `persistence/internal/{PaymentOutboxRelayIT,PaymentKafkaDeliveryIT}` and Warehouse `reservation/{WarehouseOutboxRelayIT,WarehouseKafkaDeliveryIT}` under each simulator's `src/test/java/com/aegisflow/simulator/<owner>/`, the dynamic properties now bind **both** `spring.datasource.url` and `spring.flyway.url` to `POSTGRES::getJdbcUrl`. The production postgres profile has a separate migration URL; replacing the runtime datasource URL does not replace that independent value. Both connections target one disposable database but keep different runtime/migrator roles.

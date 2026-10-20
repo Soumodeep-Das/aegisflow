@@ -1,4 +1,16 @@
-# Handoff — Payment/Warehouse relays implemented; host gate and Core inbox remain
+# Handoff — all simulator relay gates passed; Core inbox next
+
+**Latest checkpoint:** 2026-10-20T05:29:29Z, evidence-only continuation from clean `main` at `c887490`. Owner's bundled PowerShell7 `scripts/verify-simulator-relays.ps1` run with Java21.0.12.1/Docker29.8.2 finished BUILD SUCCESS at2026-10-20 10:57:43IST (05:27:43Z),3:43. Final verifier PASS and all ten saved XML reports agree: **40 unit/boundary +24 real PostgreSQL/Kafka tests passed,0 failures/errors/skips**. No numeric outer-shell exit code supplied; no test rerun. The following local documentation commit records the result; resolve its hash/clean status with `git rev-parse HEAD` and `git status --short --branch`.
+
+**Now verified:** both sibling services migrate their disposable database with separate migration/runtime credentials; nine DB relay cases each and three real Kafka cases each pass. Together with the earlier Order gate, all three simulator relay implementations have verified acknowledged publication, bounded outage/restart recovery and stable-ID redelivery after completion rollback. This remains at-least-once delivery. The earlier failed run remains below as history.
+
+**Single next implementation task:** Core durable intake in existing `control-plane/src/main/java/com/aegisflow/core/eventing/`, with a new V2 migration, trusted topic/source/tenant validation, immutable event identity/database uniqueness, same-content duplicate acceptance, conflicting/invalid-content technical quarantine, and Kafka offset acknowledgement only after the database transaction commits. Then demonstrate actual simulator service→own PostgreSQL outbox→Kafka→Core inbox, including duplicate/conflict, DB rollback and replay after DB commit before offset commit. Do not repeat passed source-relay gates without a relevant change.
+
+**Closing checks:** bundled PowerShell7 documentation checker exited0:30 Markdown/20 required/124 links/7 Mermaid/1 JSON/16 scenarios/45 Q&As/9 ADRs/0 issues. Whitespace passed; eight documentation files only, no test rerun.
+
+**Limits and owner action:** no command or setup needed now. Core inbox/full simulator-to-Core integration remain unwritten; packaged scheduled relay startup and final reactor acceptance remain outstanding. Tests poll manually and inject completion rollback rather than killing a process. P0.3 is incomplete; P0.4/AI/recovery unapproved. No production/source/migration change, infrastructure mutation, volume deletion or push in this evidence checkpoint. Older snapshots below are superseded history.
+
+---
 
 **Latest repair checkpoint:** 2026-10-20T05:22:00Z, resumed clean `main` at `b78a2d3`. The following local fix commit contains this handoff; resolve its hash/status with `git rev-parse HEAD` and `git status --short --branch`. No push, production changes, migrations, credentials or existing storage changes.
 

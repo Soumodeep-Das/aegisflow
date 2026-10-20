@@ -1,5 +1,12 @@
 # Development journal
 
+## 2026-10-20 — close Payment/Warehouse real relay gate
+
+Owner reran the unchanged focused verifier on `c887490`: BUILD SUCCESS at10:57:43IST,3:43;40 unit/boundary and24 real PostgreSQL/Kafka tests passed, zero failures/errors/skips. Independently checked ten fresh saved XML reports without rerunning anything. Both Flyway URL fixes now have real startup/migration evidence. Both sibling relays pass claim/fencing/concurrency, acknowledged delivery, broker outage/restart and ack-before-completion-rollback redelivery tests.
+
+This evidence-only checkpoint preserves earlier failures and leaves code/infrastructure untouched. All three sources now have verified relay gates; next implement Core durable inbox/quarantine and post-commit offset handling, then actual simulator-to-Core integration and failure/replay cases. No owner command needed now. P0.3 still incomplete; no P0.4 or push.
+
+
 ## 2026-10-20 — repair relay integration-test migration connection
 
 Continued clean `b78a2d3` from the saved Payment host failure, without repeating completed architecture/database/Order work. Payment's12 errors share Spring/Flyway startup failure at default localhost5435; Warehouse never ran. Both profiles define independent Flyway URLs, so copying Order's datasource-only override was insufficient. Added the missing test-container Flyway URL in all four new sibling relay/Kafka ITs, following existing persistence tests. Kept role separation and all production settings unchanged.

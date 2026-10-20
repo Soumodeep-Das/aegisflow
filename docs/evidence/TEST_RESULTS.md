@@ -1,5 +1,19 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-20 — Payment/Warehouse live relay gate passed on `c887490`
+
+Owner ran bundled PowerShell7 `-NoProfile -File .\scripts\verify-simulator-relays.ps1` with JAVA_HOME set to Temurin21.0.12.1 and Docker29.8.2. BUILD SUCCESS at10:57:43IST /05:27:43Z, total3:43. Final verifier PASS: **40 unit/boundary +24 actual PostgreSQL/Kafka tests,0 failures/errors/skips**. Independently read all ten saved XML reports; no rerun. Outer-shell numeric exit not supplied.
+
+| Owner | Unit/boundary passes | PostgreSQL relay passes | Kafka delivery passes |
+|---|---:|---:|---:|
+| Payment |20 (1 architecture+3 publisher+16 relay)|9 (6.377s)|3 (88.128s)|
+| Warehouse |20 (1 architecture+3 publisher+16 relay)|9 (6.379s)|3 (85.859s)|
+
+This validates the repaired Flyway URLs against actual disposable databases, DB claim/fencing/tenant/concurrency behavior and each source's actual Kafka acknowledgement, bounded outage/restart and immutable-ID redelivery after completion rollback. Existing Order evidence remains separate and passed. Core-identity observers are test consumers, not durable Core ingestion; full simulator-to-Core, packaged scheduling and final reactor acceptance are still outstanding.
+
+The log includes nonfatal metadata401 warnings and Kafka disconnect/reconnect messages during broker fault/teardown; all selected cases and final verifier passed. No credential change or warning suppression was performed. Earlier failed host results below remain historical. No existing Compose volumes targeted.
+
+
 ## 2026-10-20 — repair separate Flyway test URLs after host failure
 
 Host run on `b78a2d3` using bundled PowerShell7 `scripts/verify-simulator-relays.ps1` failed at2026-10-19 21:25:17IST,1:47. Payment:12 tests,0 failures,12 errors,0 skips; Warehouse reactor skipped. Both saved Payment Failsafe text reports identify Flyway SQL state08001, connection refused at127.0.0.1:5435. Context-threshold errors are downstream; no relay assertion pass is inferred.
