@@ -1,5 +1,8 @@
 # Prioritized roadmap
 
+**Current continuation,2026-10-20:** combined Core50-case gate passed across `c96dc5c` (36+10) and `42b247d` (4 normal startup checks,11:45:16IST). Do not rerun those completed live gates merely to resume. Next: final clean default reactor and packaged scheduled intake/Core process restart acceptance; P0.3 incomplete. Older checkpoints below are historical.
+
+
 **Last reviewed:** 2026-10-20
 
 **Latest gate passed:** Payment/Warehouse host verification on `c887490`,2026-10-20 10:57:43IST:40 unit/boundary +24 real PostgreSQL/Kafka tests passed, zero failures/errors/skips. The Flyway URL repair is live-verified. Earlier failure is retained in TEST_RESULTS; no repeat needed.

@@ -1,4 +1,15 @@
-# Handoff — real Core pipeline passed; standalone Core startup gate pending
+# Handoff — Core gate passed; final reactor and packaged scheduling next
+
+**Latest host evidence checkpoint:** 2026-10-20T06:20:22Z, clean `main` at `42b247d`, ahead17. Owner ran bundled PowerShell7 `verify-core-inbox.ps1 -CoreStartupOnly` with Java21.0.12.1/Docker29.8.2; BUILD SUCCESS at11:45:16IST (06:15:16Z),24.232s. Saved XML independently confirms4 passed,0 failures/errors/skips,12.549s. Core V1/V2 migrated/validated, actual HTTP health and runtime-role/database boundaries passed without simulator migration contamination. Numeric outer-shell exit not printed. No tests rerun in this evidence checkpoint.
+
+**Core gate now complete across recorded runs:**36 unit/boundary/port +10 real pipeline cases on `c96dc5c`;4 ordinary Core checks on `42b247d`. This is combined evidence, not a claim of one fresh50-test run. Earlier failed attempts remain below. Port fixes and classpath separation are exercised. No owner rerun of completed gates needed.
+
+**Exact next task:** prepare/run the final normal clean reactor build plus a packaged-JAR scheduled simulator→Kafka→Core intake and actual Core process restart check. Existing pipeline cases poll manually; packaged scheduling/final reactor remain unverified, so P0.3 is not yet complete. Reuse existing fixtures and real business services; keep database ownership and ephemeral loopback ports, and preserve prior test reports before Maven clean. P0.4/AI/recovery unapproved. No push/deployment/storage deletion or production change.
+
+This following local documentation commit records the evidence; resolve current hash/status with Git. Implementation/test source paths and previous limits are preserved below.
+
+---
+
 
 **Latest checkpoint:** 2026-10-20T06:11:29Z, resumed clean `main` at `c96dc5c`, ahead16. Owner's host verifier finished BUILD FAILURE at11:35:39IST (06:05:39Z),2:03, but **36 unit/boundary/port checks and all10 real Core pipeline cases passed**,0 failures/errors/skips in those suites. Four standalone Core PostgreSQL/HTTP cases errored from one shared context startup failure. Independently inspected all six saved XML suites. The following local fix/docs commit records this; resolve closing hash/clean state with Git. No production code/migration change, push or storage mutation.
 

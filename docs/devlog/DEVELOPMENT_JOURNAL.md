@@ -1,5 +1,10 @@
 # Development journal
 
+## 2026-10-20 — close ordinary Core startup gate
+
+Host partial verifier on `42b247d` passed all4 Core migration/startup/role checks with0 failures/errors/skips at11:45:16IST,24.232s; independently checked XML12.549s. No repeat of the already-passed36+10. This closes the classpath contamination repair and combined50-case Core gate. The remaining authorized work is final clean packaging/regression and actual scheduled packaged applications with Core process restart, before P0.3 completion. No P0.4, push or existing storage mutation.
+
+
 ## 2026-10-20 — record ten live pipeline passes and isolate ordinary Core verification
 
 Owner's run on `c96dc5c` passed all36 unit/boundary/port and10 real pipeline cases. Overall BUILD FAILURE at11:35:39IST came from4 ordinary Core startup errors: pipeline-tests added simulator migration resources, so Flyway's normal Core classpath scan found multiple V1s. The actual pipeline explicitly uses owner-specific migration locations and passed all scenarios. Independently inspected six XML suites without repeating tests.

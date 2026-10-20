@@ -1,5 +1,12 @@
 # Test evidence — P0.3 checkpoint and preserved completed milestones
 
+## 2026-10-20 — ordinary Core startup gate passed on `42b247d`
+
+Owner ran bundled PowerShell7 `-NoProfile -File .\scripts\verify-core-inbox.ps1 -CoreStartupOnly`, JAVA_HOME=Temurin21.0.12.1, Docker29.8.2. BUILD SUCCESS at11:45:16IST /06:15:16Z;24.232s. Final verifier PASS and saved XML agree: **4 passed,0 failures/errors/skips**,12.549s. Numeric outer-shell exit not printed. No test rerun.
+
+This proves ordinary Core-only classpath startup, V1+V2 migration/validation, HTTP200/UP and existing runtime-role/no-foreign-database checks. The classpath repair is now live-verified. Combined with earlier36 unit/boundary/port and10 real pipeline passes on `c96dc5c`, all50 Core-gate cases have actual passing evidence across separate runs; earlier failures remain history. Packaged scheduler/process restart and final clean reactor still remain before P0.3 completion.
+
+
 ## 2026-10-20 — real pipeline passed on `c96dc5c`; ordinary Core check classpath repair
 
 Host Java21.0.12.1/Docker29.8.2, bundled PowerShell7 `scripts/verify-core-inbox.ps1`; BUILD FAILURE at11:35:39IST /06:05:39Z,2:03. Independently read all six saved XML suites: **36 unit/boundary/port +10 real pipeline cases passed**,0 failures/errors/skips there;4 ordinary Core checks errored,0 failures/0 skips. Numeric outer shell exit not printed. No test rerun to record this.

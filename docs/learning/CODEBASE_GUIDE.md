@@ -1,5 +1,10 @@
 # Codebase guide
 
+## Core ordinary startup verified (2026-10-20)
+
+The host `-CoreStartupOnly` run on `42b247d` passed4/4 checks, confirming that separating the ordinary Core JVM/classpath from pipeline-tests resolves sibling V1 discovery. Together with the prior36+10 passes, durable intake, failure/replay and normal Core startup now have real evidence. The remaining acceptance work is the final normal reactor build and separately packaged applications running their schedulers; the existing pipeline uses manual polls.
+
+
 ## Pipeline verification classpath isolation (2026-10-20)
 
 The host run on `c96dc5c` passed all36 Core unit/boundary/port checks and10 real pipeline cases. Actual three-source delivery, rollback/replay, poison/isolation and concurrent duplicate handling now have live evidence. The remaining4 ordinary Core startup cases failed because pipeline-tests places simulator target/classes on the test runtime classpath: all services legitimately have their own V1 migrations, and a general `classpath:db/migration` scan saw several version1 files.
