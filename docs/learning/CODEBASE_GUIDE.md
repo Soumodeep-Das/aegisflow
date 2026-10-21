@@ -1,5 +1,7 @@
 # Codebase guide
 
+**Current C repair checkpoint,2026-10-21:** host21-test run had20 passes and one separate-JVM failure: PostgreSQL rejected the child's Asia/Calcutta timezone. Test launcher now pins UTC;3 launcher regressions pass, production code unchanged. Run only `scripts/verify-incidents.ps1 -RestartOnly` for the unfinished1-test gate. Do not repeat the20 passed cases. C is not complete; D follows only after actual restart success. Prior pending/21-test commands below are historical.
+
 ## P0.4-C: durable incident and evidence timeline
 
 Implemented; live SQL/process-restart gate pending.10 policy/architecture tests and3 launcher checks passed in separate runs;21 PostgreSQL tests skipped here because Docker pipe access is denied. Run scripts/verify-incidents.ps1 on the host. No complete P0.4 claim.

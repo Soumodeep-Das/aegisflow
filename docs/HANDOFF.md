@@ -1,4 +1,25 @@
-# Handoff — P0.4-C implemented; real PostgreSQL gate pending
+# Handoff — C has20 database passes; restart-only timezone repair pending
+
+## Current checkpoint — 2026-10-21T05:38:13Z, Codex
+
+Entry main clean at58eed3e. Owner host run verify-incidents.ps1 completed at11:06:10IST,48.843s, Maven exit1:17 incident cases (16 passed,1 failed),4 Core startup passed, zero errors/skips. The only failure was separateJvmRestartPreservesIdentityAndAddsLateEvidence: child JVM exited1 because PostgreSQL rejected TimeZone Asia/Calcutta. Not a port, migration, privilege or incident SQL failure.
+
+Evidence .cache/p04c/9443ec38b21746b6a0bc5b613a41d279/postgres.log and selected reports; child log control-plane/target/incident-process/c3113041-c149-4beb-9ed0-500b54833cf4.log. Preserve both.20 successful cases need no repeat for this test-only repair.
+
+**Fix:** IncidentProcessLaunch now supplies -Duser.timezone=UTC in its Java argument file, matching the existing packaged-process harness. No production Java, schema/grants or global machine timezone changed. Updated launcher tests pass3/3,0 failures/errors/skips at11:08:08IST,12.781s, exit0 (.cache/p04c-launch-utc.log). Verifier parses; its new -RestartOnly mode requires a fresh1-test/no-skip report. Actual restart rerun remains pending.
+
+**Single next action**, from repository root:
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-incidents.ps1 -RestartOnly
+```
+
+Require1 actual pass with zero failures/errors/skips. The command recompiles test changes and preserves reports/logs; it does not rerun the20 passing cases. Once passed, record C completion across these separate runs, then proceed to approved D full pipeline verification. C is not complete yet. No permanent .env, dedicated app containers, P0.5, recovery, AI or push.
+
+This following local repair/docs commit records the checkpoint; resolve final hash/status with Git. No source behavior changed and no existing volumes were targeted. Earlier implementation paths and limitations below remain applicable.
+
+## Historical C implementation checkpoint
 
 ## Current checkpoint — 2026-10-21T05:29:39Z, Codex continuation
 

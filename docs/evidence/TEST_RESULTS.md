@@ -1,5 +1,17 @@
 # Test evidence — P0.4 and preserved completed milestones
 
+## 2026-10-21 — C host20 passes; one child-timezone failure, test-only repair
+
+Repair closing static checks: docs validator exit0 (33 Markdown/70 Q&As/12 ADRs/0 issues); verifier parser and whitespace checks passed. No live rerun claimed.
+
+Owner ran verify-incidents.ps1 on58eed3e, Java21/Docker29.8.2. Saved log/selected XML confirm Maven exit1/BUILD FAILURE at11:06:10IST,48.843s: DurableIncidentIT17 with1 failure (16 passes), PostgresInfrastructureIT4 passes, no errors/skips. Overall gate failed. Evidence .cache/p04c/9443ec38b21746b6a0bc5b613a41d279/postgres.log and reports.
+
+Only separateJvmRestartPreservesIdentityAndAddsLateEvidence failed. Child log control-plane/target/incident-process/c3113041-c149-4beb-9ed0-500b54833cf4.log shows PostgreSQL FATAL invalid TimeZone Asia/Calcutta while opening the JDBC transaction. The argument-file launcher omitted the UTC option already present in the packaged harness. Added -Duser.timezone=UTC to test-only IncidentProcessLaunch and adjusted its regression assertion. Production code and V5 are unchanged;20 live passes remain valid.
+
+Exact local repair command (Java21, workspace TEMP/TMP): `./mvnw.cmd -B -ntp -o -Dmaven.repo.local=.cache/maven-repository -pl control-plane -Dtest=IncidentProcessLaunchTests -l .cache/p04c-launch-utc.log test`. Exit0 at11:08:08IST,12.781s,3 passed,0 failures/errors/skips. This repeats the relevant launcher checks only; no actual child/DB success inferred.
+
+verify-incidents.ps1 -RestartOnly parses successfully and selects only the failed method, requiring1 fresh executed pass. That live rerun is pending; preserve new evidence alongside the20 passes, do not sum stale copied reports or claim a new21-test run.
+
 ## 2026-10-21 — P0.4-C implementation; actual database gate pending
 
 Closing static checks: incident verifier parses; verify-docs.ps1 exit0 (33 Markdown/20 required/124 links/7 Mermaid/1 JSON/16 scenarios/70 Q&As/12 ADRs/0 issues); git diff --check passes. No Mermaid rendering or host verifier execution claimed.

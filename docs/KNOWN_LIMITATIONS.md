@@ -1,5 +1,7 @@
 # Known Limitations
 
+**Current C repair checkpoint,2026-10-21:** host21-test run had20 passes and one separate-JVM failure: PostgreSQL rejected the child's Asia/Calcutta timezone. Test launcher now pins UTC;3 launcher regressions pass, production code unchanged. Run only `scripts/verify-incidents.ps1 -RestartOnly` for the unfinished1-test gate. Do not repeat the20 passed cases. C is not complete; D follows only after actual restart success. Prior pending/21-test commands below are historical.
+
 C has no terminal transition or automatic severity escalation: the initial reason/severity are immutable, later reasons/results remain in the timeline. One open episode is pinned to the initial contract/config; future terminal recurrence requires explicit schema/guard work. Invalid internal provenance remains retryable/fail-closed and may stall the oldest item; no automatic evidence repair is added. Process-restart tests use separate test JVMs, not the full Core executable. All C SQL/restart cases await host execution; D integration is still pending.
 
 B's bounded cyclic scan revisits all persisted projections: deadline latency scales with workload and no5-second target is measured. Database tests use worker recreation and injected read failure, not physical process/DB restart; direct scheduled callback testing is not packaged enabled-mode wiring proof. B real PostgreSQL gate remains blocked here; C incidents are intentionally absent. Detection defaults disabled; enable only with the verified pipeline after host acceptance.

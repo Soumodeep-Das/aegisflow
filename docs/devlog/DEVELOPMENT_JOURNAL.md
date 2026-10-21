@@ -1,5 +1,11 @@
 # Development journal
 
+## 2026-10-21 — fix child JVM timezone; retain20 host passes
+
+Host C gate on58eed3e ran all21 tests:20 passed,1 restart-case failure,0 errors/skips. Inspected child log: JDBC startup rejected Asia/Calcutta, not an incident/migration/port error. Pin test child to UTC exactly as existing packaged harness does; no production changes or global timezone edits.
+
+Relevant launcher3 checks passed at11:08:08IST,12.781s. New -RestartOnly verifier parses and avoids repeating20 passed cases. Actual separate-JVM retry still needs Docker-capable host. Exact evidence/commands in TEST_RESULTS/HANDOFF. C/D remain incomplete; local repair commit only, no push or volume changes.
+
 ## 2026-10-21 — C incident/timeline checkpoint, live gate pending
 
 Closing static checks: incident verifier parses; verify-docs.ps1 exit0 (33 Markdown/20 required/124 links/7 Mermaid/1 JSON/16 scenarios/70 Q&As/12 ADRs/0 issues); git diff --check passes. No Mermaid rendering or host verifier execution claimed.

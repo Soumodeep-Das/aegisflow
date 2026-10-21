@@ -1,6 +1,6 @@
 #requires -Version 7.0
 [CmdletBinding()]
-param([string]$JavaHome = $env:JAVA_HOME)
+param([string]$JavaHome = $env:JAVA_HOME, [switch]$RestartOnly)
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 if ([string]::IsNullOrWhiteSpace($JavaHome)) { throw 'Set JAVA_HOME to Java 21.' }
@@ -27,20 +27,22 @@ try {
         }
     }
     Write-Output "Incident evidence: $evidence"
-    Write-Output 'Running only the unverified P0.4-C PostgreSQL gate and Core migration/startup regression. Passing focused unit tests are not repeated.'
+    $selection = if ($RestartOnly) { 'DurableIncidentIT#separateJvmRestartPreservesIdentityAndAddsLateEvidence' } else { 'DurableIncidentIT,PostgresInfrastructureIT' }
+    if ($RestartOnly) { Write-Output 'Running only the unfinished separate-JVM restart case; the 20 passing PostgreSQL cases are not repeated.' }
+    else { Write-Output 'Running the P0.4-C PostgreSQL gate and Core migration/startup regression.' }
     $started = [DateTime]::UtcNow
     $mavenCache = Join-Path $repositoryRoot '.cache/maven-repository'
-    & .\mvnw.cmd -B -ntp "-Dmaven.repo.local=$mavenCache" -pl control-plane -Pinfrastructure-tests '-Dit.test=DurableIncidentIT,PostgresInfrastructureIT' -l (Join-Path $evidence 'postgres.log') test-compile failsafe:integration-test failsafe:verify
+    & .\mvnw.cmd -B -ntp "-Dmaven.repo.local=$mavenCache" -pl control-plane -Pinfrastructure-tests "-Dit.test=$selection" -l (Join-Path $evidence 'postgres.log') test-compile failsafe:integration-test failsafe:verify
     $mavenExit = $LASTEXITCODE
     $reports = Join-Path $repositoryRoot 'control-plane/target/failsafe-reports'
     if (Test-Path -LiteralPath $reports) {
         Copy-Item -LiteralPath $reports -Destination (Join-Path $evidence 'reports') -Recurse
     }
     if ($mavenExit -ne 0) { throw "Incident gate failed (Maven exit $mavenExit); preserve $evidence/postgres.log and reports." }
-    foreach ($suite in @(
-        @('com.aegisflow.core.detection.internal.DurableIncidentIT',17),
-        @('com.aegisflow.core.PostgresInfrastructureIT',4)
-    )) {
+    $suites = [System.Collections.Generic.List[object]]::new()
+    $suites.Add(@('com.aegisflow.core.detection.internal.DurableIncidentIT', $(if ($RestartOnly) { 1 } else { 17 })))
+    if (-not $RestartOnly) { $suites.Add(@('com.aegisflow.core.PostgresInfrastructureIT',4)) }
+    foreach ($suite in $suites) {
         $report = Join-Path $reports "TEST-$($suite[0]).xml"
         if (-not (Test-Path -LiteralPath $report -PathType Leaf)) { throw "Missing report: $($suite[0])" }
         if ((Get-Item -LiteralPath $report).LastWriteTimeUtc -lt $started) { throw "Stale report: $($suite[0])" }
@@ -53,7 +55,8 @@ try {
             throw "All expected tests must execute with zero failures/errors/skips: $($suite[0]). Preserve $evidence."
         }
     }
-    Write-Output 'PASS: 17 durable incident tests and 4 Core PostgreSQL migration/startup tests; zero failures/errors/skips.'
+    if ($RestartOnly) { Write-Output 'PASS: one actual separate-JVM incident restart test, zero failures/errors/skips. Other tests were not rerun.' }
+    else { Write-Output 'PASS: 17 durable incident tests and 4 Core PostgreSQL migration/startup tests; zero failures/errors/skips.' }
     Write-Output 'This verifies P0.4-C only, not full end-to-end P0.4 verification. Testcontainers uses disposable databases and dynamic ports; existing Compose storage is not targeted.'
 } finally {
     Pop-Location

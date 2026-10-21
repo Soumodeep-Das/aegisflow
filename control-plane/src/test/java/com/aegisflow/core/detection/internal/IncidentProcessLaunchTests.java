@@ -6,7 +6,7 @@ class IncidentProcessLaunchTests {
     @Test void quotesLongWindowsClasspathInArgumentFile() {
         String cp="C:\\Program Files\\classes;"+"C:\\dependency.jar;".repeat(3000);
         String args=IncidentProcessLaunch.arguments(cp);
-        assertThat(args).startsWith("-cp\n\"C:\\\\Program Files\\\\classes;")
+        assertThat(args).startsWith("-Duser.timezone=UTC\n-cp\n\"C:\\\\Program Files\\\\classes;")
             .endsWith("\"\n"+IncidentProcessMain.class.getName()+"\n");
     }
     @Test void rejectsArgumentFileLineInjection() {

@@ -7,7 +7,7 @@ final class IncidentProcessLaunch {
     static String arguments(String classpath) {
         if(classpath.indexOf('\n')>=0 || classpath.indexOf('\r')>=0)
             throw new IllegalArgumentException("Invalid classpath");
-        return "-cp\n\""+classpath.replace("\\","\\\\").replace("\"","\\\"")
+        return "-Duser.timezone=UTC\n-cp\n\""+classpath.replace("\\","\\\\").replace("\"","\\\"")
             +"\"\n"+IncidentProcessMain.class.getName()+"\n";
     }
     static Map<String,String> environment(Map<String,String> inherited) {
