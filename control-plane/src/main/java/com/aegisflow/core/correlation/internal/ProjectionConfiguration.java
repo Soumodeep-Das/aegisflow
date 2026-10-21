@@ -2,6 +2,7 @@ package com.aegisflow.core.correlation.internal;
 
 import com.aegisflow.core.eventing.ProjectionInbox;
 import java.time.Clock;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
@@ -16,7 +17,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 class ProjectionConfiguration {
     @Bean Clock projectionClock() { return Clock.systemUTC(); }
     @Bean CorrelationProjector correlationProjector(ProjectionInbox inbox,JdbcTemplate jdbc,
-            PlatformTransactionManager manager,Clock projectionClock,Environment env) {
+            PlatformTransactionManager manager,@Qualifier("projectionClock") Clock projectionClock,Environment env) {
         return new CorrelationProjector(inbox,jdbc,manager,projectionClock,new ProjectionModel.Contract(
                 env.getRequiredProperty("aegisflow.core.projection.configuration-version"),
                 env.getRequiredProperty("aegisflow.core.projection.inventory-seconds",Integer.class),

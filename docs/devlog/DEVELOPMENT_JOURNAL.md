@@ -1,5 +1,9 @@
 # Development journal
 
+## 2026-10-21 — packaged startup exposed multi-clock infrastructure ambiguity
+
+Recorded contradiction1pass completing pipeline6+1. Packaged Core exited because Modulith Moments requested one Clock while all3 worker clocks were active; direct component tests had not exercised combined auto-configuration. Added root primary UTC application clock and explicit projection qualifier, retaining detection/incident named clocks. Configuration regressions load real Moments plus actual worker configurations with mocked I/O, proving combined startup without bypassing production auto-configuration. Configuration2+architecture4 passed; Core package rebuilt. No schema/rule/tenant changes, no live success claimed. Next solely packaged gate; do not rerun completed pipeline. Preserve failed logs, stop before P0.5.
+
 ## 2026-10-21 — preserve host168+6 successes; repair contradiction fault fixture
 
 Confirmed source57ad5b1 host logs/XML: clean168 passed; pipeline6 passed and1 errored on the owner reservation uniqueness guard. The fixture was wrong to manufacture a second legitimate reservation, not a detector/database/port defect. Preserved source constraints and production code. Added WarehouseContradictionFixture to emit an explicit contradictory Kafka claim derived from committed real owner evidence, keeping owner state unchanged. Split parameterized cases into named methods for exact resumption. Two focused fixture tests pass; no completed suites repeated. Added Remaining verifier mode for only failed contradiction then unreached packaged gate. Docs/handoff retain original failure and distinguish source-fault injection from real healthy business operations. Live corrected gate remains pending; P0.4 incomplete, no push or P0.5.

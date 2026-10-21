@@ -1,5 +1,20 @@
 # Handoff — A/B/C verified; D acceptance ready for host, P0.4 incomplete
 
+## Latest packaged wiring repair — 2026-10-21T17:20:19Z, Codex
+
+Entry main clean26624f5. Saved Remaining run .cache/p04d/1d2a692dc0304d0d9c047137c10aa17d: corrected contradiction1/0/0/0 at21:23:44IST (Maven2:02); all7 pipeline cases now passed across6+1 runs. Packaged1 test errored (0 failures/1 error/0 skips),106.7s suite/Maven2:01 at21:25:51IST. Core child log .cache/packaged-detection/897966b9-d519-45de-ace9-4a6553b030a5/core.log identifies Modulith Moments requiring an unqualified Clock but finding projectionClock,detectionClock,incidentClock. Not a port, PostgreSQL or Kafka authentication failure. Preserve both attempts.
+
+Production wiring repair only: root CoreClockConfiguration adds primary UTC applicationClock; ProjectionConfiguration explicitly qualifies projectionClock. Detection/incident qualifiers unchanged; no rule, grant, schema or transaction semantics changed. CoreClockConfigurationTests uses real Moments auto-configuration, both no-worker and all3 real worker configurations, mocked I/O/scheduling. Six focused tests (2 configuration+4 architecture) passed0 failures/errors/skips; Maven package exit0,30.907s at22:50:19IST. Core executable rebuilt; other3 archives unchanged. Prior168 reactor is preserved evidence, not claimed rerun on this wiring change.
+
+Single next action from existing repository:
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-p04-final.ps1 -Gate Packaged
+```
+
+Require1 actual packaged pass with zero failures/errors/skips, healthy workflow after enforcement, exactly1 missing-evidence incident and preserved DETECTED history after Core restart/late Warehouse intake. No need to repeat pipeline7, A/B/C or simulator suites for this scoped wiring fix. Docker/loopback restrictions still prevent live execution here; no packaged pass claimed. On actual pass inspect evidence and close P0.4 documentation/commit; no P0.5/push. This following local repair commit records the checkpoint; resolve final hash/status with Git. No permanent .env or existing storage touched.
+
 ## Latest repair checkpoint — 2026-10-21, Codex
 
 Entry clean main57ad5b1. Owner's saved evidence .cache/p04d/86777e661f2d4104a5804de6d907c68c independently confirms clean reactor168/0/0/0 at11:35:30IST (1:12 Maven), then pipeline7 cases with6 passed,0 failures,1 error,0 skips at11:37:18IST (88.89s suite,1:41 Maven). Only contradiction setup failed on Warehouse's valid unique tenant/business-transaction constraint. Packaged gate did not run. Preserve these logs/reports; no rerun of passing cases for this repair.

@@ -1,5 +1,13 @@
 # Test evidence — P0.4 and preserved completed milestones
 
+## 2026-10-21 — pipeline complete across6+1; packaged Clock ambiguity repaired
+
+Owner Remaining run on26624f5: DetectionPipelineScenario selected contradiction1/0/0/0, Maven exit0/2:02,21:23:44IST. PackagedDetectionScenario1 test,0 failures,1 error,0 skips;106.7s suite, Maven exit1/2:01,21:25:51IST. Selected saved XML/logs inspected at .cache/p04d/1d2a692dc0304d0d9c047137c10aa17d (do not count copied/stale XML twice). All7 component pipeline cases passed across the prior6 plus this1; not a new single7 run.
+
+Child failure log .cache/packaged-detection/897966b9-d519-45de-ace9-4a6553b030a5/core.log: MomentsAutoConfiguration.moments fails with NoUniqueBeanDefinitionException, three Clock candidates. New primary UTC applicationClock resolves infrastructure injection; worker clocks remain named and explicitly qualified. No invariant time values changed.
+
+Command with JAVA_HOME21/workspace TEMP: .\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane '-Dtest=CoreClockConfigurationTests,ControlPlaneArchitectureTests' -l .cache/p04d-clock.log package. Actual6 tests passed (configuration2+architecture4),0 failures/errors/skips, exit0,30.907s at22:50:19IST. Core executable and original archive rebuilt. No real infrastructure or full reactor rerun; host packaged-only1 gate pending. Historical168 clean reactor remains valid for previous source; this wiring delta has scoped regression evidence.
+
 ## 2026-10-21 — host reactor168 passed; D6 passed, contradiction fixture repaired
 
 Owner ran verify-p04-final.ps1 on57ad5b1, Java21/Docker29.8.2. Independently summed saved reactor/surefire XML:168 tests,0 failures/errors/skips; build exit0,1:12 at11:35:30IST. DetectionPipelineScenario XML:7 tests,0 failures,1 error,0 skips (6 passed);88.89s suite, Maven exit1/1:41 at11:37:18IST. Evidence .cache/p04d/86777e661f2d4104a5804de6d907c68c retains both logs/reports. Packaged test was NOT reached.
