@@ -1,6 +1,6 @@
 #requires -Version 7.0
 [CmdletBinding()]
-param([string]$JavaHome=$env:JAVA_HOME,[ValidateSet('All','Pipeline','Packaged','Reactor')][string]$Gate='All')
+param([string]$JavaHome=$env:JAVA_HOME,[ValidateSet('All','Pipeline','Packaged','Reactor','Remaining')][string]$Gate='All')
 $ErrorActionPreference='Stop'
 $repositoryRoot=Split-Path -Parent $PSScriptRoot
 . (Join-Path $PSScriptRoot 'lib/packaged-artifact.ps1')
@@ -65,7 +65,7 @@ try {
         }
         Write-Output "PASS: clean default reactor, $total tests, zero failures/errors/skips; four executable archives built."
     }
-    if($Gate -in @('All','Pipeline','Packaged')) {
+    if($Gate -in @('All','Pipeline','Packaged','Remaining')) {
         foreach($module in $modules) {
             $artifact=if($module -eq 'control-plane') { 'aegisflow-core' } else { Split-Path -Leaf $module }
             $inputs=@(Get-ChildItem -LiteralPath "$module/src/main" -Recurse -File)
@@ -73,13 +73,15 @@ try {
             Assert-RepackagedJarCurrent -JarPath (Join-Path $repositoryRoot "$module/target/$artifact-0.1.0-SNAPSHOT.jar") -InputPaths $inputs.FullName
         }
         $suites=@()
+        if($Gate -eq 'Remaining') { $suites+=@{ Name='DetectionPipelineScenario'; Tests=1; Selection='DetectionPipelineScenario#contradictoryWarehouseEvidenceCreatesIncident' } }
         if($Gate -in @('All','Pipeline')) { $suites+=@{ Name='DetectionPipelineScenario'; Tests=7 } }
-        if($Gate -in @('All','Packaged')) { $suites+=@{ Name='PackagedDetectionScenario'; Tests=1 } }
+        if($Gate -in @('All','Packaged','Remaining')) { $suites+=@{ Name='PackagedDetectionScenario'; Tests=1 } }
         foreach($suite in $suites) {
             $started=[DateTime]::UtcNow
             $log=Join-Path $evidence "$($suite.Name).log"
             Write-Output "Running $($suite.Name); details in $log"
-            & .\mvnw.cmd -B -ntp "-Dmaven.repo.local=$cache" -pl control-plane '-Pinfrastructure-tests,pipeline-tests' "-Dit.test=$($suite.Name)" -l $log test-compile failsafe:integration-test failsafe:verify
+            $selection=if($suite.ContainsKey('Selection')) { $suite.Selection } else { $suite.Name }
+            & .\mvnw.cmd -B -ntp "-Dmaven.repo.local=$cache" -pl control-plane '-Pinfrastructure-tests,pipeline-tests' "-Dit.test=$selection" -l $log test-compile failsafe:integration-test failsafe:verify
             $code=$LASTEXITCODE; Save-Reports $suite.Name
             if($code -ne 0) { throw "Gate failed: $($suite.Name). Preserve $evidence and .cache/packaged-detection." }
             $report=Join-Path $repositoryRoot "control-plane/target/failsafe-reports/TEST-com.aegisflow.core.eventing.internal.$($suite.Name).xml"

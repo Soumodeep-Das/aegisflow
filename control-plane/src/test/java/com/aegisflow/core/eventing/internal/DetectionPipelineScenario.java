@@ -8,8 +8,6 @@ import java.util.*;
 import java.util.concurrent.*;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.containers.Network;
@@ -95,12 +93,25 @@ class DetectionPipelineScenario {
         assertThat(result(tx)).isEqualTo("SATISFIED"); assertThat(count("incident",tx)).isZero();
         assertThat(count("observed_fact",tx)).isEqualTo(2);
     }
-    @ParameterizedTest @ValueSource(strings={"quantity","contradiction"})
-    void invalidBusinessOutcomesCannotMasqueradeAsHealthy(String fault) throws Exception {
+    @Test void wrongQuantityCannotMasqueradeAsHealthy() throws Exception { invalidBusinessOutcome("quantity"); }
+    @Test void contradictoryWarehouseEvidenceCreatesIncident() throws Exception { invalidBusinessOutcome("contradiction"); }
+    private void invalidBusinessOutcome(String fault) throws Exception {
         UUID order=UUID.randomUUID(); String tx=fault+"-"+order;
         var events=new ArrayList<UUID>(); events.add(create("order","positive",order,tx,2));
         events.add(create("warehouse","positive",order,tx,fault.equals("quantity")?3:2));
-        if(fault.equals("contradiction")) events.add(create("warehouse","negative",order,tx,2));
+        if(fault.equals("contradiction")) {
+            // The owner correctly forbids a second reservation for this transaction. Inject a faulty
+            // source claim over Kafka; never relax that constraint or mutate authoritative state.
+            var json=new tools.jackson.databind.json.JsonMapper();
+            var original=json.readValue(apps.get("warehouse").getBean(JdbcTemplate.class).queryForObject(
+                    "SELECT envelope::text FROM aegisflow.outbox_event WHERE event_id=?",String.class,events.get(1)),Map.class);
+            var contradictory=WarehouseContradictionFixture.rejectedClaim(original);
+            CorePipelineScenario.publish(KAFKA,"warehouse",contradictory,json.writeValueAsBytes(contradictory));
+            events.add(UUID.fromString((String)contradictory.get("eventId")));
+            assertThat(apps.get("warehouse").getBean(JdbcTemplate.class).queryForObject(
+                    "SELECT count(*) FROM aegisflow.reservations WHERE tenant_id=? AND business_transaction_id=? AND status='RESERVED'",
+                    Integer.class,PipelineApplications.TENANT,tx)).isEqualTo(1);
+        }
         intake(events); project(); evaluate(after(tx));
         assertThat(result(tx)).isEqualTo("VIOLATED"); assertThat(count("incident",tx)).isEqualTo(1);
         assertThat(jdbc.queryForObject("SELECT reason_code FROM aegisflow.incident WHERE business_transaction_id=?",String.class,tx))

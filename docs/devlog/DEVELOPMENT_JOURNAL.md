@@ -1,5 +1,9 @@
 # Development journal
 
+## 2026-10-21 — preserve host168+6 successes; repair contradiction fault fixture
+
+Confirmed source57ad5b1 host logs/XML: clean168 passed; pipeline6 passed and1 errored on the owner reservation uniqueness guard. The fixture was wrong to manufacture a second legitimate reservation, not a detector/database/port defect. Preserved source constraints and production code. Added WarehouseContradictionFixture to emit an explicit contradictory Kafka claim derived from committed real owner evidence, keeping owner state unchanged. Split parameterized cases into named methods for exact resumption. Two focused fixture tests pass; no completed suites repeated. Added Remaining verifier mode for only failed contradiction then unreached packaged gate. Docs/handoff retain original failure and distinguish source-fault injection from real healthy business operations. Live corrected gate remains pending; P0.4 incomplete, no push or P0.5.
+
 ## 2026-10-21 — verified C recorded; D reproducible acceptance checkpoint
 
 Started clean main at a7a4761, six local commits ahead. Inspected only checkpoint guidance and relevant existing pipeline/worker fixtures. Confirmed owner's selected C restart XML1/0/0/0 at11:10:45IST, completing prior20 cases. No A/B/C live suite rerun.

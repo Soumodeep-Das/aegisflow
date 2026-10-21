@@ -1,5 +1,17 @@
 # Test evidence — P0.4 and preserved completed milestones
 
+## 2026-10-21 — host reactor168 passed; D6 passed, contradiction fixture repaired
+
+Owner ran verify-p04-final.ps1 on57ad5b1, Java21/Docker29.8.2. Independently summed saved reactor/surefire XML:168 tests,0 failures/errors/skips; build exit0,1:12 at11:35:30IST. DetectionPipelineScenario XML:7 tests,0 failures,1 error,0 skips (6 passed);88.89s suite, Maven exit1/1:41 at11:37:18IST. Evidence .cache/p04d/86777e661f2d4104a5804de6d907c68c retains both logs/reports. Packaged test was NOT reached.
+
+Only failed case: invalidBusinessOutcomesCannotMasqueradeAsHealthy(String)[2]. It attempted a second Warehouse reservation for the same tenant/transaction and correctly hit uq_reservations_business_transaction before detector assertions. Repair preserves that constraint and injects a faulty source claim over authenticated Kafka, with a fresh event ID but conflicting same-reservation/version outcome. This is explicitly a fault fixture, not a valid second business operation or claimed authoritative remote failure.
+
+Focused command (JAVA_HOME21, workspace TEMP/TMP): .\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane '-Dtest=WarehouseContradictionFixtureTests' -l .cache/p04d-contradiction-unit.log test. Result2 passed,0 failures/errors/skips,0.390s suite,15.657s Maven exit0 at21:11:17IST. Tests assert identity/time preservation, fresh UUID, no mutation of original envelope/details, and invalid input rejection. New verifier parser PASS.
+
+The6 host successes cover healthy/replay, missing/late evidence/concurrent recording, reordered/backlogged projection, wrong quantities, application-context restart, and tenant quarantine/offset isolation. Contradiction rerun and actual packaged scheduler/restart evidence remain unverified. Resume -Gate Remaining:1 named contradiction case followed by1 packaged case. Existing clean168 production packaging remains valid: no production source or configuration changed; two new test-only unit cases passed separately (not a claimed170-case reactor run).
+
+Closing compile command: .\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane -l .cache/p04d-contradiction-compile.log test-compile. Latest test assertion compiled successfully, exit0,10.987s at21:12:53IST. Documentation checker passed33 Markdown/75 Q&As/12 ADRs/0 issues; whitespace check passed. No live corrected gate executed here.
+
 ## 2026-10-21 — C complete; D implemented, infrastructure/final reactor unverified
 
 C restart-only owner command on a7a4761:

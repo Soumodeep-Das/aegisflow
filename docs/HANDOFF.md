@@ -1,5 +1,20 @@
 # Handoff — A/B/C verified; D acceptance ready for host, P0.4 incomplete
 
+## Latest repair checkpoint — 2026-10-21, Codex
+
+Entry clean main57ad5b1. Owner's saved evidence .cache/p04d/86777e661f2d4104a5804de6d907c68c independently confirms clean reactor168/0/0/0 at11:35:30IST (1:12 Maven), then pipeline7 cases with6 passed,0 failures,1 error,0 skips at11:37:18IST (88.89s suite,1:41 Maven). Only contradiction setup failed on Warehouse's valid unique tenant/business-transaction constraint. Packaged gate did not run. Preserve these logs/reports; no rerun of passing cases for this repair.
+
+Test-only changes: DetectionPipelineScenario separates quantity/contradiction into named methods; WarehouseContradictionFixture clones the real committed InventoryReserved envelope into an explicit faulty InventoryRejected source claim (new event ID, same tenant/order/reservation/version/time, OUT_OF_STOCK). It publishes through the existing authenticated Warehouse Kafka fixture, not a second business operation, table mutation or weakened constraint. Assert the single authoritative RESERVED row remains. Healthy/missing/quantity business operations still use actual owner transactions. Two pure fixture tests passed at21:11:17IST,15.657s,0 failures/errors/skips; verifier syntax passes. Production artifacts remain current from the host168-test build.
+
+Next action from repository root:
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-p04-final.ps1 -Gate Remaining
+```
+
+Remaining selects DetectionPipelineScenario#contradictoryWarehouseEvidenceCreatesIncident (1 actual pass required), then PackagedDetectionScenario (1 actual pass required); fresh reports must have zero skips/errors/failures. It preserves evidence and does not repeat clean168 or6 passed pipeline cases. If only packaged fails afterward, resume -Gate Packaged. This repair is compiled/unit-tested, not live-verified in the sandbox; Docker remains inaccessible. Inspect actual results before closing P0.4. No P0.5, recovery, AI, permanent .env/storage changes or push. This following local repair/docs commit records the checkpoint; use git rev-parse HEAD and git status --short --branch for its final hash/tree.
+
 ## Current checkpoint — 2026-10-21T05:59:47Z, Codex P0.4-D
 
 Entry main clean at a7a4761 (ahead6). This following local test/docs commit is the current checkpoint; resolve final hash with git rev-parse HEAD and status with git status --short --branch. No push/deployment, personal .env change, existing Compose project or volume mutation.

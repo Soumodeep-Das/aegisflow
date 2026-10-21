@@ -1,11 +1,15 @@
 # Codebase guide
 
+**Latest repair checkpoint,2026-10-21:** owner host on57ad5b1 passed the clean168-test reactor and6 of7 D pipeline cases. The sole error was a faulty contradiction fixture attempting a second reservation forbidden by uq_reservations_business_transaction. Test-only repair now injects an explicitly contradictory Warehouse Kafka claim while preserving the single authoritative RESERVED row. Two fixture unit tests passed; live rerun pending. Use `scripts/verify-p04-final.ps1 -Gate Remaining` for only the corrected1-case gate followed by the unverified packaged1-case gate. Do not repeat clean168 or the6 passing cases. P0.4 remains incomplete; older full-rerun instructions below are historical. No production/schema/grant changes.
+
 ## P0.4-D acceptance walkthrough (implemented, live verification pending)
+
+Repair lesson: a valid service-owned uniqueness constraint can reject an invalid test setup before the intended assertion. WarehouseContradictionFixture.java now preserves the real original reservation and clones its envelope into a deliberately faulty source claim with a new event ID and conflicting outcome for the same reservation/version. Its two unit tests prove the original envelope and business identity are not mutated. DetectionPipelineScenario.contradictoryWarehouseEvidenceCreatesIncident sends that claim through authenticated Kafka and verifies one authoritative RESERVED row remains. A contradiction test is not permission to weaken tenant/transaction uniqueness. Six pipeline cases have since passed on the owner host; only this repaired case and packaged acceptance remain.
 
 Actual test paths under control-plane/src/test/java/com/aegisflow/core/:
 
 - eventing/internal/PipelineApplications.java: reflective test-only simulator assembly; the new create overload shares order/transaction IDs and quantities across real owner commands. Production modules still do not depend on each other.
-- eventing/internal/DetectionPipelineScenario.java:7 expected live cases, including the two quantity/contradiction parameter values. Testcontainers class-level skipping discovers fewer placeholders; that is never evidence of execution.
+- eventing/internal/DetectionPipelineScenario.java:7 named live cases; quantity and contradiction are separate methods so the corrected contradiction can resume alone. Earlier parameterized skip placeholders were not evidence of execution.
 - correlation/internal/PipelineProjectionDriver.java and detection/internal/PipelineDetectionDriver.java: bounded test-only access to real transactional workers with injectable clocks. These are component orchestration, not packaged scheduler proof.
 - eventing/internal/PackagedDetectionScenario.java:1 expected executable test with real scheduled relays, intake, projector, detector and recorder, and an actual Core process restart. Uses existing PackagedApplicationProcess (UTC JVM, OS-assigned HTTP ports and scrubbed environment).
 - scripts/verify-p04-final.ps1: default All gate preserves earlier reports before clean, validates fresh counts and rejects failures/errors/skips; Pipeline, Packaged and Reactor selections permit exact resumption after successful gates.
