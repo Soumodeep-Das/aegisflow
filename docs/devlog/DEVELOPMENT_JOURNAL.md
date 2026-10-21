@@ -1,5 +1,17 @@
 # Development journal
 
+## 2026-10-21 — verified C recorded; D reproducible acceptance checkpoint
+
+Started clean main at a7a4761, six local commits ahead. Inspected only checkpoint guidance and relevant existing pipeline/worker fixtures. Confirmed owner's selected C restart XML1/0/0/0 at11:10:45IST, completing prior20 cases. No A/B/C live suite rerun.
+
+Extended existing test-only simulator assembly with shared order/transaction identity and explicit quantities; added restart without reprovisioning roles. Added bounded test-only production worker drivers,7 expected real broker/database business-detection cases and1 executable process case. Existing P0.3 helpers retain original entry points. No production source, schema, grants, tenant policy or offset processing changed. Component cases include replay, held Order transport/reordering, pending projection, concurrent incident recording, missing/late evidence, wrong quantities/contradictions, application-context restart and broker tenant quarantine with safe offset progression. Packaged case uses real callbacks, unchanged45+15 contract, retained incident identity and late evidence after actual Core restart. This remains a test implementation, not observed live success.
+
+Rationale: reuse source-owned business commands instead of inserting forged healthy facts; use controlled relay hold only for explicit fault fixtures. Manual drivers allow clock advancement without a60-second sleep, but cannot prove packaged scheduling. Separate packaged test uses actual time and bounded conditions. Existing dynamic Docker/HTTP ports, UTC child JVM, argument handling and archive freshness guards are retained.
+
+Actual verification: initial4 and later5 Testcontainers discovery placeholders ALL skipped due denied Docker pipe;8 focused boundary/process tests passed. Final clean reactor reached77 Core cases:76 passes and1 HTTP startup error caused by denied loopback, simulator modules not reached. Latest sources compile. Exact commands/times and preserved failure evidence are in TEST_RESULTS; no green reactor/packaged claim. Added scripts/verify-p04-final.ps1 with fresh zero-skip XML checks and partial resume modes; syntax passes. Updated guide with walkthrough/debug exercise/Q71–75 and current status across required docs.
+
+Stop at host-only critical gate, not milestone completion. Highest next task: run full final verifier on owner Windows host; inspect failure or7+1 actual D passes and complete clean reactor. Record evidence, repair scoped issues, and only then evaluate P0.4 closure. No P0.5, push, personal .env read/change or existing volume mutation.
+
 ## 2026-10-21 — fix child JVM timezone; retain20 host passes
 
 Host C gate on58eed3e ran all21 tests:20 passed,1 restart-case failure,0 errors/skips. Inspected child log: JDBC startup rejected Asia/Calcutta, not an incident/migration/port error. Pin test child to UTC exactly as existing packaged harness does; no production changes or global timezone edits.

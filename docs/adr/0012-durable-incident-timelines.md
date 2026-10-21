@@ -1,6 +1,6 @@
 # ADR 0012: Recoverable incident creation and immutable timeline
 
-- **Status:** Accepted for P0.4-C implementation; real PostgreSQL gate pending
+- **Status:** Accepted; P0.4-C PostgreSQL gate verified across20 earlier passes plus1 successful restart-only rerun on2026-10-21. Full D pipeline gate remains separate.
 - **Date:** 2026-10-21
 - **Scope:** detection only, based on verified A/B and ADR0010/0011
 

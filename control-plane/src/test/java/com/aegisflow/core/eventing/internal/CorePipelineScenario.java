@@ -232,10 +232,13 @@ class CorePipelineScenario {
         var offset=client.committed(Set.of(tp)).get(tp); return offset!=null && offset.offset()>record.offset();
     }
     static RecordMetadata publish(String owner,Map<String,Object> event,byte[] bytes) throws Exception {
-        var props=new HashMap<String,Object>(); props.put("bootstrap.servers",KAFKA.bootstrap());
+        return publish(KAFKA,owner,event,bytes);
+    }
+    static RecordMetadata publish(CoreKafkaFixture kafka,String owner,Map<String,Object> event,byte[] bytes) throws Exception {
+        var props=new HashMap<String,Object>(); props.put("bootstrap.servers",kafka.bootstrap());
         props.put("security.protocol","SASL_PLAINTEXT"); props.put("sasl.mechanism","PLAIN");
         props.put("sasl.jaas.config","org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + owner
-                + "\" password=\"" + KAFKA.password(owner) + "\";");
+                + "\" password=\"" + kafka.password(owner) + "\";");
         props.put("key.serializer",ByteArraySerializer.class); props.put("value.serializer",ByteArraySerializer.class);
         props.put("acks","all"); props.put("max.block.ms",5000); props.put("delivery.timeout.ms",15000); props.put("request.timeout.ms",5000);
         byte[] key=(event.get("tenantId")+":"+event.get("businessTransactionId")).getBytes(StandardCharsets.UTF_8);

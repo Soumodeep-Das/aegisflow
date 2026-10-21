@@ -1,4 +1,31 @@
-# Handoff — C has20 database passes; restart-only timezone repair pending
+# Handoff — A/B/C verified; D acceptance ready for host, P0.4 incomplete
+
+## Current checkpoint — 2026-10-21T05:59:47Z, Codex P0.4-D
+
+Entry main clean at a7a4761 (ahead6). This following local test/docs commit is the current checkpoint; resolve final hash with git rev-parse HEAD and status with git status --short --branch. No push/deployment, personal .env change, existing Compose project or volume mutation.
+
+**Last completed:** C's21 PostgreSQL cases now verified across prior20 plus successful restart-only1/0/0/0 at11:10:45IST. Selected XML/log inspected under .cache/p04c/ef77263efc0549c8a79762e0979e645a. Earlier pending-C statements below are historical and superseded. A/B/C implementation and successful suites need no repeat merely to resume.
+
+**D implemented but NOT verified:** DetectionPipelineScenario7 expected live cases and PackagedDetectionScenario1 expected packaged case; real owner business operations share transaction/order identity. No production Java or migrations changed. Test helpers in eventing/internal/PipelineApplications and existing CorePipelineScenario/PackagedPipelineScenario are reused; new correlation/internal/PipelineProjectionDriver and detection/internal/PipelineDetectionDriver are test-only. Actual JAR test enables CORE_PROJECTION_ENABLED, CORE_DETECTION_ENABLED and CORE_INCIDENTS_ENABLED with existing defaults45+15. It holds only its own Warehouse outbox publication, then releases it across actual Core restart. It writes ignored synthetic incident-evidence.txt alongside process logs.
+
+**Actual checks:** latest sources compiled; focused architecture/process8 passed. Earlier new infrastructure discoveries skipped ALL4 then ALL5 placeholders due Docker named-pipe denial; later parameterized expansion and added cases bring expected live counts to7+1, not those skipped counts. Final clean reactor attempt77 Core tests:76 passes,1 error,0 failures/skips at11:28:07IST,31.220s, exit1. Core foundation HTTP cannot establish loopback (Permission denied: connect); simulator modules not reached. Reports/child logs backed up under .cache/p04d-agent-final before clean; failed-core-surefire retains failure. Core executable JAR must be rebuilt after that clean. Do not bypass freshness checks or call this a product port collision. New script syntax passes. No D real acceptance, executable detection/evidence demonstration, or final complete reactor pass yet.
+
+**Single next task:** owner runs from existing repository with Docker Desktop and Java21:
+
+Closing documentation check:33 Markdown,20 required,124 local links,7 Mermaid source blocks,1 JSON,16 scenarios,75 answered interview questions,12 ADRs,0 issues; git diff --check clean. Mermaid rendering not performed. Verifier parsed successfully. Local commit records compiled/test-reviewed acceptance work, not a successful live D gate.
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-p04-final.ps1
+```
+
+Require clean reactor with zero failures/errors/skips,7 actual component pipeline cases and1 actual packaged case. Script prints counts/paths and preserves prior/failed reports. No permanent credentials/stack required. Keep .cache/p04d/<id> and .cache/packaged-detection/<id> private local evidence. If reactor passes and only pipeline fails, fix first cause and resume -Gate Pipeline; if only packaged fails, use -Gate Packaged. Partial modes require current artifacts and do not claim omitted gates passed. Production changes require appropriate regression/rebuild. Do not repeat old A/B/C suites automatically.
+
+**Acceptance matrix:** healthy matching3-owner flow and no post-enforcement incident; missing observed outcome with exact fact-to-inbox references; actual Kafka replay; reorder/backlog protection; wrong quantity/contradiction; concurrent incident workers; Core context restart preserving pending projection/deadlines; trusted-source/tenant quarantine plus committed poison offset; packaged real schedulers/Core process restart/late evidence retaining DETECTED identity/history. Existing verified A/B/C rollback, evaluation concurrency and P0.3 commit-before-ack fault evidence is preserved, not replaced or newly rerun. Review live coverage and failures before final closure; packaged pending-work timing and full machine/broker failure are not claimed by a context restart.
+
+**Remaining limits:** no new live tests executed here, no new evidence timeline actually demonstrated, no authoritative recovery/lifecycle resolution, no terminal recurrence, permanent deployment or performance claim. All code remains P0.4. Diagnose failures using retained first errors; do not suppress tests or alter applied V1–V5. Disable opt-in workers to stop activity; retain databases/history. On all gates passing, update mandatory evidence/docs, commit and mark P0.4 complete, then STOP. No P0.5/recovery/AI/push.
+
+## Historical C repair checkpoint
 
 ## Current checkpoint — 2026-10-21T05:38:13Z, Codex
 

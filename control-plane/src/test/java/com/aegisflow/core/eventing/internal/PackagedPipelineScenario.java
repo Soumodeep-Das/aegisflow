@@ -105,6 +105,9 @@ class PackagedPipelineScenario {
         }
     }
     static PackagedApplicationProcess start(String owner,PostgreSQLContainer db,Path log,String group) throws Exception {
+        return start(owner,db,log,group,Map.of());
+    }
+    static PackagedApplicationProcess start(String owner,PostgreSQLContainer db,Path log,String group,Map<String,String> extra) throws Exception {
         String upper=owner.toUpperCase(Locale.ROOT), prefix=upper+"_DB_";
         Map<String,String> env=new HashMap<>();
         env.put(prefix+"URL",db.getJdbcUrl()); env.put(prefix+"RUNTIME_USER","aegisflow_"+owner+"_runtime");
@@ -118,6 +121,7 @@ class PackagedPipelineScenario {
             env.put(upper+"_OUTBOX_RELAY_ENABLED","true"); env.put(upper+"_OUTBOX_ALLOWED_TENANTS",PipelineApplications.TENANT);
             env.put(upper+"_KAFKA_BOOTSTRAP_SERVERS",KAFKA.bootstrap()); env.put("KAFKA_"+upper+"_PASSWORD",KAFKA.password(owner));
         }
+        env.putAll(extra);
         String module=owner.equals("core") ? "control-plane" : "simulators/"+owner+"-service";
         String artifact=owner.equals("core") ? "aegisflow-core" : owner+"-service";
         return PackagedApplicationProcess.start(PipelineApplications.root().resolve(module+"/target/"+artifact+"-0.1.0-SNAPSHOT.jar"),log,env);

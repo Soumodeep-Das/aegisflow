@@ -1,5 +1,37 @@
 # Test evidence — P0.4 and preserved completed milestones
 
+## 2026-10-21 — C complete; D implemented, infrastructure/final reactor unverified
+
+C restart-only owner command on a7a4761:
+
+```powershell
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-incidents.ps1 -RestartOnly
+```
+
+Inspected .cache/p04c/ef77263efc0549c8a79762e0979e645a/postgres.log and selected DurableIncidentIT XML:1 test,0 failures/errors/skips,14.484s suite; Maven25.942s, exit0 at11:10:45IST. Together with earlier20 successful cases this satisfies C's21 cases across separate runs, NOT a single new21-test run. The original failed attempt and UTC launcher fix remain documented below. No completed C suite repeated.
+
+D local commands used Java21.0.12.1/Maven3.10.0, workspace TEMP/TMP=.cache/tmp and offline cache:
+
+```powershell
+.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane '-Pinfrastructure-tests,pipeline-tests' '-Dit.test=DetectionPipelineScenario' -l .cache/p04d-first.log test-compile failsafe:integration-test failsafe:verify
+.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane '-Pinfrastructure-tests,pipeline-tests' '-Dit.test=DetectionPipelineScenario,PackagedDetectionScenario' -l .cache/p04d-compiled.log test-compile failsafe:integration-test failsafe:verify
+.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane '-Dtest=ControlPlaneArchitectureTests,PackagedProcessTests' -l .cache/p04d-boundaries.log test
+.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -l .cache/p04d-agent-final/reactor.log clean verify
+```
+
+- First D discovery:4 placeholders, ALL4 skipped,0 failures/errors; exit0,24.024s,11:22:36IST. Docker named-pipe AccessDeniedException. No scenario executed.
+- Second D discovery before adding restart/tenant cases:5 placeholders, ALL5 skipped,0 failures/errors; exit0,27.942s,11:25:14IST. Same Docker denial. Parameterized cases are not expanded under class-level skip; do not confuse placeholders with expected live counts.
+- Focused architecture/packaged-process regression:8 tests passed,0 failures/errors/skips; exit0,20.093s,11:27:11IST.
+- Final clean reactor attempt compiled the latest test sources, ran77 Core tests:76 passed,0 failures,1 error,0 skips; exit1,31.220s,11:28:07IST. AegisFlowCoreApplicationTests.servesActuatorHealthOverHttp could not start Tomcat: IOException Unable to establish loopback connection caused by SocketException Permission denied: connect. Simulator modules were NOT reached. This is not a successful reactor or packaging gate. Original Core JAR was removed by the normal clean target; host must rebuild, not bypass artifact guards.
+- Previous reports and child logs saved before clean under .cache/p04d-agent-final; new failing Core reports copied to failed-core-surefire. Both discovery logs and historical C evidence retained.
+- New verifier PowerShell parser: PASS. Live invocation is not possible here; docker info itself returns engine-pipe permission denied. No ports, tests or security checks disabled to bypass it.
+
+Expected host gates, not observed results: clean default reactor (verifier reports actual total), DetectionPipelineScenario7 live cases, PackagedDetectionScenario1 actual packaged case. Default script invokes each separately and checks fresh XML counts, zero failures/errors/skips. Selected partial modes do not validate omitted gates. No new end-to-end scenario or packaged incident timeline is claimed demonstrated yet. Existing A/B/C and P0.3 real evidence remains valid; new transport-to-detection composition needs its own live pass.
+
+Full host command: scripts/verify-p04-final.ps1 under PS7 with JAVA_HOME21 and Docker Desktop. Preserve .cache/p04d/<id>, .cache/packaged-detection/<id> and incident-evidence.txt. Resume only a failed gate using -Gate Pipeline or -Gate Packaged after successful earlier gates and unchanged source; use -Gate Reactor for the default reactor alone. No permanent .env or existing Compose volume targeted.
+
+Closing documentation command: PowerShell7 -NoProfile -File scripts/verify-docs.ps1 passed33 Markdown/20 required/124 local links/7 Mermaid source blocks/1 JSON/16 scenarios/75 answered Q&As/12 ADRs/0 issues. git diff --check passed. No Mermaid rendering was performed.
+
 ## 2026-10-21 — C host20 passes; one child-timezone failure, test-only repair
 
 Repair closing static checks: docs validator exit0 (33 Markdown/70 Q&As/12 ADRs/0 issues); verifier parser and whitespace checks passed. No live rerun claimed.

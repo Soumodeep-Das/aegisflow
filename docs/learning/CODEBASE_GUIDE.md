@@ -1,5 +1,45 @@
 # Codebase guide
 
+## P0.4-D acceptance walkthrough (implemented, live verification pending)
+
+Actual test paths under control-plane/src/test/java/com/aegisflow/core/:
+
+- eventing/internal/PipelineApplications.java: reflective test-only simulator assembly; the new create overload shares order/transaction IDs and quantities across real owner commands. Production modules still do not depend on each other.
+- eventing/internal/DetectionPipelineScenario.java:7 expected live cases, including the two quantity/contradiction parameter values. Testcontainers class-level skipping discovers fewer placeholders; that is never evidence of execution.
+- correlation/internal/PipelineProjectionDriver.java and detection/internal/PipelineDetectionDriver.java: bounded test-only access to real transactional workers with injectable clocks. These are component orchestration, not packaged scheduler proof.
+- eventing/internal/PackagedDetectionScenario.java:1 expected executable test with real scheduled relays, intake, projector, detector and recorder, and an actual Core process restart. Uses existing PackagedApplicationProcess (UTC JVM, OS-assigned HTTP ports and scrubbed environment).
+- scripts/verify-p04-final.ps1: default All gate preserves earlier reports before clean, validates fresh counts and rejects failures/errors/skips; Pipeline, Packaged and Reactor selections permit exact resumption after successful gates.
+
+Walkthrough: fixture commands commit Order/Payment/Warehouse state plus outbox in their own databases. Their real relay publishes the unchanged envelope and records acknowledgement. Core commits validated inbox data before Kafka acknowledgement. Projector commits observed_fact, business_transaction and APPLIED progress together; its pinned45+15-second contract supplies enforce_after. Detection records an immutable evaluation; incident processing atomically records its DETECTED episode, timeline and exact fact references. In the missing-outcome fixture, only Warehouse publication is withheld. Evidence establishes missing observation at evaluation time, never proof that a remote Warehouse operation failed.
+
+The packaged fixture starts every seeding context before business writes to keep actual matching outcomes within the45-second deadline; no event timestamp is rewritten. It closes seed contexts with outboxes still PENDING, launches actual JARs, waits for ENFORCED/SATISFIED healthy evidence and one missing-outcome incident, stops only its Core child, releases held Warehouse transport, then restarts Core on the same test database/group. Expected late evidence adds SATISFIED history without changing DETECTED. Bounded condition polling uses real time here; component deadline tests advance Clock and never sleep60 seconds. Expected assertions are not verified results yet.
+
+### Debugging exercise: explain the incident without inventing remote state
+
+After a successful packaged gate, inspect .cache/packaged-detection/<id>/incident-evidence.txt and the Core logs. Find the initial MISSING_OBSERVED_OUTCOME evaluation: tenant/transaction, incident UUID, rule/contract/config versions, due/enforcement/evaluation times, severity, original Order/Payment facts and hashes. Compare the later VALID_OBSERVED_OUTCOME snapshot and unchanged incident UUID/DETECTED state. An empty Warehouse observation in the first snapshot means not yet observed, not a Warehouse API failure. If no incident exists, inspect accepted inbox versus APPLIED progress before checking deadline time; pending projection must keep the decision UNKNOWN. If the packaged process fails before health, retain logs and diagnose startup rather than invoking worker methods to manufacture a pass. Synthetic evidence stays ignored under .cache; do not copy credentials or environment dumps into docs.
+
+### Q71. Why use the same business identity across service fixtures?
+
+Independent UUIDs prove transport but cannot prove correlation. Shared tenant/transaction/order identities with matching SKU quantities test whether separate owner operations form one coherent observation.
+
+### Q72. Why is a manual worker call not executable-application proof?
+
+It bypasses bean activation, scheduled callbacks, environment binding and process lifecycle. The separate packaged gate must demonstrate these using real JAR processes and persisted results.
+
+### Q73. Why do skipped Testcontainers tests not satisfy acceptance?
+
+No real transaction, broker acknowledgement, constraint or restart assertion ran. Maven exit0 can include all-skipped tests, so the verifier checks fresh XML counts and requires zero skips.
+
+### Q74. What does a late valid Warehouse event change?
+
+It changes current observed facts and creates a new immutable evaluation/timeline entry. It does not erase the earlier missing-evidence observation, replace incident identity or authorize RESOLVED.
+
+### Q75. Why preserve source occurrence and arrival time separately?
+
+An on-time business outcome can arrive after enforcement. Its occurrence determines contractual timing; arrival and evaluation snapshots explain what Core knew when it raised the incident.
+
+**Current checkpoint, 2026-10-21: P0.4-A/B/C verified; D acceptance implemented but NOT verified.** C's restart-only host report passed 1/0/0/0 at11:10:45IST on `a7a4761`, completing the earlier20 successful cases without repeating them. The failed first attempt remains historical evidence. New D tests use real owner operations, shared business identity, real Kafka and PostgreSQL, deterministic component clocks, and a separate executable-service scenario. Docker access is denied in this coding session; skipped discovery is not a pass. Run `scripts/verify-p04-final.ps1` on the host for the clean reactor and new D gates. P0.4 remains incomplete until actual zero-skip acceptance and evidence review. No permanent .env, existing storage, P0.5, recovery, AI or push. Older statuses/commands below are superseded history.
+
 **Current C repair checkpoint,2026-10-21:** host21-test run had20 passes and one separate-JVM failure: PostgreSQL rejected the child's Asia/Calcutta timezone. Test launcher now pins UTC;3 launcher regressions pass, production code unchanged. Run only `scripts/verify-incidents.ps1 -RestartOnly` for the unfinished1-test gate. Do not repeat the20 passed cases. C is not complete; D follows only after actual restart success. Prior pending/21-test commands below are historical.
 
 ## P0.4-C: durable incident and evidence timeline

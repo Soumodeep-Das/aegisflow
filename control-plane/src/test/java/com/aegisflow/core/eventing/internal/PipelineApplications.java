@@ -29,8 +29,14 @@ final class PipelineApplications {
         @Bean TaskScheduler taskScheduler() { return mock(TaskScheduler.class); }
     }
     static ConfigurableApplicationContext start(String owner, PostgreSQLContainer database, CoreKafkaFixture kafka) throws Exception {
+        return start(owner,database,kafka,true);
+    }
+    static ConfigurableApplicationContext restart(String owner, PostgreSQLContainer database, CoreKafkaFixture kafka) throws Exception {
+        return start(owner,database,kafka,false);
+    }
+    private static ConfigurableApplicationContext start(String owner, PostgreSQLContainer database, CoreKafkaFixture kafka,boolean provision) throws Exception {
         String runtime = "aegisflow_" + owner + "_runtime", migrator = "aegisflow_" + owner + "_migrator";
-        try (var connection = DriverManager.getConnection(database.getJdbcUrl(),database.getUsername(),database.getPassword());
+        if(provision) try (var connection = DriverManager.getConnection(database.getJdbcUrl(),database.getUsername(),database.getPassword());
              var sql = connection.createStatement()) {
             sql.execute("CREATE ROLE " + migrator + " LOGIN PASSWORD '" + PASSWORD + "'");
             sql.execute("CREATE ROLE " + runtime + " LOGIN PASSWORD '" + PASSWORD + "'");
@@ -78,6 +84,12 @@ final class PipelineApplications {
     }
 
     static UUID create(ConfigurableApplicationContext app, String owner, String outcome) throws Exception {
+        UUID order = UUID.randomUUID();
+        return create(app,owner,outcome,order,"txn-"+order,2);
+    }
+    // Shared business identity, without rewriting envelopes or bypassing the owner transaction.
+    static UUID create(ConfigurableApplicationContext app, String owner, String outcome,
+                       UUID order, String transaction, int quantity) throws Exception {
         String pkg = "com.aegisflow.simulator." + owner;
         Class<?> commandClass = Class.forName(switch (owner) {
             case "order" -> pkg + ".persistence.CreateOrder";
@@ -87,12 +99,12 @@ final class PipelineApplications {
         UUID resource = UUID.randomUUID();
         var values = new HashMap<String,Object>();
         values.put("tenantId",TENANT); values.put("idempotencyKey",resource.toString());
-        values.put("orderId",owner.equals("order") ? resource : resource.toString());
+        values.put("orderId",owner.equals("order") ? order : order.toString());
         values.put("paymentId",resource); values.put("reservationId",resource);
-        values.put("businessTransactionId","txn-" + resource); values.put("correlationId","corr-" + resource);
+        values.put("businessTransactionId",transaction); values.put("correlationId","corr-" + transaction);
         values.put("amount",new BigDecimal("12.00")); values.put("currency","INR");
         if (owner.equals("order")) values.put("lines",List.of(Class.forName(pkg + ".persistence.CreateOrder$Line")
-                .getConstructor(String.class,int.class).newInstance("sku-1",2)));
+                .getConstructor(String.class,int.class).newInstance("sku-1",quantity)));
         if (owner.equals("payment")) {
             values.put("status",outcome.equals("negative") ? "DECLINED" : "AUTHORIZED");
             values.put("declineReason",outcome.equals("negative") ? "SIMULATED_DECLINE" : null);
@@ -101,7 +113,7 @@ final class PipelineApplications {
             values.put("status",outcome.equals("negative") ? "REJECTED" : "RESERVED");
             values.put("rejectionReason",outcome.equals("negative") ? "OUT_OF_STOCK" : null);
             values.put("lines",List.of(Class.forName(pkg + ".reservation.ReservationLine")
-                    .getConstructor(String.class,int.class).newInstance("sku-1",2)));
+                    .getConstructor(String.class,int.class).newInstance("sku-1",quantity)));
         }
         var components = commandClass.getRecordComponents();
         Object[] parameters = new Object[components.length]; Class<?>[] types = new Class<?>[components.length];
