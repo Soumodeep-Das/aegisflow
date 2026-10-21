@@ -1,0 +1,6 @@
+# Fail-closed build-context allowlist. dev-build-images.ps1 stages only these files.
+**
+!Dockerfile
+!.dockerignore
+!app.jar
+!HealthProbe.class

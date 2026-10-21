@@ -1,5 +1,45 @@
 # Codebase guide
 
+## P0.5-A image packaging walkthrough — 2026-10-22
+
+Implemented, Docker gate pending. scripts/dev-build-images.ps1 runs the existing reactor once (unless explicitly reusing current artifacts), validates each owner executable via scripts/lib/application-images.ps1 and the existing packaged-artifact guard, compiles docker/HealthProbe.java, and copies four files per owner into .cache/application-images/<id>/<owner>. docker/Dockerfile packages the selected JAR in the existing pinned Java21 runtime, runs UID/GID10001 and exec-form Java PID1/UTC. .dockerignore is a deny-all/explicit-file allowlist. No workspace credentials, sources or Git history enter the build context; no Maven dependency download occurs at application startup.
+
+scripts/verify-application-images.ps1 verifies runtime UID/content/hash/Java, uses a unique labelled bridge and exact owned container IDs, waits for health, probes both host-loopback publication and container-DNS HTTP, then gracefully stops/removes only those temporary resources. Read-only root/capability drop and small /tmp constrain writable locations. Foundation HTTP alone proves no business readiness. scripts/verify-image-policy.ps1 and docker/HealthProbeTests.java are static/infrastructure-free checks, not substitutes for Docker execution.
+
+Planned persistent network shape (B/C, not deployed):
+
+```text
+core-app      -- core-data(internal)      -- core-db      -- core-db-data
+order-app     -- order-data(internal)     -- order-db     -- order-db-data
+payment-app   -- payment-data(internal)   -- payment-db   -- payment-db-data
+warehouse-app -- warehouse-data(internal) -- warehouse-db -- warehouse-db-data
+all four apps -- kafka-events            -- kafka        -- kafka-data
+```
+
+Each app will use its owner's DNS name5432 and kafka:9092, with explicit postgres/worker flags and trusted synthetic tenants. Core gets no sibling network/password. Bootstrap/migration/runtime roles remain separate. Private credentials, persistent lifecycle and service-owned demo are not implemented by A; see LOCAL_DEPLOYMENT and ADR0013.
+
+Debugging exercise: after the host image gate, inspect the bounded JSON evidence for owner, image, container ID, actual loopback port and bridge probe result. If self-health is UP but bridge HTTP fails, compare container SERVER_ADDRESS with the host default127.0.0.1: a container's loopback is not its bridge interface. Do not open host ports to0.0.0.0 or weaken database networks. If the image has the wrong main class/hash, fix artifact selection rather than copying arbitrary target JARs. If Docker is denied before building, no runtime claim is available.
+
+### Q76. Why does localhost mean something different inside Docker?
+
+Each container has its own network namespace. localhost refers to that container, not the Windows host or a sibling. Compose DNS names route to services sharing an allowed network; internal PostgreSQL5432 and Kafka9092 differ from host-published ports.
+
+### Q77. Why separate bootstrap, migration and runtime credentials?
+
+Bootstrap creates roles/schema privileges; migrations change approved schema; runtime handles only granted business tables/columns. Sharing the bootstrap identity would give an application unnecessary administrative authority. A missing credential file over retained volumes must trigger recovery, not silent regeneration.
+
+### Q78. Does a healthy JVM prove Kafka readiness?
+
+No. HTTP UP establishes only configured health checks. Broker readiness, provisioned topics/ACLs, authenticated source publication, durable intake and business detection require separate evidence. A's foundation image gate deliberately makes no Kafka claim.
+
+### Q79. Why retain volumes and protect private environment files separately?
+
+Volumes contain durable data and broker identity; credential files contain access material. Deleting either can break restart or lose data. Named volumes survive container removal unless explicitly deleted. Environment values remain visible to privileged Docker users, so ignored files are local-development hygiene, not production secret management.
+
+### Q80. Why run Java directly as PID1 and leave heap headroom?
+
+Exec-form startup delivers SIGTERM to Java for Spring graceful shutdown rather than an intermediate shell. A bounded stop period permits shutdown without Docker-wide action. Heap percentage leaves memory for metaspace, threads and native buffers; a container memory limit is not entirely available for heap. Actual stop/start durability must still be tested with PostgreSQL/Kafka in later gates.
+
 Verified debugging outcome (2026-10-21): the packaged incident-evidence.txt under .cache/packaged-detection/e8419af8-9ec7-447f-a726-cbfd4ed150ef shows initial missing observation, a post-restart PROJECTION_UNSETTLED interval, then valid late-arriving InventoryReserved. Sort by evaluated_at rather than file row order. The incident UUID and DETECTED state persist across all snapshots, while current result changes from VIOLATED through UNKNOWN to SATISFIED. This is now actual executable evidence, not only the expected exercise; it does not authorize RESOLVED.
 
 **P0.4 COMPLETE — 2026-10-21.** Final packaged acceptance on `ab1089c` passed1/0/0/0 at22:55:29IST: actual simulator relays, Core intake/projection/detection/incidents, healthy workflow, missing observed outcome, and Core process restart with late evidence. Component pipeline7 cases passed across6+1 runs; A/B/C gates remain verified. Prior clean reactor168 plus scoped clock-fix6 regressions are separate results, not a new combined run. Historical failed attempts below are preserved and superseded by their documented successful reruns. No further verification command is required now. STOP: P0.5, recovery, AI, deployment and pushes require new authorization.

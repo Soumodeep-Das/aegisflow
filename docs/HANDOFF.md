@@ -1,4 +1,25 @@
-# Handoff — P0.4 complete; stop pending new authorization
+# Handoff — P0.5-A image tooling implemented; live gate pending
+
+## Current checkpoint — 2026-10-22, Codex
+
+Entry clean main1d0b1f535908bfdcdf8bf773382f83b3aa41ab05, synchronized with origin/main. Owner explicitly authorized full P0.5. Inspected deployment-related configuration, bootstrap/Kafka helpers, prior artifact/port guards and final P0.4 evidence; no completed business suites repeated. P0.4 remains verified. This following local checkpoint is implementation plus static checks, NOT verified images or a persistent-stack deployment; resolve closing hash with git rev-parse HEAD.
+
+**Implemented A:** docker/Dockerfile (shared pinned Temurin21 JRE, UID/GID10001, direct Java PID1/UTC, container-only bind0.0.0.0:8080); Docker build-context allowlist; bounded Java HealthProbe; scripts/lib/application-images.ps1 (owner mappings, archive identity/private-entry check, loopback port parser); dev-build-images.ps1 (reactor once, freshness guards, four-file staging and metadata); verify-application-images.ps1 (image Java/non-root/hash/content, four sequential foundation containers, actual host/bridge HTTP, exact-ID/label cleanup); verify-image-policy.ps1 (static checks). No production application/config/schema or existing Compose file changed. No personal .env/.env.kafka read/written, no credentials generated, no persistent container/volume changed.
+
+**Actual verification:** verify-image-policy.ps1 passed6 health-response checks,4 actual executable identity inspections, distinct mapping/port and5 rejection checks, Dockerfile/context policy and4 PowerShell parses. Real verify-application-images.ps1 -UseExistingArtifacts exited1 at Docker preflight: named-pipe permission denied, no build/container action. Docker success on owner's terminal does not grant this coding session engine access. Fresh Maven reactor NOT rerun here; host default verifier deliberately builds/tests current source once. All Docker A image/non-root/network/shutdown assertions are still unverified.
+
+**Next single action**, repository root, normal owner PowerShell with Docker Desktop ready:
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-application-images.ps1
+```
+
+Require successful fresh default reactor reports with zero failures/errors/skips, four correct images and all4 real container/network checks. Preserve printed .cache/application-images and .cache/application-image-verification evidence. The first pull/build may take time. If reactor passes but only Docker checks fail, fix first evidenced cause and use -UseExistingArtifacts for unchanged current archives; never bypass freshness/content validation. No A pass may be inferred from policy checks.
+
+**After A passes:** continue B, without new scope approval: guard private credential initialization/reuse; existing-volume plus missing-file failure; explicit Compose env precedence; existing owner DB bootstrap and Kafka provisioning. Then C app overlay/lifecycle on unchanged aegisflow-foundation identity and D ordinary persistent business/restart acceptance plus final regression. Do not claim old Testcontainers P0.4 demonstrates a permanent stack. dev-init/up/status/verify/down and persistent demo are NOT implemented yet. A image defaults foundation intentionally; future overlay must opt into postgres/workers/tenant allowlists.
+
+**Design/limits:** ADR0013 and LOCAL_DEPLOYMENT explain planned9 services, owner-only DB networks, kafka:9092, credentials visible to privileged Docker users, no public TLS/security claim. Existing start-kafka.ps1 does not yet guard missing credentials over retained volumes: do not advertise it as final P0.5 startup. Demo must withhold transport of an on-time owner outcome, not create a truly late operation and change INV-002 semantics to force SATISFIED. No recovery/AI/new invariant/API/choreography. A cleanup removes only its own temporary container IDs/network, no volumes; interrupted cleanup may leave those labelled resources. Source/metadata/logs retained. No push or remote deployment.
 
 ## Final checkpoint — 2026-10-21T17:25:29Z evidence time, Codex closure
 

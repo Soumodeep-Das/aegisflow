@@ -1,5 +1,15 @@
 # Test evidence — P0.4 and preserved completed milestones
 
+## 2026-10-22 — P0.5-A static packaging checkpoint, Docker unavailable
+
+Entry1d0b1f5 clean main/origin. Java21 existing artifacts inspected, no completed P0.4 suite repeated. Command (JAVA_HOME Temurin21.0.12.101-hotspot, bundled PowerShell7): scripts/verify-image-policy.ps1. Exit0:6 Java health-response checks;4 actual executable owner manifests/classes and forbidden-private-entry checks; distinct4 mappings; loopback valid case and5 rejected forms; digest/user/COPY/context policies;4 PowerShell parser checks. This is static/Java verification, NOT image build/start.
+
+Command scripts/verify-application-images.ps1 -UseExistingArtifacts exited1 during dev-build-images.ps1 Docker preflight. docker info returned permission denied connecting npipe:////./pipe/dockerDesktopLinuxEngine. No images built, containers started, credentials created or volumes touched. All live A acceptance remains unverified; no skipped result counted passed. Default host command (without switch) will run clean verify once, preserve old/new reports, then build/start all4 images and record exact artifact hashes and container results.
+
+Source paths: docker/Dockerfile, docker/HealthProbe.java, docker/HealthProbeTests.java, .dockerignore; scripts/dev-build-images.ps1, verify-application-images.ps1, verify-image-policy.ps1 and lib/application-images.ps1. Existing packaged-artifact guard reused. Health/status has only foundation scope; B/C/D persistent credentials, lifecycle, business flows and restart are not implemented or verified. Existing historical P0.4 evidence remains below unchanged.
+
+Closing rerun after adding image-JAR hash verification and prior child-log preservation: static/image-policy command exit0 with the same checks. verify-docs.ps1 exit0:35 Markdown,20 required,106 local links,6 Mermaid source blocks,1 JSON,16 scenarios,80 answered interview questions,13 ADRs,0 issues. git diff --check clean. Mermaid rendering not performed. README obsolete checkpoint prose removed from current instructions; historical records remain in Git/journal/evidence/handoff.
+
 ## 2026-10-21 — P0.4 final packaged PASS and closure
 
 Owner command from repository root, JAVA_HOME Java21:

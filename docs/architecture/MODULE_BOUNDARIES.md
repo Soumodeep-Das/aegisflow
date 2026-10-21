@@ -1,5 +1,7 @@
 # Module boundaries — foundation through P0.4-B
 
+P0.5-A packaging adds no application module/deployable dependency. docker/HealthProbe.java is a standalone JDK-only image health tool, compiled outside the reactor and not imported by Core or simulators. Each staged image receives exactly its own executable archive; the four mappings validate Start-Class and class presence. Persistent apps will retain owner-only DB networks/credentials and Kafka event connectivity; that overlay is still B/C work. Existing domain and Modulith boundaries remain unchanged.
+
 **Current,2026-10-21:** ten modules remain. Eventing intake and correlation A are verified. B detection is implemented with18 focused tests passed, real PostgreSQL gate pending. Evidence and other business modules remain placeholders. Detection depends only on correlation/eventing public APIs; correlation only on eventing; eight others deny module dependencies.
 
 ## Deployable boundaries versus Java modules

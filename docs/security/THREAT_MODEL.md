@@ -1,5 +1,9 @@
 # AegisFlow Threat Model
 
+## P0.5-A container surface — 2026-10-22
+
+Image contexts are fresh four-file allowlists, not the repository; private .env/.cache/Git data is excluded and selected executable entries are inspected. UID/GID10001 and direct Java PID1 run with container-only HTTP0.0.0.0, host publication loopback-only, no Docker socket/capabilities, read-only filesystem and bounded temporary storage in the verifier. Live enforcement remains unverified until the host A gate. This does not add public auth, TLS or business APIs. Future persistent app containers must keep owner-only credentials/networks; Docker environment secrets remain accessible to privileged local Docker users. Existing-volume/missing-credential recovery guards are mandatory B work, not implemented by A. A health pass proves process networking only, not trusted Kafka delivery or incident correctness.
+
 **Core intake implementation,2026-10-20:** fixed source-owned topic mapping plus operator-configured source-specific tenant allowlists gate acceptance. Missing bindings deny; all missing blocks opt-in startup. Kafka/header payload claims alone do not authorize a tenant. Raw-byte parsing, size/depth/string/number bounds, duplicate-key rejection, PostgreSQL-safe text/numbers and strict initial schemas prevent known poison paths. Technical quarantine keeps only digest/coordinates/size/reason, never raw invalid content or claimed tenant authority. Append-only runtime grants protect accepted/quarantined evidence. These controls have local unit/port evidence; real Core isolation/quarantine/transaction tests are pending Docker-capable execution. Existing broker ACL tests remain passed. The local trusted-producer model cannot detect a compromised permitted producer fabricating events within its configured tenant set.
 
 **Status:** threat design with implemented persistence controls and Kafka infrastructure source; consult dated evidence for verification limits.

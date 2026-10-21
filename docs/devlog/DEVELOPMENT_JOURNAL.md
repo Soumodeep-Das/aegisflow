@@ -1,5 +1,11 @@
 # Development journal
 
+## 2026-10-22 — start approved P0.5 with narrow application image gate
+
+Confirmed local/GitHub baseline1d0b1f5 and clean tree. Read owner's P0.5 master and targeted deployment sources. Chose one host reactor build plus four minimal staged image contexts, retaining existing official Java21 digest and artifact freshness checks. Kept host foundation binding unchanged; container-only overrides solve bridge access. Added non-root direct Java PID1, read-only verifier runtime, bounded HTTP probe, dynamic loopback ports and independent bridge checks. No permanent credentials or Compose storage touched.
+
+Static policy/identity/Java checks passed; live A attempt stops at engine-pipe permission denial. User explicitly permits an honest host-verification checkpoint in this environment. Added exact host command and B/C/D continuation rather than building an unverified permanent stack. README rewritten to current status/commands; obsolete checkpoint prose is preserved in prior Git history and existing evidence/journal/handoff instead of dominating current instructions. ADR0013 documents design and local-only limits; guide adds Q76–80. No P0.5 completion/push claim.
+
 ## 2026-10-21 — P0.4 closed after real packaged detection/restart pass
 
 Owner final packaged run onab1089c passed1/0/0/0 at22:55:29IST. Independently inspected saved XML/log and incident timeline. Healthy all-owner flow stayed satisfied beyond enforcement; missing Warehouse observation produced a single explainable MEDIUM incident. Core process restart and late on-time Warehouse delivery retained UUID/DETECTED history while current evaluation became SATISFIED, with a recorded UNKNOWN projection-backlog interval. This closes D after7 component pipeline passes and scoped Clock wiring regressions; A/B/C remain verified. No test rerun for this docs-only closure. Updated README, architecture/invariants, roadmap/plan, limitations, guide, evidence and handoff; preserved all failed attempts. Stop at P0.4, no P0.5/recovery/AI/deployment or push.
