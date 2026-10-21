@@ -79,7 +79,8 @@ class DurableProjectionIT {
     @BeforeEach void clear(TestInfo info) {
         if(!info.getTestMethod().orElseThrow().getName().equals("backfillsAnInboxCommittedBeforeV3")) {
             // Only this test's fresh disposable database, never an ordinary Compose volume.
-            admin.execute("TRUNCATE aegisflow.invariant_evaluation,aegisflow.business_transaction,aegisflow.observed_fact,"
+            admin.execute("TRUNCATE aegisflow.incident_fact_reference,aegisflow.incident_timeline,aegisflow.incident,"
+                    +"aegisflow.invariant_evaluation,aegisflow.business_transaction,aegisflow.observed_fact,"
                     +"aegisflow.inbox_projection_progress,aegisflow.inbox_message,aegisflow.quarantine_record");
         }
     }
@@ -119,7 +120,7 @@ class DurableProjectionIT {
         return Boolean.TRUE.equals(new TransactionTemplate(manager).execute(s -> inbox.hasUnsettled(tenant,transaction)));
     }
     @Test @Order(1) void backfillsAnInboxCommittedBeforeV3() {
-        assertThat(flyway(null).info().applied()).hasSize(4);
+        assertThat(flyway(null).info().applied()).hasSize(5);
         assertThat(projector().poll()).isEqualTo(1);
         assertThat(jdbc.queryForObject("SELECT inbox_event_id FROM aegisflow.observed_fact",UUID.class)).isEqualTo(legacy);
         assertThat(jdbc.queryForObject("SELECT status FROM aegisflow.inbox_message",String.class)).isEqualTo("ACCEPTED");

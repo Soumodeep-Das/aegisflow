@@ -1,5 +1,11 @@
 # Data Model
 
+## P0.4-C V5 — implemented, actual SQL gate pending
+
+Detection owns incident (UUID identity, tenant/transaction, INV-002/v1, contract/config, structured unique episode and key, severity/reason, DETECTED/state_version1, material revision, opened/updated times, initial evaluation FK), incident_timeline (unique incident/evaluation link, kind and recorded time), and incident_fact_reference (exact immutable fact references).
+
+Every reference carries tenant and transaction; timeline links immutable V4 evaluations for complete fact snapshots, due/enforcement/evaluation timestamps and explanation. All three allow runtime SELECT/INSERT; only incident_revision/updated_at allow UPDATE. No lifecycle/evidence rewrite or deletion. Atomic timeline plus references doubles as durable completion; anti-join retries/backfills after restart. No correlation-module SQL read or new module dependency; ADR0012 defines open-episode scope and future lifecycle limits.
+
 ## P0.4-B V4 — implemented, PostgreSQL gate passed
 
 Host verification on892ac17 passed17 detection +4 Core migration/startup tests, zero failures/errors/skips. No incident schema or complete P0.4 acceptance is claimed.

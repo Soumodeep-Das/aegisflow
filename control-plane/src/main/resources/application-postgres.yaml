@@ -1,6 +1,9 @@
 # This application receives only its own database configuration.
 aegisflow:
   core:
+    incidents:
+      enabled: ${CORE_INCIDENTS_ENABLED:false}
+      batch-size: ${CORE_INCIDENT_BATCH_SIZE:25}
     detection:
       enabled: ${CORE_DETECTION_ENABLED:false}
       batch-size: ${CORE_DETECTION_BATCH_SIZE:25}

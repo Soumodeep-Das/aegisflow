@@ -1,5 +1,71 @@
 # Codebase guide
 
+## P0.4-C: durable incident and evidence timeline
+
+Implemented; live SQL/process-restart gate pending.10 policy/architecture tests and3 launcher checks passed in separate runs;21 PostgreSQL tests skipped here because Docker pipe access is denied. Run scripts/verify-incidents.ps1 on the host. No complete P0.4 claim.
+
+Actual new paths:
+
+```text
+control-plane/src/main/java/com/aegisflow/core/detection/internal/
+  IncidentPolicy.java
+  IncidentRecorder.java
+  IncidentConfiguration.java
+control-plane/src/main/resources/db/migration/V5__durable_incidents.sql
+control-plane/src/test/java/com/aegisflow/core/detection/internal/
+  DurableIncidentIT.java
+  IncidentPolicyTests.java
+  IncidentProcessMain.java
+  IncidentProcessLaunch.java
+  IncidentProcessLaunchTests.java
+scripts/verify-incidents.ps1
+```
+
+Flow: B commits immutable VIOLATED evaluation → C anti-join finds no timeline completion → transaction-scoped incident gate → create or reuse tenant/transaction/contract episode → append timeline and exact immutable fact references → commit incident revision and references together. A crash before C begins leaves the evaluation eligible; a crash before C commit rolls back all its effects. No Kafka replay is needed. This uses JDBC/TransactionTemplate with bounded one-evaluation transactions, not a cross-service transaction or an in-memory queue.
+
+Timeline is the minimal detection-owned equivalent of evidence records. It references exact evaluations, whose snapshots preserve checked facts/items, source/intake times, deadline/grace, result and explanation; fact links reference accepted provenance and hashes. It does not invent remote API collection. No new module dependency is added. Incident severity/reason at opening remain fixed; later evaluation reasons remain visible. Evidence material revision changes; lifecycle state/version do not.
+
+Settings: CORE_INCIDENTS_ENABLED defaults false; CORE_INCIDENT_BATCH_SIZE25/max100; callback1s. IncidentConfiguration injects incidentClock independently of projection/detection clocks. Existing frozen45+15 semantics stay unchanged. A new valid Warehouse fact can append EVIDENCE_CHANGED and SATISFIED evaluation but cannot set RESOLVED.
+
+Debug/read exercise after host gate passes: run laterSatisfiedEvidenceAppendsWithoutResolving. Query the disposable database using its test connection (not simulator or permanent credentials):
+
+```sql
+SELECT i.incident_id, i.state, i.incident_revision, t.entry_kind,
+       e.evaluated_at, e.due_at, e.enforce_after, e.result, e.reason_code,
+       e.observation->'order' AS order_checked,
+       e.observation->'inventory' AS warehouse_observed
+FROM aegisflow.incident i
+JOIN aegisflow.incident_timeline t
+  ON (t.tenant_id,t.incident_id)=(i.tenant_id,i.incident_id)
+JOIN aegisflow.invariant_evaluation e
+  ON (e.tenant_id,e.business_transaction_id,e.evaluation_id)=
+     (t.tenant_id,t.business_transaction_id,t.evaluation_id)
+WHERE i.tenant_id='tenant-a' AND i.business_transaction_id='txn'
+ORDER BY e.evaluated_at,e.evaluation_id;
+```
+
+Expected: same incident ID, DETECTED, revision2; original VIOLATED/missing Warehouse observation, then SATISFIED with actual Warehouse evidence. Three fact-reference rows link one initial Order and the later Order+Warehouse snapshot. No historical row is replaced. In rollback test the evidence trigger failure leaves evaluation1 but incident/timeline0; retry succeeds.
+
+### Q66. How does C recover after evaluation committed but incident creation never ran?
+
+The evaluation stays durable and the anti-join finds that it has no timeline completion. The next worker resumes it; Kafka offsets and in-memory callbacks are irrelevant.
+
+### Q67. Why both advisory coordination and database uniqueness?
+
+The gate keeps application workers simple; unique episode/timeline constraints remain the final database guard against duplicate logical effects. A JVM mutex alone cannot coordinate multiple processes.
+
+### Q68. Is a timeline entry enough to mark completion?
+
+Only because its insert, all fact links and incident creation/revision share one transaction. Inserting it in a separate earlier transaction would falsely hide incomplete evidence work.
+
+### Q69. Why retain DETECTED after a later SATISFIED event evaluation?
+
+SATISFIED describes observed event evidence, not fresh authoritative current state. The timeline and material revision change; independent verification and lifecycle transitions are future work.
+
+### Q70. What does the separate-JVM restart test prove?
+
+It starts production IncidentRecorder in one Java process, then another against the same disposable database and checks stable identity plus appended late evidence. It does not prove full packaged Core/Kafka scheduling; D must cover that. Argument files avoid Windows long-command limits and child environment filtering excludes inherited application credentials.
+
 **Latest verification,2026-10-21:** B's17 detection and4 Core PostgreSQL startup tests passed on892ac17 with zero failures/errors/skips; earlier18 focused tests passed separately. The B walkthrough/debug exercise below now has its recorded real SQL proof. Earlier pending/host-command statements are historical; no rerun needed. C incidents/evidence and D full integration remain next, not implemented.
 
 ## P0.4-B: time-driven decisions, not incidents

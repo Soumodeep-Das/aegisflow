@@ -1,6 +1,6 @@
 # Business and Safety Invariants
 
-**Current P0.4-B checkpoint,2026-10-21:** B's host gate passed on `892ac17`:17 detection +4 Core PostgreSQL startup/migration tests, zero failures/errors/skips. Earlier18 focused tests passed separately; A remains verified. No owner rerun needed. Next approved task is C durable incidents/evidence, then D full integration. Full P0.4 is not complete; no P0.5/recovery/AI or push. Older pending statuses below are history.
+**Current P0.4-C checkpoint,2026-10-21:** A/B remain verified. C durable incident/timeline implementation has10 focused policy/architecture passes;21 database checks skipped due Docker access denial. Run `scripts/verify-incidents.ps1` for the pending17 C +4 Core PostgreSQL checks. No permanent .env or dedicated Compose apps needed. C/D and full P0.4 are not complete; no P0.5/recovery/AI/push. Earlier checkpoints below are history.
 
 ## Active P0.4-A boundary — 2026-10-21
 

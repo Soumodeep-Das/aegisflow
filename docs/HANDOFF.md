@@ -1,4 +1,31 @@
-# Handoff — P0.4-B database gate PASSED
+# Handoff — P0.4-C implemented; real PostgreSQL gate pending
+
+## Current checkpoint — 2026-10-21T05:29:39Z, Codex continuation
+
+Entry main clean at43c18ac; A/B remain verified. This following local source/docs checkpoint implements C; resolve closing hash/status with git rev-parse HEAD and git status --short --branch. No push, deployment, permanent .env read/change or existing Compose/storage mutation. D not started because C's live gate is still unverified.
+
+**Implemented:** detection/internal IncidentRecorder, IncidentPolicy, IncidentConfiguration; V5 durable incident/timeline/fact references. One open episode per tenant/transaction/invariant/contract/config, stable UUID, DETECTED state/version1, append-only evaluation context and exact tenant/transaction-scoped fact FKs. Late evidence increments material revision and appends history, never resolves. Timeline anti-join is the durable completion mechanism; creation/revision/timeline/fact links commit together. ADR0012 records episode and lifecycle limits.
+
+**Actual verification:** IncidentPolicyTests6 + architecture4 passed at00:40:38IST,20.380s, exit0. Real PostgreSQL attempt compiled but skipped ALL21 (DurableIncidentIT17 + Core startup4), exit0 at00:41:45IST,19.333s, Docker named-pipe AccessDeniedException. Maven green is NOT gate success. Subsequent test-launcher hardening uses an argument file for Windows long classpaths and filters inherited environment; focused launcher results are recorded in TEST_RESULTS. No completed A/B suite repeated.
+
+**Single next task:** run the new C gate from the existing repository with Docker Desktop running:
+
+Closing checks: launcher3 passed separately (11:01:00IST,21.421s); verifier parses, docs33 Markdown/70 Q&As/12 ADRs/0 issues, whitespace clean. Source unchanged after10 policy/architecture passes. Full host verifier remains unexecuted here.
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-incidents.ps1
+```
+
+Require21 actual passes, zero failures/errors/skips. Script saves fresh selected reports/logs under .cache/p04c/<id>; it does not repeat completed unit or A/B suites. Tests use only disposable PostgreSQL/dynamic ports and synthetic credentials. New separate-JVM test uses IncidentProcessMain twice on the same DB, with logs/argument files in the test working directory's target/incident-process; preserve these on failure. This proves a worker process restart only if actually passed, not full packaged Core wiring.
+
+**Source paths:** control-plane/src/main/java/com/aegisflow/core/detection/internal/{IncidentRecorder,IncidentPolicy,IncidentConfiguration}.java; resources/db/migration/V5__durable_incidents.sql; tests detection/internal/{DurableIncidentIT,IncidentPolicyTests,IncidentProcessMain,IncidentProcessLaunch,IncidentProcessLaunchTests}.java. No new module dependencies; evidence equivalent timeline is detection-owned. CORE_INCIDENTS_ENABLED=false by default; CORE_INCIDENT_BATCH_SIZE25/max100, callback1s.
+
+**After host PASS:** record/commit real evidence, then D full simulator business operation → outbox → Kafka → Core intake/projection/evaluation/incident tests, including healthy, missing Warehouse, replay/reordering/restart and late evidence. Rebuild outdated packaged artifacts for relevant integration; do not bypass freshness guards. No further P0.4 approval required. No P0.5/recovery/AI/push.
+
+**Limits/recovery:** no terminal incident transitions, recurrence-after-terminal workflow, dashboard/API, automatic severity escalation or authoritative verification. Invalid internal provenance fails closed and remains eligible, requiring investigation rather than silent discard. Disable incident worker to stop polling; retain database/history, do not edit applied V1–V5 or delete volumes. The runtime cannot update lifecycle or rewrite/delete evidence.
+
+## Historical B completion checkpoint
 
 ## Current checkpoint — 2026-10-20T19:02:20Z / 2026-10-21 00:32:20IST
 

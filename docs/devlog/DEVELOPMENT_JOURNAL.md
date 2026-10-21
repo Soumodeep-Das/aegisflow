@@ -1,5 +1,17 @@
 # Development journal
 
+## 2026-10-21 — C incident/timeline checkpoint, live gate pending
+
+Closing static checks: incident verifier parses; verify-docs.ps1 exit0 (33 Markdown/20 required/124 links/7 Mermaid/1 JSON/16 scenarios/70 Q&As/12 ADRs/0 issues); git diff --check passes. No Mermaid rendering or host verifier execution claimed.
+
+Continued clean43c18ac with targeted incident/evidence/lifecycle reads only. Implemented V5 and detection-owned bounded IncidentRecorder with anti-join completion, unique open episode, atomic timeline/fact references and material revision updates. DETECTED is the only implemented canonical state; runtime cannot resolve. ADR0012 documents why late facts append and how evaluation commit remains recoverable without a dual-write gap.
+
+Focused policy/architecture10 passed at00:40:38IST.21 PostgreSQL cases compiled but all skipped at00:41:45IST due Docker pipe denial; exact commands/results in TEST_RESULTS. After interruption, inspected saved logs/Git without repeating tests. Hardened separate-JVM test against Windows command length and inherited environment; isolated launcher tests run separately. No permanent .env/container prerequisites or changes. Stop before D until actual C host gate; no push.
+
+Next owner command is verify-incidents.ps1 (17 C +4 V5 startup checks, zero skips required). Preserve .cache/p04c logs and target/incident-process child diagnostics on failure; record passing evidence before D.
+
+Launcher follow-up passed3 tests at11:01:00IST,21.421s, exit0, zero failures/errors/skips. Checks only Java argument-file encoding and environment isolation; actual process restart remains in the unexecuted SQL suite.
+
 ## 2026-10-21 — record B real PostgreSQL acceptance
 
 Owner's verify-detection.ps1 on892ac17 passed21 tests,0 failures/errors/skips at00:32:20IST,46.189s. Confirmed saved log and the selected17 detection/4 startup XML reports; excluded other historical reports. Earlier18 focused tests were not repeated. Evidence .cache/p04b/0eacae6f641c4c51ba4e57178bc155c2. Recorded exact outcomes and next task in TEST_RESULTS/HANDOFF, updated active status and guide. Source unchanged, no tests rerun or push.

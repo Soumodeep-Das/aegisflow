@@ -1,6 +1,6 @@
 # Recovery State Machine
 
-**Status:** Phase 0 normative design. The states describe intended durable records, not a running implementation.
+**Current P0.4-C:** DETECTED creation is implemented, actual PostgreSQL gate pending. No transition from DETECTED is implemented. V5 restricts runtime state mutation; late evaluation context increments incident_revision and appends timeline while state_version remains1. The full canonical transition design below remains future work, not an executed recovery system. Terminal recurrence requires that later authorized workflow/schema, never implicit resolution from an event.
 
 ## 1. Separation of concerns
 

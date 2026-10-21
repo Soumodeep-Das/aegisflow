@@ -1,5 +1,25 @@
 # Test evidence — P0.4 and preserved completed milestones
 
+## 2026-10-21 — P0.4-C implementation; actual database gate pending
+
+Closing static checks: incident verifier parses; verify-docs.ps1 exit0 (33 Markdown/20 required/124 links/7 Mermaid/1 JSON/16 scenarios/70 Q&As/12 ADRs/0 issues); git diff --check passes. No Mermaid rendering or host verifier execution claimed.
+
+Baseline43c18ac plus C working tree. Java21.0.12.1, Maven3.10.0, offline repository cache; JAVA_HOME documented Temurin21, TEMP/TMP=.cache/tmp.
+
+```powershell
+.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane '-Dtest=IncidentPolicyTests,ControlPlaneArchitectureTests' -l .cache/p04c-unit.log test
+.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane -Pinfrastructure-tests '-Dit.test=DurableIncidentIT,PostgresInfrastructureIT' -l .cache/p04c-postgres-available.log test-compile failsafe:integration-test failsafe:verify
+.\mvnw.cmd -B -ntp -o '-Dmaven.repo.local=.cache/maven-repository' -pl control-plane '-Dtest=IncidentProcessLaunchTests' -l .cache/p04c-process-launch.log test
+```
+
+First exit0/BUILD SUCCESS at00:40:38IST,20.380s:6 policy +4 architecture =10 tests, zero failures/errors/skips. Second exit0/BUILD SUCCESS at00:41:45IST,19.333s but21 SKIPPED (17 incident +4 Core PostgreSQL),0 executed: Testcontainers Docker named-pipe access denied. No C database/process-restart success claimed.
+
+The third command checks test-only Windows argument-file escaping/line injection/environment isolation added during continuation; its final result is recorded below. No production source changed after the10-pass run. verify-incidents.ps1 requires fresh exact21 passes/no skips and preserves reports/logs under .cache/p04c/<id>. Only selected suites count; copied old reports are not new evidence.
+
+Launcher follow-up: exit0/BUILD SUCCESS at2026-10-21 11:01:00IST,21.421s; IncidentProcessLaunchTests3 passed,0 failures/errors/skips (suite0.401s). This is3 additional tests, not a repeated13-test invocation or an actual child-process/database pass. All C SQL/restart cases still require the host gate.
+
+New SQL tests exercise production intake/projector/detector/recorder, incident uniqueness, atomic rollback after timeline insertion, concurrent replay, explicit tenant/transaction FKs, immutable grants, prior-context backfill, late satisfaction without resolution, bounded batches and two separate Java worker processes. They remain unverified here; full packaged scheduler/Kafka business integration is D, not this gate. V1–V4 unchanged; old test migration counts/TRUNCATE lists updated mechanically for V5 FK compatibility.
+
 ## 2026-10-21 — P0.4-B host gate PASSED on 892ac17
 
 Evidence-only closing checks: verify-docs.ps1 exit0 (32 Markdown/65 Q&As/11 ADRs/0 issues); git diff --check passed. No executable suite repeated.

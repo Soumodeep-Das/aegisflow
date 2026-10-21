@@ -23,7 +23,8 @@ public final class DetectionFixture implements AutoCloseable {
         context.refresh();
     }
     public void clear() {
-        DurableProjectionIT.admin.execute("TRUNCATE aegisflow.invariant_evaluation,aegisflow.business_transaction,"
+        DurableProjectionIT.admin.execute("TRUNCATE aegisflow.incident_fact_reference,aegisflow.incident_timeline,aegisflow.incident,"
+            +"aegisflow.invariant_evaluation,aegisflow.business_transaction,"
             +"aegisflow.observed_fact,aegisflow.inbox_projection_progress,aegisflow.inbox_message,aegisflow.quarantine_record");
         DurableProjectionIT.admin.update("UPDATE aegisflow.detection_sweep SET tenant_cursor='',transaction_cursor=''");
     }
