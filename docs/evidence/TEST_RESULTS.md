@@ -1,5 +1,21 @@
 # Test evidence — P0.4 and preserved completed milestones
 
+## 2026-10-21 — P0.4 final packaged PASS and closure
+
+Owner command from repository root, JAVA_HOME Java21:
+
+```powershell
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-p04-final.ps1 -Gate Packaged
+```
+
+Source ab1089c, Docker29.8.2. Saved selected XML independently checked: PackagedDetectionScenario1 test,0 failures/errors/skips,189.185s suite. Maven exit0,3:21 at2026-10-21T22:55:29+05:30. Evidence .cache/p04d/efc50ad38f9a42bca0d1f4dd343d5da4/PackagedDetectionScenario.log and selected reports. Actual executable logs and incident-evidence.txt: .cache/packaged-detection/e8419af8-9ec7-447f-a726-cbfd4ed150ef.
+
+The successful test proves actual scheduled owner relays/Core intake/projector/detector/recorder, not manually invoked workers. Healthy transaction has3 facts, ENFORCED/SATISFIED and no incident. Missing Warehouse observation has2 facts and exactly1 DETECTED incident. Actual Core process stop/restart consumes the held Warehouse record, leaves6 accepted inbox events/zero quarantine, adds late evidence while retaining incident UUID and DETECTED state. Component fault tests separately cover actual broker replay, reorder/backlog, quantity mismatch, contradiction injection, tenant quarantine/offset progression, context restart and concurrent incident recording.
+
+Inspected synthetic timeline: incident bb75cded-e6e1-46f8-8144-c1a62bf84c91, tenant pipeline-a; INV-002v1, ECOM_ORDER_V1v1, demo-v1,45+15 seconds. Order occurred17:23:35.099408Z; due17:24:20.099408Z; enforce17:24:35.099408Z. At17:24:36.634627Z: VIOLATED/MISSING_OBSERVED_OUTCOME, MEDIUM, Order/Payment evidence, inventory null. Warehouse occurred17:23:35.268482Z but was observed after Core restart at17:25:22.215016Z. Evaluation17:25:22.245794Z is UNKNOWN/PROJECTION_UNSETTLED;17:25:25.303550Z is SATISFIED/VALID_OBSERVED_OUTCOME with matching sku-1 quantity2. Initial DETECTED and historical evaluations persist. Output rows are not chronologically sorted; order by evaluated_at when explaining them. No claim of a failed remote operation or authoritative recovery.
+
+Acceptance basis across separate runs: A43 focused+16 database; B18 focused+21 database; C focused10/launcher3 and21 database across20+1 corrected runs; D pipeline7 across6+1; clean reactor168 on57ad5b1; fixture repair2 and clock wiring6 separately; packaged1 onab1089c. Counts overlap across regressions and must not be summed into one invented suite. No full-reactor rerun after clock wiring; scoped regressions and rebuilt executable acceptance cover that delta. Earlier failures/skips remain recorded. All P0.4 gates are now accepted; no command or P0.5 work follows automatically.
+
 ## 2026-10-21 — pipeline complete across6+1; packaged Clock ambiguity repaired
 
 Owner Remaining run on26624f5: DetectionPipelineScenario selected contradiction1/0/0/0, Maven exit0/2:02,21:23:44IST. PackagedDetectionScenario1 test,0 failures,1 error,0 skips;106.7s suite, Maven exit1/2:01,21:25:51IST. Selected saved XML/logs inspected at .cache/p04d/1d2a692dc0304d0d9c047137c10aa17d (do not count copied/stale XML twice). All7 component pipeline cases passed across the prior6 plus this1; not a new single7 run.

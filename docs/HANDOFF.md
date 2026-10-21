@@ -1,4 +1,20 @@
-# Handoff — A/B/C verified; D acceptance ready for host, P0.4 incomplete
+# Handoff — P0.4 complete; stop pending new authorization
+
+## Final checkpoint — 2026-10-21T17:25:29Z evidence time, Codex closure
+
+Entry main clean atab1089c. Owner ran verify-p04-final.ps1 -Gate Packaged using Java21/Docker29.8.2. Independently inspected selected XML, log and incident-evidence.txt:1 actual packaged test passed,0 failures/errors/skips,189.185s suite, Maven3:21/exit0 at22:55:29IST. Evidence .cache/p04d/efc50ad38f9a42bca0d1f4dd343d5da4 and .cache/packaged-detection/e8419af8-9ec7-447f-a726-cbfd4ed150ef. Preserve failed prior attempts; no reruns performed in this closure.
+
+**Completed:** A durable tenant projections, B deterministic deadlines, C immutable evaluations/durable incidents and D real transport-to-detection/packaged acceptance. D pipeline7 passed across6+1; final packaged1 passed after primary Clock repair. Clean reactor168 was on57ad5b1; subsequent test-fixture2 and clock/configuration+architecture6 passed separately, then rebuilt Core passed packaged acceptance onab1089c. Do not claim a fresh whole-reactor run onab1089c or add overlapping runs into one total.
+
+**Demonstrated:** real simulator business state/outbox -> Kafka relay -> Core inbox -> facts/projection -> INV-002 -> durable incident/timeline. Healthy matching Order/Payment/Warehouse remains SATISFIED after enforcement with no incident. Missing observed Warehouse outcome produces one MEDIUM/DETECTED incident; replay, backlog, wrong quantities, contradictory source claims, scoped tenants, concurrency and context restart are covered by component pipeline and prior A/B/C evidence. Packaged actual Core process restart retains incident identity/history and consumes withheld Warehouse transport. Late on-time evidence produces SATISFIED without declaring RESOLVED.
+
+**Exact observed timeline:** synthetic incident bb75cded-e6e1-46f8-8144-c1a62bf84c91, tenant pipeline-a, transaction missing-0cdb73d9-6ea7-4c0c-a4a2-caa58b4548b8, INV-002v1/ECOM_ORDER_V1v1/demo-v1. Due17:24:20.099408Z, enforcement17:24:35.099408Z, VIOLATED/MISSING_OBSERVED_OUTCOME17:24:36.634627Z with OrderCreated/PaymentAuthorized and no inventory observed. After restart, UNKNOWN/PROJECTION_UNSETTLED17:25:22.245794Z then SATISFIED/VALID_OBSERVED_OUTCOME17:25:25.303550Z with InventoryReserved sku-1 quantity2. State stays DETECTED; earlier AWAITING_ENFORCEMENT evaluation is also retained. This proves missing observation, not remote failure or authoritative recovery.
+
+**Paths:** production correlation/internal and detection/internal workers, V3–V5 migrations; CoreClockConfiguration primary UTC infrastructure clock; test eventing/internal/DetectionPipelineScenario, PackagedDetectionScenario and WarehouseContradictionFixture; scripts/verify-p04-final.ps1. Guide contains actual flow, debugging exercise and75 answered interview questions.
+
+**Limits:** isolated local synthetic workload, not production performance/HA, permanent deployment, full-machine restart, universal exactly-once effects or authoritative lifecycle resolution. Contradiction is an explicit authenticated source-fault fixture; owner uniqueness is preserved. No permanent .env or existing Compose volume changed, no push. Stop here: no owner command needed. Next task requires explicit user authorization/specification; do not infer P0.5 approval. Preserve source/history and ignored local evidence; never rewrite applied migrations or delete storage to resume.
+
+This following local documentation commit closes P0.4; resolve final hash/tree with git rev-parse HEAD and git status --short --branch. Earlier pending instructions below are historical only.
 
 ## Latest packaged wiring repair — 2026-10-21T17:20:19Z, Codex
 

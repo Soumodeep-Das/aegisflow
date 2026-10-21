@@ -1,5 +1,9 @@
 # Development journal
 
+## 2026-10-21 — P0.4 closed after real packaged detection/restart pass
+
+Owner final packaged run onab1089c passed1/0/0/0 at22:55:29IST. Independently inspected saved XML/log and incident timeline. Healthy all-owner flow stayed satisfied beyond enforcement; missing Warehouse observation produced a single explainable MEDIUM incident. Core process restart and late on-time Warehouse delivery retained UUID/DETECTED history while current evaluation became SATISFIED, with a recorded UNKNOWN projection-backlog interval. This closes D after7 component pipeline passes and scoped Clock wiring regressions; A/B/C remain verified. No test rerun for this docs-only closure. Updated README, architecture/invariants, roadmap/plan, limitations, guide, evidence and handoff; preserved all failed attempts. Stop at P0.4, no P0.5/recovery/AI/deployment or push.
+
 ## 2026-10-21 — packaged startup exposed multi-clock infrastructure ambiguity
 
 Recorded contradiction1pass completing pipeline6+1. Packaged Core exited because Modulith Moments requested one Clock while all3 worker clocks were active; direct component tests had not exercised combined auto-configuration. Added root primary UTC application clock and explicit projection qualifier, retaining detection/incident named clocks. Configuration regressions load real Moments plus actual worker configurations with mocked I/O, proving combined startup without bypassing production auto-configuration. Configuration2+architecture4 passed; Core package rebuilt. No schema/rule/tenant changes, no live success claimed. Next solely packaged gate; do not rerun completed pipeline. Preserve failed logs, stop before P0.5.
