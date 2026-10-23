@@ -73,9 +73,17 @@ function Invoke-WithDevelopmentEnvironment([scriptblock]$Action) {
     }
     $saved=@{}
     try {
-        foreach($key in $keys) { $saved[$key]=[Environment]::GetEnvironmentVariable($key,'Process'); [Environment]::SetEnvironmentVariable($key,$null,'Process') }
+        foreach($key in $keys) {
+            $saved[$key]=@{Present=(Test-Path -LiteralPath "Env:$key");Value=[Environment]::GetEnvironmentVariable($key,'Process')}
+            # On this runtime SetEnvironmentVariable(null) leaves an empty override.
+            # Compose distinguishes absent from empty; use the provider's removal operation.
+            Remove-Item -LiteralPath "Env:$key" -ErrorAction SilentlyContinue
+        }
         & $Action
     } finally {
-        foreach($key in $keys) { [Environment]::SetEnvironmentVariable($key,$saved[$key],'Process') }
+        foreach($key in $keys) {
+            if($saved[$key].Present) { [Environment]::SetEnvironmentVariable($key,$saved[$key].Value,'Process') }
+            else { Remove-Item -LiteralPath "Env:$key" -ErrorAction SilentlyContinue }
+        }
     }
 }

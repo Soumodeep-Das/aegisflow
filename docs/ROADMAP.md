@@ -1,5 +1,9 @@
 # Prioritized roadmap
 
+## 2026-10-23 — fix empty environment overrides
+
+Host startup on ce590c3 created the private file but failed Compose interpolation before containers started. Reproduced safely: SetEnvironmentVariable(null) left18 present empty password keys, overriding --env-file. Changed scoped cleanup to Remove-Item Env: and restore presence/value separately. Added presence regression and actual Docker Compose config --quiet against disposable credentials.22 checks passed; independently validated existing .env.development and actual Compose interpolation with unchanged file hash. No secret values printed, credentials rotated, containers started or volumes touched. No Maven/A repeat. Next: rerun scripts/dev-infrastructure-up.ps1 with bundled PS7; existing credentials are reused. B remains incomplete until startup/auth/permission/restart gates execute; C/D pending. This following local repair checkpoint starts from clean ce590c3; resolve hash via git rev-parse HEAD. No push.
+
 2026-10-23 latest: owner read-only initialization preflight PASS. Protected credential creation and persistent five-service startup helper implemented;20 focused checks pass. Next host dev-infrastructure-up.ps1, then B authentication/permission/restart acceptance. C/D remain pending.
 
 P0.5-B partial2026-10-23: credential guards implemented,14 pure checks pass; Docker inventory denied here. Next owner dev-init.ps1 -CheckOnly is read-only. Complete file/ACL, actual Compose precedence and existing bootstrap/Kafka/auth/restart verification before C. A remains complete; D is not authorized before B/C pass.

@@ -19,6 +19,7 @@ $old=[Environment]::GetEnvironmentVariable('CORE_DB_PASSWORD','Process')
 try {
     [Environment]::SetEnvironmentVariable('CORE_DB_PASSWORD','test-sentinel','Process')
     Check { Invoke-WithDevelopmentEnvironment { if($env:CORE_DB_PASSWORD) { throw 'Environment override leaked.' } } }
+    Check { Invoke-WithDevelopmentEnvironment { foreach($key in Get-DevelopmentSecretKeys) { if(Test-Path -LiteralPath "Env:$key") { throw 'Empty environment override remains.' } } } }
     Check { if($env:CORE_DB_PASSWORD -ne 'test-sentinel') { throw 'Environment was not restored.' } }
     Check { Invoke-WithDevelopmentEnvironment { throw 'Expected action failure' } } $true
     Check { if($env:CORE_DB_PASSWORD -ne 'test-sentinel') { throw 'Failure did not restore environment.' } }
@@ -33,7 +34,14 @@ $hash=(Get-FileHash $testFile).Hash
 Check { Write-NewDevelopmentCredentials $testFile (New-DevelopmentCredentials) } $true
 Check { if((Get-FileHash $testFile).Hash -ne $hash) { throw 'Existing private file changed.' } }
 Check { $acl=Get-Acl $testFile; if(-not $acl.AreAccessRulesProtected -or @($acl.Access).Count -ne 1) { throw 'Private ACL not protected.' } }
+Check {
+    $repo=Split-Path -Parent $PSScriptRoot
+    Invoke-WithDevelopmentEnvironment {
+        & docker compose --env-file $testFile --file "$repo/compose.yaml" --file "$repo/compose.kafka.yaml" --profile postgres config --quiet
+        if($LASTEXITCODE -ne 0) { throw 'Actual Compose file interpolation failed.' }
+    }
+}
 foreach($file in @('dev-init.ps1','dev-infrastructure-up.ps1','verify-development-credentials.ps1','lib/development-credentials.ps1')) {
     Check { $tokens=$null; $errors=$null; [Management.Automation.Language.Parser]::ParseFile("$PSScriptRoot/$file",[ref]$tokens,[ref]$errors) | Out-Null; if($errors.Count) { throw 'Parse failed.' } }
 }
-Write-Output "PASS: $count credential policy/file/ACL/environment/parser checks; only disposable ignored credentials created. No Docker or persistent credentials used. B is not verified."
+Write-Output "PASS: $count credential policy/file/ACL/environment/parser/Compose checks; disposable ignored credentials only. Docker Compose parsing used, no engine resources created. B is not verified."
