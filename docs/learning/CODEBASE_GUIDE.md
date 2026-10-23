@@ -1,5 +1,7 @@
 # Codebase guide
 
+P0.5-B startup continuation: Write-NewDevelopmentCredentials applies a protected current-user DACL atomically with CreateNew before writing bytes. Tests roundtrip a disposable file, refuse overwrites and confirm unchanged hash/ACL. dev-infrastructure-up.ps1 calls dev-init, scopes environment precedence, waits for five services, reuses bootstrap-databases, separately waits for Kafka provisioning exit0, then compares private-file hashes. This establishes startup only when executed; it does not prove permission rejection or persistence after restart.
+
 P0.5-B partial: scripts/dev-init.ps1 inventories fixed project storage before calling scripts/lib/development-credentials.ps1. New-DevelopmentCredentials uses RandomNumberGenerator; Read-DevelopmentCredentials validates without echoing values; Invoke-WithDevelopmentEnvironment restores removed overrides even after errors. Debug exercise: verify-development-credentials.ps1 injects a sentinel shell password and throws inside the scoped action; it must restore the sentinel afterward.14 checks pass, not live infrastructure acceptance. Private file import/ACL hardening and durable bootstrap/restart gates remain unfinished.
 
 P0.5-A verified2026-10-23: all four foundation images passed actual host and separate bridge-client health checks, then exited143 without OOM. The field-order regression demonstrates why successful application startup and health-probe correctness must be tested independently. No persistent database/Kafka readiness or business deployment is implied; B/C/D remain unfinished.

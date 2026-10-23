@@ -26,9 +26,7 @@ try {
         Assert-DevelopmentCredentials $values
         # CreateNew also protects against another initializer creating the file concurrently.
         # A partial write fails validation on retry; it must never be silently regenerated.
-        $stream=[IO.File]::Open($private,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
-        $writer=[IO.StreamWriter]::new($stream,[Text.UTF8Encoding]::new($false))
-        try { foreach($key in $values.Keys) { $writer.WriteLine("$key=$($values[$key])") } } finally { $writer.Dispose() }
+        Write-NewDevelopmentCredentials -Path $private -Values $values
     }
     Invoke-WithDevelopmentEnvironment {
         & docker compose --project-name aegisflow-foundation --env-file $private --file compose.yaml --file compose.kafka.yaml --profile postgres config --quiet

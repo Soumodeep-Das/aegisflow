@@ -1,5 +1,7 @@
 # Prioritized roadmap
 
+2026-10-23 latest: owner read-only initialization preflight PASS. Protected credential creation and persistent five-service startup helper implemented;20 focused checks pass. Next host dev-infrastructure-up.ps1, then B authentication/permission/restart acceptance. C/D remain pending.
+
 P0.5-B partial2026-10-23: credential guards implemented,14 pure checks pass; Docker inventory denied here. Next owner dev-init.ps1 -CheckOnly is read-only. Complete file/ACL, actual Compose precedence and existing bootstrap/Kafka/auth/restart verification before C. A remains complete; D is not authorized before B/C pass.
 
 **2026-10-23: P0.5-A COMPLETE on581da54.** All4 live container gates passed; next is B guarded private credentials/bootstrap, then C lifecycle and D persistent business acceptance. No A rerun needed. See latest HANDOFF for evidence and preservation requirements; older pending-A entries are historical.

@@ -18,6 +18,21 @@ function New-DevelopmentCredentials {
     return $values
 }
 
+function Write-NewDevelopmentCredentials([string]$Path,$Values) {
+    Assert-DevelopmentCredentials $Values
+    if(-not $IsWindows) { throw 'Private-file initialization currently requires Windows ACL support.' }
+    # Apply the protected DACL at creation, before any credential bytes are written.
+    $security=[Security.AccessControl.FileSecurity]::new()
+    $security.SetAccessRuleProtection($true,$false)
+    $sid=[Security.Principal.WindowsIdentity]::GetCurrent().User
+    $security.SetOwner($sid)
+    $security.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($sid,'FullControl','Allow'))
+    $stream=[IO.FileSystemAclExtensions]::Create([IO.FileInfo]::new($Path),[IO.FileMode]::CreateNew,
+        [Security.AccessControl.FileSystemRights]::FullControl,[IO.FileShare]::None,4096,[IO.FileOptions]::None,$security)
+    $writer=[IO.StreamWriter]::new($stream,[Text.UTF8Encoding]::new($false))
+    try { foreach($key in $Values.Keys) { $writer.WriteLine("$key=$($Values[$key])") } } finally { $writer.Dispose() }
+}
+
 function Read-DevelopmentCredentials([string]$Path) {
     $values=[ordered]@{}
     $allowed=@(Get-DevelopmentSecretKeys)+@('KAFKA_CLUSTER_ID','KAFKA_HOST_PORT')
