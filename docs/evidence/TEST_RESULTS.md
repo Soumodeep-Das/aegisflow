@@ -1,5 +1,11 @@
 # Test evidence — P0.4 and preserved completed milestones
 
+## 2026-10-23 — confirmed health field-order repair
+
+Owner retry on2912bf2 rebuilt all4 images without repeating Maven. Evidence .cache/application-image-verification/aegisflow-images-ac40eb5d74c94d8dbdccfe9b9cc351cf records Core running, not OOM-killed, and repeated rejected HTTP200 bodies with groups before status UP. The probe incorrectly required status first. docker/HealthProbe.java now accepts either field order for the details-disabled status/optional groups contract, rejecting duplicate/nested status, malformed/trailing data and DOWN. Thirteen probe checks pass, including the exact observed response; archive/port/policy/PowerShell checks also pass via scripts/verify-image-policy.ps1 (exit0). No application JAR, ports, timeout, database or business behavior changed. The earlier172 reactor passes remain valid evidence, not rerun.
+
+Next owner command: scripts/verify-application-images.ps1 -UseExistingArtifacts with Java21 and bundled PS7. This rebuilds the probe layer and reruns the unverified four-container gate. A is NOT complete until real success; B/C/D remain pending. Prior failed evidence retained. This following local repair commit starts from clean2912bf2; resolve its hash with git rev-parse HEAD. No push/private files/volumes changed.
+
 ## 2026-10-23 — image host result and diagnostic continuation
 
 Owner output on fd9c75d:172 reactor tests passed,0 failures/errors/skips; all4 images built (.cache/application-images/53a9f1e95d564ca2b69323093ea15980). Core runtime health timeout stopped A before remaining3 applications. Retained .cache/application-image-verification/aegisflow-images-e76d1f8b61ec42e4a1d8be75c44a5c4a log independently shows successful Core startup in16.588s, not the health response. Cause unproven. Added probe diagnostics and State-only capture before cleanup. Java21 scripts/verify-image-policy.ps1 exit0:6 probe cases,4 archive identities and existing port/policy/PowerShell checks pass. No reactor repeated. Local JAR diagnostic could not bind due sandbox SocketException permission denial; initial unquoted JVM argument failed parsing, corrected launch reached restricted socket operation. Live diagnostic rerun still needed: verify-application-images.ps1 -UseExistingArtifacts. No Docker pass inferred.

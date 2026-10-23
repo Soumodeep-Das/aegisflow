@@ -1,5 +1,11 @@
 # Development journal
 
+## 2026-10-23 — confirmed health field-order repair
+
+Owner retry on2912bf2 rebuilt all4 images without repeating Maven. Evidence .cache/application-image-verification/aegisflow-images-ac40eb5d74c94d8dbdccfe9b9cc351cf records Core running, not OOM-killed, and repeated rejected HTTP200 bodies with groups before status UP. The probe incorrectly required status first. docker/HealthProbe.java now accepts either field order for the details-disabled status/optional groups contract, rejecting duplicate/nested status, malformed/trailing data and DOWN. Thirteen probe checks pass, including the exact observed response; archive/port/policy/PowerShell checks also pass via scripts/verify-image-policy.ps1 (exit0). No application JAR, ports, timeout, database or business behavior changed. The earlier172 reactor passes remain valid evidence, not rerun.
+
+Next owner command: scripts/verify-application-images.ps1 -UseExistingArtifacts with Java21 and bundled PS7. This rebuilds the probe layer and reruns the unverified four-container gate. A is NOT complete until real success; B/C/D remain pending. Prior failed evidence retained. This following local repair commit starts from clean2912bf2; resolve its hash with git rev-parse HEAD. No push/private files/volumes changed.
+
 ## 2026-10-23 — preserve successful image build; instrument health failure
 
 Resumed clean fd9c75d. Preserved owner's172 successful tests and4 builds. Core log proves startup but not health; previous cleanup discarded Docker health history. Added bounded HTTP/parser/exception diagnostics and State-only saved evidence without dumping environment. Static policy checks pass; local runtime diagnosis blocked by sandbox loopback permissions. Root cause not yet established. Next owner retry uses -UseExistingArtifacts; no repeat Maven suite, no volume/private configuration changes. P0.5-A remains incomplete; no B/C/D or push.

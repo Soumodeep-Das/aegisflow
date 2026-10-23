@@ -1,5 +1,11 @@
 # Handoff — P0.5-A image tooling implemented; live gate pending
 
+## 2026-10-23 — confirmed health field-order repair
+
+Owner retry on2912bf2 rebuilt all4 images without repeating Maven. Evidence .cache/application-image-verification/aegisflow-images-ac40eb5d74c94d8dbdccfe9b9cc351cf records Core running, not OOM-killed, and repeated rejected HTTP200 bodies with groups before status UP. The probe incorrectly required status first. docker/HealthProbe.java now accepts either field order for the details-disabled status/optional groups contract, rejecting duplicate/nested status, malformed/trailing data and DOWN. Thirteen probe checks pass, including the exact observed response; archive/port/policy/PowerShell checks also pass via scripts/verify-image-policy.ps1 (exit0). No application JAR, ports, timeout, database or business behavior changed. The earlier172 reactor passes remain valid evidence, not rerun.
+
+Next owner command: scripts/verify-application-images.ps1 -UseExistingArtifacts with Java21 and bundled PS7. This rebuilds the probe layer and reruns the unverified four-container gate. A is NOT complete until real success; B/C/D remain pending. Prior failed evidence retained. This following local repair commit starts from clean2912bf2; resolve its hash with git rev-parse HEAD. No push/private files/volumes changed.
+
 ## Diagnostic continuation — 2026-10-23, Codex
 
 Entry clean main fd9c75d. Owner run passed172 default tests (zero failures/errors/skips) and built all4 images; build evidence .cache/application-images/53a9f1e95d564ca2b69323093ea15980. Runtime evidence .cache/application-image-verification/aegisflow-images-e76d1f8b61ec42e4a1d8be75c44a5c4a shows Core started in16.588s but health wait expired. Its log has no startup exception; probe response was not retained. Root cause remains UNKNOWN, not proven to be ports, memory or parsing. Other3 runtime gates were not reached.

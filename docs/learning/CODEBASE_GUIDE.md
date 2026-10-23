@@ -1,5 +1,7 @@
 # Codebase guide
 
+Health debugging result (2026-10-23): retained Health.Log showed HTTP200 with groups before status UP. JSON field order is not meaningful. HealthProbe now accepts either order in the details-disabled Actuator contract, but rejects duplicate statuses, nested-status substitutions and malformed bodies.13 pure Java checks cover this. Do not fix a parser defect by increasing startup timeouts or weakening health to HTTP200 alone.
+
 ## Image health debugging continuation — 2026-10-23
 
 A Spring Started log and Docker healthy state are different observations. docker/HealthProbe.java now reports non-200 status, bounded rejected response or exception type. scripts/verify-application-images.ps1 preserves *.state.json with Health.Log and exit/OOM fields before cleanup, alongside application logs. It intentionally does not save full docker inspect with Config.Env. Debugging exercise: rerun with -UseExistingArtifacts, compare Started timing against Health.Log; identify HTTP failure versus response parsing versus probe timeout before changing configuration. Expected current result is diagnostic evidence, not an assumed fix. The172-test reactor and4 image builds passed; Core health is still unverified.

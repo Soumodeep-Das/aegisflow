@@ -1,5 +1,7 @@
 # Prioritized roadmap
 
+2026-10-23: Core health cause confirmed and repaired: JSON groups-before-status was rejected.13 probe regressions pass. Retry only verify-application-images.ps1 -UseExistingArtifacts; A live gate remains pending, then B/C/D.
+
 **2026-10-23 next gate:** retain172 passing reactor tests and4 successful builds. Diagnose Core health timeout using newly retained State/Health.Log; retry verify-application-images.ps1 -UseExistingArtifacts. No proven cause yet. A remains incomplete; B/C/D follow actual A success.
 
 **Current P0.5 authorization/checkpoint,2026-10-22:** P0.4 is complete; P0.5 persistent local deployment is approved. A four-image packaging/static checks implemented; actual Docker gate blocked by coding-session engine access and awaits owner verify-application-images.ps1. Then B guarded credentials/bootstrap, C owner-scoped app Compose/lifecycle, D ordinary persistent business/restart demonstration and final regression. None of B/C/D is implemented or verified yet. Preserve existing project/volumes/private configuration. No P1/recovery/AI/push. See LOCAL_DEPLOYMENT and latest HANDOFF; older stop/P0.4 retry instructions below are historical.

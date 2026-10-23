@@ -4,8 +4,14 @@ import java.nio.charset.StandardCharsets;
 
 /** JRE-only bounded health probe: process/database health, never business readiness. */
 public final class HealthProbe {
+    // Only the details-disabled Actuator contract: status plus optional string-array groups.
+    // JSON object field order is immaterial; nested or duplicate statuses must not pass.
+    private static final String STRING="\"(?:[^\"\\\\\\x00-\\x1f]|\\\\(?:[\"\\\\/bfnrt]|u[0-9a-fA-F]{4}))*\"";
+    private static final String GROUPS="\"groups\"\\s*:\\s*\\[\\s*(?:"+STRING+"(?:\\s*,\\s*"+STRING+")*)?\\s*\\]";
+    private static final String UP="\"status\"\\s*:\\s*\"UP\"";
     static boolean healthy(int status, String body) {
-        return status==200 && body.length()<=4096 && body.matches("(?s)\\s*\\{\\s*\"status\"\\s*:\\s*\"UP\"(?:\\s*,.*|\\s*\\})\\s*");
+        return status==200 && body.length()<=4096 && body.matches(
+                "\\s*\\{\\s*(?:"+UP+"(?:\\s*,\\s*"+GROUPS+")?|"+GROUPS+"\\s*,\\s*"+UP+")\\s*\\}\\s*");
     }
     public static void main(String[] args) {
         if(args.length!=1) System.exit(2);
