@@ -1,5 +1,7 @@
 # Codebase guide
 
+Boundary verification: scripts/verify-development-boundaries.ps1 checks actual network membership and IPv4 reachability, not merely Compose declarations. Own-address positive controls prevent a stopped database masquerading as successful isolation. KafkaSmoke --persistent-boundaries exercises six unauthorized sibling-topic descriptions and Core ACL-administration denial, accepting explicit authorization exceptions only, not timeouts. It writes no business-topic records. These checks are implemented but await host execution; application-level boundaries belong to C.
+
 ## 2026-10-23 — persistent Kafka read-only gate passed
 
 Owner84f7e32 run passed both Kafka phases around retained broker stop/start. Independently inspected .cache/p05b-kafka/21aab228c3c54763aef13d8511284fe4/results.json: Passed=true,2 records, identical broker/topic identity snapshots; both logs confirm listener/topic config, exact17 ACL inventory, source/Core authentication and wrong-password rejection. Private-file hash remained unchanged. Standalone build8.101s; no JUnit tests in that tool build. No records/offsets written by verifier, no volumes deleted; broker itself naturally updates internal storage. Earlier failed attempts remain preserved; metadata-failure root cause was not conclusively established by the later success.

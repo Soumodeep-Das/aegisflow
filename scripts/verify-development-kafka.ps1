@@ -1,6 +1,6 @@
 #requires -Version 7.0
 [CmdletBinding()]
-param([string]$JavaHome=$env:JAVA_HOME)
+param([string]$JavaHome=$env:JAVA_HOME,[switch]$BoundariesOnly)
 $ErrorActionPreference='Stop'
 $root=Split-Path -Parent $PSScriptRoot
 . "$PSScriptRoot/lib/development-credentials.ps1"
@@ -27,14 +27,16 @@ try {
     $settings=@{KAFKA_BOOTSTRAP_SERVERS='127.0.0.1:19092';KAFKA_SMOKE_EXPECTED_HOST='127.0.0.1';KAFKA_SMOKE_EXPECTED_PORT='19092';KAFKA_SMOKE_RUN_ID=[guid]::NewGuid().ToString('N')}
     foreach($p in @('ADMIN','ORDER','PAYMENT','WAREHOUSE','CORE')) { $settings["KAFKA_${p}_PASSWORD"]=$values["KAFKA_${p}_PASSWORD"] }
     $baseline=$null
-    foreach($pass in 1..2) {
+    $passes=if($BoundariesOnly) { @(1) } else { @(1,2) }
+    foreach($pass in $passes) {
         $start=[Diagnostics.ProcessStartInfo]::new("$JavaHome/bin/java.exe")
         $start.UseShellExecute=$false; $start.CreateNoWindow=$true
         $start.RedirectStandardOutput=$true; $start.RedirectStandardError=$true
         $start.Environment.Clear()
         $filtered=New-KafkaSmokeEnvironment -Source ([Environment]::GetEnvironmentVariables('Process')) -Settings $settings
         foreach($key in $filtered.Keys) { $start.Environment[$key]=$filtered[$key] }
-        foreach($arg in @('-Duser.timezone=UTC','-cp',"$root/tools/kafka-smoke/target/classes;$root/tools/kafka-smoke/target/lib/*",'com.aegisflow.tools.kafka.KafkaSmoke','--persistent-read-only')) { $start.ArgumentList.Add($arg) }
+        $mode=if($BoundariesOnly) { '--persistent-boundaries' } else { '--persistent-read-only' }
+        foreach($arg in @('-Duser.timezone=UTC','-cp',"$root/tools/kafka-smoke/target/classes;$root/tools/kafka-smoke/target/lib/*",'com.aegisflow.tools.kafka.KafkaSmoke',$mode)) { $start.ArgumentList.Add($arg) }
         $process=[Diagnostics.Process]::new(); $process.StartInfo=$start
         try {
             $null=$process.Start(); $stdout=$process.StandardOutput.ReadToEndAsync(); $stderr=$process.StandardError.ReadToEndAsync()
@@ -47,6 +49,12 @@ try {
                 # Our own stage/type-only line is safe to show; never print raw client errors.
                 $output -split '\r?\n' | Where-Object { $_ -match '^FAIL: Kafka smoke at [a-zA-Z /-]+ \([a-zA-Z >-]+\)$' } | Write-Output
                 throw "Kafka pass $pass failed; inspect sanitized evidence."
+            }
+            if($BoundariesOnly) {
+                $result.Scope='Kafka metadata authorization denials only; no restart'
+                $result.Passes+=@{Pass=$pass;ForbiddenOperations=7;PositiveControls=4}
+                Write-Output 'PASS: six sibling-topic metadata denials and Core ACL-administration denial; four positive controls.'
+                continue
             }
             $identity=@($output -split '\r?\n' | Where-Object { $_ -match '^(IDENTITY|TOPIC_ID): ' }) -join "`n"
             if(@($identity -split "`n").Count -ne 4 -or $identity -notmatch ([regex]::Escape('IDENTITY: '+$values.KAFKA_CLUSTER_ID))) { throw 'Broker/topic identity evidence invalid.' }
@@ -66,5 +74,6 @@ try {
     }
     if((Get-FileHash $private).Hash -ne $hash) { throw 'Private file changed.' }
     $result.Passed=$true
-    Write-Output 'PASS: persistent Kafka read-only gate and unchanged broker/topic IDs after restart. No messages or offsets written. Cross-service network and active forbidden-operation acceptance still pending; B is incomplete.'
+    if($BoundariesOnly) { Write-Output 'PASS: Kafka metadata authorization boundary gate only; no restart or write-operation claim.' }
+    else { Write-Output 'PASS: persistent Kafka read-only gate and unchanged broker/topic IDs after restart. No messages or offsets written. Cross-service network and active forbidden-operation acceptance still pending; B is incomplete.' }
 } finally { $result | ConvertTo-Json -Depth 5 | Set-Content "$evidence/results.json"; Write-Output "Evidence: $evidence"; Pop-Location }

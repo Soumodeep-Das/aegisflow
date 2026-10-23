@@ -61,8 +61,28 @@ public final class KafkaSmoke {
                 return;
             }
             boolean readOnly = arguments.length == 1 && "--persistent-read-only".equals(arguments[0]);
-            require(arguments.length == 0 || readOnly);
+            boolean boundaries = arguments.length == 1 && "--persistent-boundaries".equals(arguments[0]);
+            require(arguments.length == 0 || readOnly || boundaries);
             Settings settings = Settings.fromEnvironment(System.getenv());
+            if (boundaries) {
+                stage.set("forbidden metadata operations");
+                for (String owner : OWNERS) {
+                    Admin client = Admin.create(properties(settings, owner, settings.passwords().get(owner)));
+                    try {
+                        client.describeTopics(List.of(topic(owner))).allTopicNames().get(15, TimeUnit.SECONDS);
+                        for (String sibling : OWNERS) if (!sibling.equals(owner))
+                            expectFailure(TopicAuthorizationException.class, () -> client.describeTopics(List.of(topic(sibling))).allTopicNames().get(15, TimeUnit.SECONDS));
+                    } finally { client.close(CLOSE_TIMEOUT); }
+                }
+                Admin core = Admin.create(properties(settings, "core", settings.passwords().get("core")));
+                try {
+                    core.describeTopics(OWNERS.stream().map(KafkaSmoke::topic).toList()).allTopicNames().get(15, TimeUnit.SECONDS);
+                    expectFailure(org.apache.kafka.common.errors.ClusterAuthorizationException.class,
+                            () -> core.describeAcls(org.apache.kafka.common.acl.AclBindingFilter.ANY).values().get(15, TimeUnit.SECONDS));
+                } finally { core.close(CLOSE_TIMEOUT); }
+                System.out.println("PASS: six sibling topic descriptions and Core ACL administration denied explicitly; positive controls passed; no records written");
+                return;
+            }
             stage.set("broker metadata and topic configuration");
             verifyMetadata(settings);
             System.out.println("PASS: advertised listener and three source topic configurations");
