@@ -1,5 +1,11 @@
 # Codebase guide
 
+## 2026-10-23 — correct persistent ACL expectation
+
+Host642a877 build passed, then Kafka pass1 failed exact ACL inventory before restart; evidence .cache/p05b-kafka/30dccb7fd91b49699d1451ce62323483/pass-1.log confirms advertised listener/topic configuration passed. Verifier expected16 ACLs but existing provision.sh grants17: Core consumer-group prefix has both READ and DESCRIBE. Fixed expected inventory, not broker permissions; added mismatch counts only (no private error details), extracted pure expectedPersistentAcls and3 regression assertions. Java21 offline standalone Maven package exit0;18 infrastructure-free guard checks passed. No live corrected broker pass claimed, no application reactor/database gate repeated, no credentials/storage changed.
+
+Next: rerun scripts/verify-development-kafka.ps1 with Java21 and bundled PS7. Verify both read-only passes and unchanged broker/topic IDs across restart; B remains incomplete until live result plus remaining cross-service/authorization gates. Earlier16-entry claim is superseded by corrected17. This local repair follows642a877; resolve commit with git rev-parse HEAD. No push or C/D work.
+
 Persistent Kafka verification uses KafkaSmoke --persistent-read-only via scripts/verify-development-kafka.ps1. The branch returns before marker publication/offset commits, checks exact ACL inventory and principal authentication, then compares broker/topic IDs across restart. This preserves production-topic cleanliness but deliberately does not claim successful forbidden-write rejection from ACL inspection alone. A metadata inventory and an exercised authorization denial are different evidence.
 
 2026-10-23 persistent database verification now passed on35ac333: four owners before/after restart, unchanged storage identities/private-file hash, actual role authentication and wrong-password rejection through service DNS. Schema privilege checks do not establish cross-service network isolation or application-table grants; those require separate acceptance. Preserve this distinction when explaining least privilege.

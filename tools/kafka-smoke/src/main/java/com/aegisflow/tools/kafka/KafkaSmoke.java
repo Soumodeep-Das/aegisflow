@@ -97,7 +97,7 @@ public final class KafkaSmoke {
         }
     }
 
-    private static void verifyPersistentReadOnly(Settings settings) throws Exception {
+    private static Set<org.apache.kafka.common.acl.AclBinding> expectedPersistentAcls() {
         var expected = new HashSet<org.apache.kafka.common.acl.AclBinding>();
         for (String owner : OWNERS) {
             for (var operation : List.of(org.apache.kafka.common.acl.AclOperation.WRITE, org.apache.kafka.common.acl.AclOperation.DESCRIBE))
@@ -106,10 +106,22 @@ public final class KafkaSmoke {
             for (var operation : List.of(org.apache.kafka.common.acl.AclOperation.READ, org.apache.kafka.common.acl.AclOperation.DESCRIBE))
                 expected.add(acl(org.apache.kafka.common.resource.ResourceType.TOPIC, topic(owner), org.apache.kafka.common.resource.PatternType.LITERAL, "core", operation));
         }
-        expected.add(acl(org.apache.kafka.common.resource.ResourceType.GROUP, "aegisflow-core-", org.apache.kafka.common.resource.PatternType.PREFIXED, "core", org.apache.kafka.common.acl.AclOperation.READ));
+        for (var operation : List.of(org.apache.kafka.common.acl.AclOperation.READ, org.apache.kafka.common.acl.AclOperation.DESCRIBE))
+            expected.add(acl(org.apache.kafka.common.resource.ResourceType.GROUP, "aegisflow-core-", org.apache.kafka.common.resource.PatternType.PREFIXED, "core", operation));
+        return Set.copyOf(expected);
+    }
+
+    private static void verifyPersistentReadOnly(Settings settings) throws Exception {
+        var expected = expectedPersistentAcls();
         Admin admin = Admin.create(properties(settings, "admin", settings.passwords().get("admin")));
         try {
-            require(new HashSet<>(admin.describeAcls(org.apache.kafka.common.acl.AclBindingFilter.ANY).values().get(15, TimeUnit.SECONDS)).equals(expected));
+            var observed = new HashSet<>(admin.describeAcls(org.apache.kafka.common.acl.AclBindingFilter.ANY).values().get(15, TimeUnit.SECONDS));
+            if (!observed.equals(expected)) {
+                var missing = new HashSet<>(expected); missing.removeAll(observed);
+                var extra = new HashSet<>(observed); extra.removeAll(expected);
+                System.out.println("ACL inventory mismatch: missing=" + missing.size() + ", unexpected=" + extra.size());
+                require(false);
+            }
             System.out.println("IDENTITY: " + admin.describeCluster().clusterId().get(15, TimeUnit.SECONDS));
             var topics = admin.describeTopics(OWNERS.stream().map(KafkaSmoke::topic).toList()).allTopicNames().get(15, TimeUnit.SECONDS);
             for (String owner : OWNERS) System.out.println("TOPIC_ID: " + owner + " " + topics.get(topic(owner)).topicId());
@@ -350,6 +362,14 @@ public final class KafkaSmoke {
 
     private static void selfTest() throws Exception {
         int checks = 0;
+        var inventory = expectedPersistentAcls();
+        require(inventory.size() == 17);
+        checks++;
+        for (var operation : List.of(org.apache.kafka.common.acl.AclOperation.READ, org.apache.kafka.common.acl.AclOperation.DESCRIBE)) {
+            require(inventory.contains(acl(org.apache.kafka.common.resource.ResourceType.GROUP, "aegisflow-core-",
+                    org.apache.kafka.common.resource.PatternType.PREFIXED, "core", operation)));
+            checks++;
+        }
         require(isExpectedFailure(new TopicAuthorizationException(Set.of("synthetic")), TopicAuthorizationException.class));
         checks++;
         require(isExpectedFailure(new ExecutionException(new TopicAuthorizationException(Set.of("synthetic"))),

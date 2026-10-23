@@ -1,5 +1,11 @@
 # Handoff — P0.5-A image tooling implemented; live gate pending
 
+## 2026-10-23 — correct persistent ACL expectation
+
+Host642a877 build passed, then Kafka pass1 failed exact ACL inventory before restart; evidence .cache/p05b-kafka/30dccb7fd91b49699d1451ce62323483/pass-1.log confirms advertised listener/topic configuration passed. Verifier expected16 ACLs but existing provision.sh grants17: Core consumer-group prefix has both READ and DESCRIBE. Fixed expected inventory, not broker permissions; added mismatch counts only (no private error details), extracted pure expectedPersistentAcls and3 regression assertions. Java21 offline standalone Maven package exit0;18 infrastructure-free guard checks passed. No live corrected broker pass claimed, no application reactor/database gate repeated, no credentials/storage changed.
+
+Next: rerun scripts/verify-development-kafka.ps1 with Java21 and bundled PS7. Verify both read-only passes and unchanged broker/topic IDs across restart; B remains incomplete until live result plus remaining cross-service/authorization gates. Earlier16-entry claim is superseded by corrected17. This local repair follows642a877; resolve commit with git rev-parse HEAD. No push or C/D work.
+
 ## 2026-10-23 — persistent Kafka read-only restart gate prepared
 
 Resumed clean c0ed678, preserving passed database gate. Added --persistent-read-only mode to existing tools/kafka-smoke KafkaSmoke: existing metadata/topic configuration checks, exact16-entry ACL inventory, authenticated own-topic descriptions for all3 sources/Core, explicit wrong-admin-password rejection, broker/topic identity output. It returns before producer/consumer operations; no synthetic messages or offsets contaminate persistent topics. scripts/verify-development-kafka.ps1 invokes this on the host listener before/after stopping and starting only the persistent Kafka service, comparing cluster/topic IDs and unchanged private-file hash. Redacted logs/results saved under .cache/p05b-kafka; no cleanup/delete or credential regeneration. Uses existing Java21 standalone client build, not application reactor.
