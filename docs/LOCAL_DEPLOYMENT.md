@@ -1,5 +1,7 @@
 # Local deployment — P0.5 in progress
 
+Current B partial checkpoint: run only scripts/dev-init.ps1 -CheckOnly under PowerShell7 for read-only Docker inventory and initialization safety. No private configuration is created in this mode. Existing legacy configuration or retained volumes without .env.development cause a safe stop; share the error, never delete volumes or replace passwords. Infrastructure startup/restart verification and unified C commands are not implemented yet. Do not use non-CheckOnly initialization until remaining file/ACL verification is complete.
+
 ## Status and prerequisites
 
 P0.5-A is verified on581da54: all four real images passed non-root/read-only startup, host/bridge health and shutdown. No repeat A command is needed. Next is B guarded credential/bootstrap implementation. Nine-service persistent startup and business demonstrations are not yet available; do not manually fill credentials to work around unfinished B/C/D.

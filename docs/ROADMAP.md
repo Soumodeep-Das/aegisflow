@@ -1,5 +1,7 @@
 # Prioritized roadmap
 
+P0.5-B partial2026-10-23: credential guards implemented,14 pure checks pass; Docker inventory denied here. Next owner dev-init.ps1 -CheckOnly is read-only. Complete file/ACL, actual Compose precedence and existing bootstrap/Kafka/auth/restart verification before C. A remains complete; D is not authorized before B/C pass.
+
 **2026-10-23: P0.5-A COMPLETE on581da54.** All4 live container gates passed; next is B guarded private credentials/bootstrap, then C lifecycle and D persistent business acceptance. No A rerun needed. See latest HANDOFF for evidence and preservation requirements; older pending-A entries are historical.
 
 2026-10-23: Core health cause confirmed and repaired: JSON groups-before-status was rejected.13 probe regressions pass. Retry only verify-application-images.ps1 -UseExistingArtifacts; A live gate remains pending, then B/C/D.
