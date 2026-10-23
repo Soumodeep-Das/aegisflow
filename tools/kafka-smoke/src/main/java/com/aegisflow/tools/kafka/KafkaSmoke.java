@@ -92,9 +92,18 @@ public final class KafkaSmoke {
             System.out.println("PASS: incorrect password rejected by SASL authentication");
         } catch (Exception failure) {
             // Client exception messages can contain configuration, payloads or credentials.
-            System.out.println("FAIL: Kafka smoke at " + stage.get() + " (" + failure.getClass().getSimpleName() + ")");
+            System.out.println("FAIL: Kafka smoke at " + stage.get() + " (" + failureTypes(failure) + ")");
             System.exit(1);
         }
+    }
+
+    private static String failureTypes(Throwable failure) {
+        StringBuilder types = new StringBuilder();
+        for (int depth = 0; failure != null && depth < 8; depth++, failure = failure.getCause()) {
+            if (depth > 0) types.append(" -> ");
+            types.append(failure.getClass().getSimpleName());
+        }
+        return types.toString();
     }
 
     private static Set<org.apache.kafka.common.acl.AclBinding> expectedPersistentAcls() {
@@ -362,6 +371,9 @@ public final class KafkaSmoke {
 
     private static void selfTest() throws Exception {
         int checks = 0;
+        require(failureTypes(new ExecutionException(new SaslAuthenticationException("private-value")))
+                .equals("ExecutionException -> SaslAuthenticationException"));
+        checks++;
         var inventory = expectedPersistentAcls();
         require(inventory.size() == 17);
         checks++;

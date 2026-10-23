@@ -12,6 +12,11 @@ New-Item -ItemType Directory -Force -Path $evidence | Out-Null
 Push-Location $root
 try {
     & "$PSScriptRoot/dev-init.ps1" -CheckOnly
+    Invoke-WithDevelopmentEnvironment {
+        $ready=@('compose','--project-name','aegisflow-foundation','--env-file',$private,'--file',"$root/compose.kafka.yaml")
+        & docker @ready up -d --wait --wait-timeout 180 kafka
+        if($LASTEXITCODE -ne 0) { throw 'Kafka readiness failed before verification; storage and credentials retained.' }
+    }
     if(-not $JavaHome) { throw 'Set JAVA_HOME to Java21.' }
     $version=& "$JavaHome/bin/java.exe" -version 2>&1
     if($LASTEXITCODE -ne 0 -or ($version | Out-String) -notmatch 'version "21\.') { throw 'Java21 required.' }
@@ -38,7 +43,11 @@ try {
             $log=$output+$errors
             foreach($key in Get-DevelopmentSecretKeys) { $log=$log.Replace($values[$key],'[REDACTED]') }
             $log | Set-Content "$evidence/pass-$pass.log"
-            if($process.ExitCode -ne 0) { throw "Kafka pass $pass failed; inspect sanitized evidence." }
+            if($process.ExitCode -ne 0) {
+                # Our own stage/type-only line is safe to show; never print raw client errors.
+                $output -split '\r?\n' | Where-Object { $_ -match '^FAIL: Kafka smoke at [a-zA-Z /-]+ \([a-zA-Z >-]+\)$' } | Write-Output
+                throw "Kafka pass $pass failed; inspect sanitized evidence."
+            }
             $identity=@($output -split '\r?\n' | Where-Object { $_ -match '^(IDENTITY|TOPIC_ID): ' }) -join "`n"
             if(@($identity -split "`n").Count -ne 4 -or $identity -notmatch ([regex]::Escape('IDENTITY: '+$values.KAFKA_CLUSTER_ID))) { throw 'Broker/topic identity evidence invalid.' }
             if($pass -eq 1) { $baseline=$identity } elseif($identity -ne $baseline) { throw 'Broker/topic IDs changed across retained restart.' }
