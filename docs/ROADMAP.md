@@ -1,5 +1,7 @@
 # Prioritized roadmap
 
+**2026-10-23: P0.5-A COMPLETE on581da54.** All4 live container gates passed; next is B guarded private credentials/bootstrap, then C lifecycle and D persistent business acceptance. No A rerun needed. See latest HANDOFF for evidence and preservation requirements; older pending-A entries are historical.
+
 2026-10-23: Core health cause confirmed and repaired: JSON groups-before-status was rejected.13 probe regressions pass. Retry only verify-application-images.ps1 -UseExistingArtifacts; A live gate remains pending, then B/C/D.
 
 **2026-10-23 next gate:** retain172 passing reactor tests and4 successful builds. Diagnose Core health timeout using newly retained State/Health.Log; retry verify-application-images.ps1 -UseExistingArtifacts. No proven cause yet. A remains incomplete; B/C/D follow actual A success.

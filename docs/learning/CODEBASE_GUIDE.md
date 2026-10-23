@@ -1,5 +1,7 @@
 # Codebase guide
 
+P0.5-A verified2026-10-23: all four foundation images passed actual host and separate bridge-client health checks, then exited143 without OOM. The field-order regression demonstrates why successful application startup and health-probe correctness must be tested independently. No persistent database/Kafka readiness or business deployment is implied; B/C/D remain unfinished.
+
 Health debugging result (2026-10-23): retained Health.Log showed HTTP200 with groups before status UP. JSON field order is not meaningful. HealthProbe now accepts either order in the details-disabled Actuator contract, but rejects duplicate statuses, nested-status substitutions and malformed bodies.13 pure Java checks cover this. Do not fix a parser defect by increasing startup timeouts or weakening health to HTTP200 alone.
 
 ## Image health debugging continuation — 2026-10-23

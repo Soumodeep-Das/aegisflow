@@ -1,5 +1,11 @@
 # Test evidence — P0.4 and preserved completed milestones
 
+## 2026-10-23 — P0.5-A verified closure
+
+Owner ran verify-application-images.ps1 -UseExistingArtifacts on581da54. All4 Core/Order/Payment/Warehouse gates passed: Java21, UID10001, read-only startup, image/archive identity, host loopback HTTP and separate bridge DNS/HTTP. Independently inspected all4 owner JSON records and State snapshots in .cache/application-image-verification/aegisflow-images-08c67f1250654717ac98f2b33f08f0c4: allUP/BridgeProbe Passed; all exited143, OOMKilled false after bounded shutdown. Earlier172 reactor tests and13 probe regressions remain separate passed evidence, not rerun or summed. Previous health-parser failures are retained.
+
+P0.5-A is COMPLETE, not full P0.5. Next authorized task is B guarded private credentials/bootstrap: preserve existing files/volumes, refuse missing credentials over retained storage, validate explicit environment precedence and independently verify owner roles/Kafka topics and ACLs. Then C nine-service lifecycle and D persistent business/restart acceptance. No permanent credentials generated, personal files changed, persistent storage targeted or push performed. No further A owner command is needed. This documentation checkpoint follows clean581da54; resolve closing hash using git rev-parse HEAD. P0.4 remains complete; no P1/recovery/AI.
+
 ## 2026-10-23 — confirmed health field-order repair
 
 Owner retry on2912bf2 rebuilt all4 images without repeating Maven. Evidence .cache/application-image-verification/aegisflow-images-ac40eb5d74c94d8dbdccfe9b9cc351cf records Core running, not OOM-killed, and repeated rejected HTTP200 bodies with groups before status UP. The probe incorrectly required status first. docker/HealthProbe.java now accepts either field order for the details-disabled status/optional groups contract, rejecting duplicate/nested status, malformed/trailing data and DOWN. Thirteen probe checks pass, including the exact observed response; archive/port/policy/PowerShell checks also pass via scripts/verify-image-policy.ps1 (exit0). No application JAR, ports, timeout, database or business behavior changed. The earlier172 reactor passes remain valid evidence, not rerun.

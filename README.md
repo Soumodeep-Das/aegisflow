@@ -4,11 +4,11 @@ A Java 21/Spring Boot control plane that observes independently owned Order, Pay
 
 ## Current status
 
-P0.4 is complete at `1d0b1f5`. P0.5 persistent local Docker deployment is approved and in progress. **P0.5-A image packaging is implemented but its real Docker gate is not verified yet.** Credentials/bootstrap, the nine-service application Compose overlay, and persistent business demonstrations remain unfinished.
+P0.4 is complete at `1d0b1f5`. **P0.5-A image packaging is verified on581da54:** all four real containers passed startup, non-root, host/bridge health and shutdown checks. P0.5 remains in progress: guarded credentials/bootstrap (B), the nine-service application Compose overlay (C), and persistent business demonstrations (D) remain unfinished.
 
 Read the [local deployment guide](docs/LOCAL_DEPLOYMENT.md) and [exact handoff](docs/HANDOFF.md) before running commands. Historical results and failures are preserved in [test evidence](docs/evidence/TEST_RESULTS.md) and the [development journal](docs/devlog/DEVELOPMENT_JOURNAL.md); they are not current retry instructions.
 
-## Next owner command: verify the four images
+## Image verifier reference (already passed; no rerun needed)
 
 From the existing repository, with Docker Desktop running and PowerShell7 available:
 

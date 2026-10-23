@@ -2,7 +2,7 @@
 
 ## Status and prerequisites
 
-Only P0.5-A image tooling is implemented at this checkpoint; live Docker verification is pending. Nine-service persistent startup, safe private credential initialization and business demonstrations are not yet available. Do not manually fill credentials to work around this unfinished gate.
+P0.5-A is verified on581da54: all four real images passed non-root/read-only startup, host/bridge health and shutdown. No repeat A command is needed. Next is B guarded credential/bootstrap implementation. Nine-service persistent startup and business demonstrations are not yet available; do not manually fill credentials to work around unfinished B/C/D.
 
 Use Windows11, Docker Desktop Linux containers, Java21 JDK, PowerShell7 and existing Maven wrapper. Run docker info to verify the engine is actually reachable; a Docker client version alone is insufficient. This coding session cannot access the engine pipe, independently of the owner's working Docker Desktop.
 
