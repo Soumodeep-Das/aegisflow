@@ -1,5 +1,11 @@
 # Codebase guide
 
+## D fixture safety gate (2026-10-24; real database execution pending)
+
+Warehouse LocalDemoIT lives beside LocalDemoTests in the simulator's root test package. It calls the exact package-local LocalDemo.execute method used by the CLI, using a non-web Spring context and the existing restricted PostgreSQL roles. TransactionTemplate joins ReservationApplicationService's local transaction: business state and the held retry schedule must commit or roll back together. Releasing transport changes next_attempt_at, never the event envelope or occurrence time. The new tests check replay, rollback, tenant isolation and refusal to release nonexistent state. They do not prove a separate CLI process starts correctly, Kafka delivery or persistent P0.5-D acceptance.
+
+Debugging exercise: run scripts/verify-local-demo-driver.ps1 from ordinary PowerShell7 with Java21 and Docker. Inspect its fresh .cache/p05d-driver report: expect four executed cases and zero skips. If startup fails, preserve postgres.log and find the first cause; do not reset persistent volumes or mark a compilation-only build as a database pass. The fixture's PostgreSQL database is disposable and unrelated to the nine-service stack.
+
 ## P0.5-D partial driver (2026-10-24)
 
 Each simulator now has LocalDemo.java alongside its application main. Only the explicit --aegisflow.local-demo=true command selects it; ordinary startup does not seed data. It starts a separate non-web postgres context with relay/Flyway disabled, then calls the existing owner business method and closes. UUID-scoped tenant/transaction/resource identities make later replay assertions traceable. The Warehouse driver's TransactionTemplate encloses both reservation/outbox creation and the delivery hold, so a running relay cannot claim the uncommitted event between those steps. Release changes scheduling only, never event occurrence or identity. There is no public mutation API.

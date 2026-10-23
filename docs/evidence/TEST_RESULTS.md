@@ -1,5 +1,15 @@
 # Test evidence — P0.4 and preserved completed milestones
 
+## 2026-10-24 — D fixture database gate prepared; host execution pending
+
+Continued clean local4703cb5 without repeating A/B/C. Added simulators/warehouse-service/src/test/java/com/aegisflow/simulator/warehouse/LocalDemoIT.java: four real PostgreSQL cases for held-event replay/repeated release with unchanged envelope/hash/creation time, outer rollback of reservation/lines/outbox/idempotency, same-aggregate cross-tenant release isolation, and missing-outcome release refusal. Reuses existing restricted runtime/migrator bootstrap, pinned PostgreSQL and dynamic Testcontainers ports. No skip-on-missing-Docker annotation. Production change only exposes LocalDemo.execute package-locally for tests; no new endpoint or changed business rules.
+
+Actual Java21 command: mvnw.cmd -o -B -ntp -Dmaven.repo.local=.cache/maven-repository -pl simulators/warehouse-service -Dtest=LocalDemoTests test. Exit0,15.738s; all Warehouse test sources compile;2 guard tests pass,0 failures/errors/skips. The four new database cases have NOT executed. docker info exits1 with engine-pipe permission denied. PowerShell verifier parser passed. No images rebuilt, running containers changed, credentials edited, persistent data mutated or push.
+
+Next owner command: PowerShell7 -NoProfile -File ./scripts/verify-local-demo-driver.ps1 with JAVA_HOME set to Java21. The script selects only LocalDemoIT, preserves Maven log/fresh XML under .cache/p05d-driver/<run>, and requires exactly4 tests with0 failures/errors/skips. This is fixture safety evidence, NOT a substitute for ordinary-stack D acceptance or complete CLI JVM wiring.
+
+Exact continuation: inspect host fixture result, fix any failure, then implement guarded persistent D runner with explicit per-run synthetic tenant trust, on-time held Warehouse outcome, real owner CLI operations and real worker processing; Core-only restart/release/history assertions and full-stack retained restart. Final clean reactor and rebuilt image identity remain required. D/P0.5 INCOMPLETE. Prior C deployment remains unchanged. Local checkpoint follows4703cb5; resolve hash/tree using git rev-parse HEAD and git status --short --branch.
+
 ## 2026-10-24 — P0.5-D partial CLI driver checkpoint, NOT acceptance
 
 Entry clean7188975, main ahead3; owner explicitly approved persistent D. Read current continuity/plan and existing owner business methods/P0.4 packaged fixture; no A/B/C rerun. Added package-local LocalDemo.java beside each simulator main, entered ONLY with --aegisflow.local-demo=true. Normal startup unchanged. Explicit single run UUID, healthy/missing scenario and allowed mode create (Warehouse also hold/release); tenant demo-<UUID>, deterministic per-run order/resource/transaction/idempotency identities. Calls existing OrderPersistenceService, PaymentCreation and ReservationApplicationService. Separate non-web CLI context forces postgres, disables its relay and Flyway; migrations must already be applied by ordinary apps. No public mutation endpoint or Core writes/credentials introduced.

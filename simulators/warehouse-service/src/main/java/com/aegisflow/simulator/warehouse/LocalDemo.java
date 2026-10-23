@@ -41,7 +41,7 @@ final class LocalDemo {
         if(!java.util.Set.of("create","hold","release").contains(mode)) throw new IllegalArgumentException("Unknown demo operation");
         if(!mode.equals("create") && !scenario.equals("missing")) throw new IllegalArgumentException("Only missing scenario may hold/release");
     }
-    private static UUID execute(org.springframework.context.ConfigurableApplicationContext context,
+    static UUID execute(org.springframework.context.ConfigurableApplicationContext context,
             String tenant,String tx,UUID order,UUID resource,String mode) {
         var service=context.getBean(ReservationApplicationService.class);
             var jdbc=context.getBean(org.springframework.jdbc.core.JdbcTemplate.class);
