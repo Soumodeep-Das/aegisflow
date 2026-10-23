@@ -1,5 +1,7 @@
 # Codebase guide
 
+Persistent database verifier: scripts/verify-development-databases.ps1 uses TCP127.0.0.1 inside each database container so PostgreSQL password authentication is exercised, not local socket trust. It tests schema privileges without creating tables, checks explicit wrong-password errors, then compares pg_control_system system identifiers across retained-volume restart. Debugging: a generic network failure must not count as successful authentication rejection. This is not Kafka, application migration or business durability acceptance.
+
 ## 2026-10-23 — fix empty environment overrides
 
 Host startup on ce590c3 created the private file but failed Compose interpolation before containers started. Reproduced safely: SetEnvironmentVariable(null) left18 present empty password keys, overriding --env-file. Changed scoped cleanup to Remove-Item Env: and restore presence/value separately. Added presence regression and actual Docker Compose config --quiet against disposable credentials.22 checks passed; independently validated existing .env.development and actual Compose interpolation with unchanged file hash. No secret values printed, credentials rotated, containers started or volumes touched. No Maven/A repeat. Next: rerun scripts/dev-infrastructure-up.ps1 with bundled PS7; existing credentials are reused. B remains incomplete until startup/auth/permission/restart gates execute; C/D pending. This following local repair checkpoint starts from clean ce590c3; resolve hash via git rev-parse HEAD. No push.

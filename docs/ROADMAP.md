@@ -1,5 +1,7 @@
 # Prioritized roadmap
 
+Latest2026-10-23: persistent infrastructure startup PASS reported by owner. Next verify-development-databases.ps1 for TCP auth/role boundaries and four-database retained-storage restart; implemented but not live verified. Kafka auth/restart and cross-service boundaries follow before C.
+
 ## 2026-10-23 — fix empty environment overrides
 
 Host startup on ce590c3 created the private file but failed Compose interpolation before containers started. Reproduced safely: SetEnvironmentVariable(null) left18 present empty password keys, overriding --env-file. Changed scoped cleanup to Remove-Item Env: and restore presence/value separately. Added presence regression and actual Docker Compose config --quiet against disposable credentials.22 checks passed; independently validated existing .env.development and actual Compose interpolation with unchanged file hash. No secret values printed, credentials rotated, containers started or volumes touched. No Maven/A repeat. Next: rerun scripts/dev-infrastructure-up.ps1 with bundled PS7; existing credentials are reused. B remains incomplete until startup/auth/permission/restart gates execute; C/D pending. This following local repair checkpoint starts from clean ce590c3; resolve hash via git rev-parse HEAD. No push.
