@@ -4,6 +4,11 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
 
 class LocalDemoTests {
+    @Test void pinnedDatabaseFixtureConstructsWithoutStartingDocker() {
+        // Loading the fixture catches digest compatibility errors before the host-only gate.
+        assertThat(LocalDemoIT.POSTGRES).isNotNull();
+        assertThat(LocalDemoIT.POSTGRES.isRunning()).isFalse();
+    }
     @Test void rejectsMissingAndDuplicateRunArguments() {
         assertThatThrownBy(() -> LocalDemo.argument(new String[0],"run")).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> LocalDemo.argument(new String[]{"--aegisflow.demo.run=a","--aegisflow.demo.run=b"},"run")).isInstanceOf(IllegalArgumentException.class);

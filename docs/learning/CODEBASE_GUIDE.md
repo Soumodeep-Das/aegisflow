@@ -1,5 +1,7 @@
 # Codebase guide
 
+Fixture debugging correction (2026-10-24): LocalDemoIT must parse the pinned image with DockerImageName and explicitly declare asCompatibleSubstituteFor("postgres"), as existing tests do. A String constructor compiled but rejected this digest reference during static initialization, before any PostgreSQL test ran. LocalDemoTests now constructs the fixture without starting Docker, catching that error in the focused unit gate (3 passed). This still cannot prove container startup or SQL assertions.
+
 ## D fixture safety gate (2026-10-24; real database execution pending)
 
 Warehouse LocalDemoIT lives beside LocalDemoTests in the simulator's root test package. It calls the exact package-local LocalDemo.execute method used by the CLI, using a non-web Spring context and the existing restricted PostgreSQL roles. TransactionTemplate joins ReservationApplicationService's local transaction: business state and the held retry schedule must commit or roll back together. Releasing transport changes next_attempt_at, never the event envelope or occurrence time. The new tests check replay, rollback, tenant isolation and refusal to release nonexistent state. They do not prove a separate CLI process starts correctly, Kafka delivery or persistent P0.5-D acceptance.

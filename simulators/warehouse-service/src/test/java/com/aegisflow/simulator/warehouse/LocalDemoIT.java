@@ -16,6 +16,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
 /** Fixture safety gate only; this is not persistent-deployment or Kafka acceptance. */
 @Testcontainers
@@ -25,7 +26,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 class LocalDemoIT {
     @Container
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer(
-            "postgres:18.6@sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336")
+            DockerImageName.parse("postgres:18.6@sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336")
+                    .asCompatibleSubstituteFor("postgres"))
             .withDatabaseName("warehouse_p02").withUsername("warehouse_test_admin")
             .withPassword("synthetic-admin-test-only")
             .withInitScript("db/test/warehouse-test-bootstrap.sql");

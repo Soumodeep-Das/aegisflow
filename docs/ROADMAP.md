@@ -1,5 +1,11 @@
 # Prioritized roadmap
 
+## 2026-10-24 — D driver fixture initialization repair
+
+Host evidence .cache/p05d-driver/28458324c4e44e9c84e6e6ae21df17c5 failed before database startup: LocalDemoIT static initialization rejected the digest-pinned PostgreSQL image;1 reported test,0 failures,1 error,0 skips. This was a missing Testcontainers compatibility declaration in the new fixture, not a credential/port/business failure. Retained failure evidence unchanged. Added DockerImageName.parse(...).asCompatibleSubstituteFor("postgres"), matching the existing Warehouse fixture; image/digest/roles remain unchanged. Added a Docker-free construction regression in LocalDemoTests.
+
+Java21 offline Maven -pl simulators/warehouse-service -Dtest=LocalDemoTests test (with -B -ntp -Dmaven.repo.local=.cache/maven-repository) exited0 in14.600s:3 tests,0 failures/errors/skips; IT sources compile. Real four-case PostgreSQL gate still UNVERIFIED. Rerun scripts/verify-local-demo-driver.ps1 on the host, not completed A/B/C suites. No app code, persistent containers, credentials, volumes or images changed. D remains incomplete; after this gate passes resume persistent orchestrator work described below. Repair follows local96f2204; current hash is git rev-parse HEAD; no push.
+
 ## 2026-10-24 — D fixture database gate prepared; host execution pending
 
 Continued clean local4703cb5 without repeating A/B/C. Added simulators/warehouse-service/src/test/java/com/aegisflow/simulator/warehouse/LocalDemoIT.java: four real PostgreSQL cases for held-event replay/repeated release with unchanged envelope/hash/creation time, outer rollback of reservation/lines/outbox/idempotency, same-aggregate cross-tenant release isolation, and missing-outcome release refusal. Reuses existing restricted runtime/migrator bootstrap, pinned PostgreSQL and dynamic Testcontainers ports. No skip-on-missing-Docker annotation. Production change only exposes LocalDemo.execute package-locally for tests; no new endpoint or changed business rules.
