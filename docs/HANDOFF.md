@@ -1,5 +1,11 @@
 # Handoff — P0.5-A image tooling implemented; live gate pending
 
+## 2026-10-23 — persistent database gate passed
+
+Owner ran verify-development-databases.ps1 on35ac333 successfully. Independently inspected .cache/p05b-db/5e7d498eae024145adeb4d8ec15b7d5b/results.json: Passed=true,8 owner/pass records, each of4 owners has2 passes and exactly1 storage identity. Verified TCP service-address bootstrap/migration/runtime authentication, restricted role flags, schema USAGE and migrator-only CREATE, explicit wrong-password rejection, repeated bootstrap and stop/start retaining PostgreSQL system identifiers and unchanged private-file hash. Kafka remained running; no volumes deleted. These are8 owner/pass records, not8 JUnit tests or proof of all possible database isolation properties. Earlier failed6258f061279843eda909221ee008acec evidence is preserved.
+
+Next unverified B gate: persistent Kafka authentication/ACL and broker retained-storage restart, plus cross-service network/credential boundaries. Do not repeat this passed database gate merely to resume. C nine-service application deployment waits for B; D remains prohibited before B/C verification. Current5 infrastructure containers remain; no app containers added. This documentation checkpoint follows clean35ac333; resolve hash with git rev-parse HEAD. No push; no owner command needed to repeat databases.
+
 2026-10-23 database verifier repair: host run on740201b failed Core before any completed database pass/restart; retained .cache/p05b-db/6258f061279843eda909221ee008acec/results.json has Passed=false and empty Passes. Repeated infrastructure/role/topic bootstrap succeeded. Probe used loopback TCP, which can match initdb trusted-local HBA rules and is unsuitable for proving deployed password authentication. Changed PGHOST to the explicit owner service DNS address and added allowlisted FAIL_STAGE evidence without printing raw potentially private errors. No pg_hba, role, credential or storage changes. Root cause of the prior generic failure remains unconfirmed; no database pass claimed. PowerShell parse and whitespace checks pass. Next rerun verify-development-databases.ps1; B/C remain incomplete. Following local checkpoint starts from740201b; no push.
 
 ## 2026-10-23 — persistent database verification prepared
