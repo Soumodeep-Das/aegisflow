@@ -4,6 +4,7 @@ param([string]$JavaHome=$env:JAVA_HOME)
 $ErrorActionPreference='Stop'
 $root=Split-Path -Parent $PSScriptRoot
 . "$PSScriptRoot/lib/development-credentials.ps1"
+. "$PSScriptRoot/lib/development-boundaries.ps1"
 $private=Join-Path $root '.env.development'
 $evidence=Join-Path $root ('.cache/p05b-boundaries/'+[guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Force -Path $evidence | Out-Null
@@ -15,8 +16,10 @@ try {
         $compose=@('compose','--project-name','aegisflow-foundation','--env-file',$private,'--file',"$root/compose.yaml",'--file',"$root/compose.kafka.yaml",'--profile','postgres')
         $owners=@('core','order','payment','warehouse'); $ids=@{}; $addresses=@{}
         foreach($owner in $owners) {
-            $id=& docker @compose ps --quiet "$owner-db"
-            if($LASTEXITCODE -ne 0 -or $id -notmatch '^[a-f0-9]{64}$') { throw "Expected running $owner database." }
+            $discovered=@(& docker @compose ps --all --quiet "${owner}-db")
+            $id=Get-DevelopmentContainerId -Output $discovered -ExitCode $LASTEXITCODE
+            $running=& docker inspect --format '{{.State.Running}}' $id
+            if($LASTEXITCODE -ne 0 -or $running -ne 'true') { throw "${owner}-db exists but is not running. Run dev-infrastructure-up.ps1, then retry; storage is preserved." }
             $nets=(& docker inspect --format '{{json .NetworkSettings.Networks}}' $id) | ConvertFrom-Json
             $name="aegisflow-foundation_$owner-data"
             if($LASTEXITCODE -ne 0 -or @($nets.PSObject.Properties).Count -ne 1 -or $nets.PSObject.Properties.Name -cne $name) { throw 'Unexpected database network membership.' }
