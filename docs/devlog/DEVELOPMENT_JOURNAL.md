@@ -1,5 +1,13 @@
 # Development journal
 
+## 2026-10-23 — persistent Kafka read-only restart gate prepared
+
+Resumed clean c0ed678, preserving passed database gate. Added --persistent-read-only mode to existing tools/kafka-smoke KafkaSmoke: existing metadata/topic configuration checks, exact16-entry ACL inventory, authenticated own-topic descriptions for all3 sources/Core, explicit wrong-admin-password rejection, broker/topic identity output. It returns before producer/consumer operations; no synthetic messages or offsets contaminate persistent topics. scripts/verify-development-kafka.ps1 invokes this on the host listener before/after stopping and starting only the persistent Kafka service, comparing cluster/topic IDs and unchanged private-file hash. Redacted logs/results saved under .cache/p05b-kafka; no cleanup/delete or credential regeneration. Uses existing Java21 standalone client build, not application reactor.
+
+Actual local checks: build-kafka-smoke.ps1 BUILD SUCCESS (8.920s Maven; remote metadata DNS warnings, cached dependencies available), no JUnit tests in this tool project; existing --self-test15 guard checks passed; new PowerShell parse and whitespace checks passed. New live ACL/auth/restart assertions remain UNEXECUTED due engine restrictions. Exact ACL inventory is not a claim of exercised forbidden writes; cross-service network/credential checks and active authorization-denial acceptance still pending before B closure/C. No database/A suites repeated, app containers started or push.
+
+Next owner command: Java21 JAVA_HOME then bundled PS7 -NoProfile -File .\scripts\verify-development-kafka.ps1. It temporarily restarts Kafka only, retains storage and leaves databases running. Preserve sanitized evidence on failure; never share .env.development. Following local checkpoint starts at c0ed678; resolve commit via git rev-parse HEAD. B remains incomplete; C/D not begun.
+
 ## 2026-10-23 — persistent database gate passed
 
 Owner ran verify-development-databases.ps1 on35ac333 successfully. Independently inspected .cache/p05b-db/5e7d498eae024145adeb4d8ec15b7d5b/results.json: Passed=true,8 owner/pass records, each of4 owners has2 passes and exactly1 storage identity. Verified TCP service-address bootstrap/migration/runtime authentication, restricted role flags, schema USAGE and migrator-only CREATE, explicit wrong-password rejection, repeated bootstrap and stop/start retaining PostgreSQL system identifiers and unchanged private-file hash. Kafka remained running; no volumes deleted. These are8 owner/pass records, not8 JUnit tests or proof of all possible database isolation properties. Earlier failed6258f061279843eda909221ee008acec evidence is preserved.

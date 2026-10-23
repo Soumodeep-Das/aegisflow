@@ -60,11 +60,20 @@ public final class KafkaSmoke {
                 selfTest();
                 return;
             }
-            require(arguments.length == 0);
+            boolean readOnly = arguments.length == 1 && "--persistent-read-only".equals(arguments[0]);
+            require(arguments.length == 0 || readOnly);
             Settings settings = Settings.fromEnvironment(System.getenv());
             stage.set("broker metadata and topic configuration");
             verifyMetadata(settings);
             System.out.println("PASS: advertised listener and three source topic configurations");
+
+            if (readOnly) {
+                stage.set("persistent ACL inventory and principal authentication");
+                verifyPersistentReadOnly(settings);
+                verifyWrongPassword(settings);
+                System.out.println("PASS: exact ACL inventory, source/Core authentication and wrong-password rejection; no records or offsets written");
+                return;
+            }
 
             stage.set("source producer acknowledgements");
             Map<TopicPartition, ExpectedRecord> expected = produce(settings);
@@ -86,6 +95,38 @@ public final class KafkaSmoke {
             System.out.println("FAIL: Kafka smoke at " + stage.get() + " (" + failure.getClass().getSimpleName() + ")");
             System.exit(1);
         }
+    }
+
+    private static void verifyPersistentReadOnly(Settings settings) throws Exception {
+        var expected = new HashSet<org.apache.kafka.common.acl.AclBinding>();
+        for (String owner : OWNERS) {
+            for (var operation : List.of(org.apache.kafka.common.acl.AclOperation.WRITE, org.apache.kafka.common.acl.AclOperation.DESCRIBE))
+                expected.add(acl(org.apache.kafka.common.resource.ResourceType.TOPIC, topic(owner), org.apache.kafka.common.resource.PatternType.LITERAL, owner, operation));
+            expected.add(acl(org.apache.kafka.common.resource.ResourceType.CLUSTER, "kafka-cluster", org.apache.kafka.common.resource.PatternType.LITERAL, owner, org.apache.kafka.common.acl.AclOperation.IDEMPOTENT_WRITE));
+            for (var operation : List.of(org.apache.kafka.common.acl.AclOperation.READ, org.apache.kafka.common.acl.AclOperation.DESCRIBE))
+                expected.add(acl(org.apache.kafka.common.resource.ResourceType.TOPIC, topic(owner), org.apache.kafka.common.resource.PatternType.LITERAL, "core", operation));
+        }
+        expected.add(acl(org.apache.kafka.common.resource.ResourceType.GROUP, "aegisflow-core-", org.apache.kafka.common.resource.PatternType.PREFIXED, "core", org.apache.kafka.common.acl.AclOperation.READ));
+        Admin admin = Admin.create(properties(settings, "admin", settings.passwords().get("admin")));
+        try {
+            require(new HashSet<>(admin.describeAcls(org.apache.kafka.common.acl.AclBindingFilter.ANY).values().get(15, TimeUnit.SECONDS)).equals(expected));
+            System.out.println("IDENTITY: " + admin.describeCluster().clusterId().get(15, TimeUnit.SECONDS));
+            var topics = admin.describeTopics(OWNERS.stream().map(KafkaSmoke::topic).toList()).allTopicNames().get(15, TimeUnit.SECONDS);
+            for (String owner : OWNERS) System.out.println("TOPIC_ID: " + owner + " " + topics.get(topic(owner)).topicId());
+        } finally { admin.close(CLOSE_TIMEOUT); }
+        for (String principal : List.of("order", "payment", "warehouse", "core")) {
+            Admin client = Admin.create(properties(settings, principal, settings.passwords().get(principal)));
+            try {
+                var names = principal.equals("core") ? OWNERS.stream().map(KafkaSmoke::topic).toList() : List.of(topic(principal));
+                require(client.describeTopics(names).allTopicNames().get(15, TimeUnit.SECONDS).size() == names.size());
+            } finally { client.close(CLOSE_TIMEOUT); }
+        }
+    }
+
+    private static org.apache.kafka.common.acl.AclBinding acl(org.apache.kafka.common.resource.ResourceType type, String name,
+            org.apache.kafka.common.resource.PatternType pattern, String principal, org.apache.kafka.common.acl.AclOperation operation) {
+        return new org.apache.kafka.common.acl.AclBinding(new org.apache.kafka.common.resource.ResourcePattern(type, name, pattern),
+                new org.apache.kafka.common.acl.AccessControlEntry("User:" + principal, "*", operation, org.apache.kafka.common.acl.AclPermissionType.ALLOW));
     }
 
     private static void verifyMetadata(Settings settings) throws Exception {
