@@ -1,5 +1,7 @@
 # Local deployment — P0.5 in progress
 
+Current2026-10-23: A/B complete; five persistent infrastructure services verified. No need to repeat successful B gates. Next C adds four application containers and unified lifecycle; these are not implemented yet. Preserve .env.development and all project volumes. Earlier pending/retry instructions below are history; latest HANDOFF is authoritative.
+
 Latest2026-10-23: owner read-only preflight passed. Next run scripts/dev-infrastructure-up.ps1 under bundled PowerShell7. It creates ignored .env.development with18 distinct passwords and a stable cluster ID under protected Windows ACL, starts the four databases and Kafka, bootstraps roles and provisions topics/ACLs. It preserves all storage/configuration and does not start application containers. Do not share the private file. Startup is not yet executed/verified; B auth/restart acceptance and C remain unfinished. Earlier CheckOnly-only advice below is historical.
 
 Current B partial checkpoint: run only scripts/dev-init.ps1 -CheckOnly under PowerShell7 for read-only Docker inventory and initialization safety. No private configuration is created in this mode. Existing legacy configuration or retained volumes without .env.development cause a safe stop; share the error, never delete volumes or replace passwords. Infrastructure startup/restart verification and unified C commands are not implemented yet. Do not use non-CheckOnly initialization until remaining file/ACL verification is complete.
