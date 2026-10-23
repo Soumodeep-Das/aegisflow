@@ -4,9 +4,9 @@ A Java 21/Spring Boot control plane that observes independently owned Order, Pay
 
 ## Current status
 
-P0.5-C implementation is ready but not live verified. Next owner command: scripts/verify-development-stack.ps1 under PowerShell7. It starts and tests the actual nine-service deployment and leaves it running. Lifecycle commands use scripts/dev-stack.ps1 -Action up, status, stop, down or restart-apps; storage is retained. Full business demonstration remains D and must wait for C verification.
+P0.5-C is live verified on `a3e4a2b`: all nine persistent services healthy, four applications checked before/after clean application-only restart, infrastructure and credentials retained. No verification rerun needed. Lifecycle commands use scripts/dev-stack.ps1 -Action up, status, stop, down or restart-apps; storage is retained. P0.5-D full business demonstration remains unimplemented/unverified; full P0.5 is not complete.
 
-P0.4 is complete at `1d0b1f5`. **P0.5-A images and P0.5-B persistent infrastructure are verified.** Five infrastructure services are running with guarded credentials, separate database identities/networks, Kafka ACLs and retained-storage restart evidence. The four application containers/unified lifecycle (C) remain unfinished; persistent business demonstrations (D) must wait for C acceptance. Full P0.5 is not complete.
+P0.4 is complete at `1d0b1f5`. P0.5-A/B/C are verified within their documented scopes. The local stack now includes Core, Order, Payment, Warehouse, four owner databases and Kafka. D must prove business behavior on that ordinary persistent deployment.
 
 Read the [local deployment guide](docs/LOCAL_DEPLOYMENT.md) and [exact handoff](docs/HANDOFF.md) before running commands. Historical results and failures are preserved in [test evidence](docs/evidence/TEST_RESULTS.md) and the [development journal](docs/devlog/DEVELOPMENT_JOURNAL.md); they are not current retry instructions.
 

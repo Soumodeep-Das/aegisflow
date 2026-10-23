@@ -1,5 +1,7 @@
 # Local deployment — P0.5 in progress
 
+Latest2026-10-23: A/B/C verified; owner left nine services healthy/running after application-only restart. No repeat verifier needed. Use scripts/dev-stack.ps1 -Action status to inspect, up to start, stop or down for non-destructive stop, restart-apps for app-only restart. kafka-init is one-shot and may appear exited. D business acceptance remains pending. Earlier pending-C instructions below are historical.
+
 Current C (2026-10-23): unified apps implemented, live verification pending. First run scripts/verify-development-stack.ps1 under bundled PS7. Lifecycle: scripts/dev-stack.ps1 -Action up|status|stop|down|restart-apps. Both stop and down preserve all named volumes, networks and containers; up repeats safe prerequisite bootstrap/provisioning before applications. Ports8080–8083 bind only127.0.0.1; tenant demo-tenant is explicitly trusted. Never bypass orchestration with a direct first-time Compose app start.
 
 The verifier leaves all nine long-running services up after success. kafka-init is a tenth, exited one-shot job, not a long-running service. Four application containers have only their owner's DB network plus kafka-events and receive no bootstrap/sibling passwords. C health is not D business acceptance. No persistent forbidden-write injection is attempted; that remains a D limitation.

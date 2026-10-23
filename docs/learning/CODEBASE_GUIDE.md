@@ -1,5 +1,7 @@
 # Codebase guide
 
+P0.5-C live acceptance now passed on a3e4a2b (2026-10-23): nine healthy services, eight app/pass records around clean app-only restart, unchanged infrastructure identities/private credentials. This validates the deployment walkthrough below, not D business-flow behavior. Optional status command: scripts/dev-stack.ps1 -Action status. Synthetic tenant is demo-tenant; consumer group/channel remain stable across restart.
+
 ## 2026-10-23 — repair lifecycle action shadowing
 
 Host1f526d6 C verifier started/bootstraped infrastructure but erroneously stopped it before apps. Evidence .cache/p05c/10b2bd3c94d84a68b0d8563e6af82a7f preserved. Cause: Invoke-WithDevelopmentEnvironment parameter $Action shadowed dev-stack's string action through PowerShell dynamic scope; switch default performed stop. Renamed helper parameter EnvironmentBody, captured stackOperation separately, restricted stop branch explicitly to stop/down and made default throw without lifecycle operations. No containers/volumes/private files deleted; infrastructure may currently be stopped from failed run.
