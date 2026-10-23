@@ -1,5 +1,11 @@
 # Codebase guide
 
+## 2026-10-23 — repair lifecycle action shadowing
+
+Host1f526d6 C verifier started/bootstraped infrastructure but erroneously stopped it before apps. Evidence .cache/p05c/10b2bd3c94d84a68b0d8563e6af82a7f preserved. Cause: Invoke-WithDevelopmentEnvironment parameter $Action shadowed dev-stack's string action through PowerShell dynamic scope; switch default performed stop. Renamed helper parameter EnvironmentBody, captured stackOperation separately, restricted stop branch explicitly to stop/down and made default throw without lifecycle operations. No containers/volumes/private files deleted; infrastructure may currently be stopped from failed run.
+
+Actual local checks:27 credential/file/ACL/environment/Compose tests pass including5 action-shadow regressions; corrected static unified Compose passes (.cache/p05c/3b26ec114716427b8d9f709357596438); lifecycle parser passes. No Java/business/source/credential changes or actual Docker integration pass. C remains unverified. Next rerun verify-development-stack.ps1: up restores retained infrastructure before app startup. No need to regenerate credentials, rebuild images or repeat A/B restart suites. B remains complete despite stale helper console wording. This following local repair starts clean1f526d6; no push/D work.
+
 ## P0.5-C deployment walkthrough (implemented, live verification pending)
 
 Actual paths: compose.apps.yaml defines the four app services; scripts/dev-stack.ps1 orchestrates lifecycle; scripts/verify-development-stack.ps1 verifies configuration and actual runtime/restart. dev-init.ps1 owns private initialization; dev-infrastructure-up.ps1 owns role/bootstrap and Kafka provisioning. No new Java business modules.

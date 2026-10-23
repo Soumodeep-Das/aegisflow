@@ -65,7 +65,7 @@ function Assert-DevelopmentInitializationSafe([bool]$PrivateExists,[string[]]$Vo
     }
 }
 
-function Invoke-WithDevelopmentEnvironment([scriptblock]$Action) {
+function Invoke-WithDevelopmentEnvironment([scriptblock]$EnvironmentBody) {
     # Shell interpolation outranks --env-file. Remove every variable used by the fixed Compose files.
     $keys=@(Get-DevelopmentSecretKeys)+@('KAFKA_CLUSTER_ID','KAFKA_HOST_PORT','COMPOSE_FILE','COMPOSE_PROJECT_NAME','COMPOSE_PROFILES','COMPOSE_ENV_FILES')
     foreach($owner in @('CORE','ORDER','PAYMENT','WAREHOUSE')) {
@@ -79,7 +79,7 @@ function Invoke-WithDevelopmentEnvironment([scriptblock]$Action) {
             # Compose distinguishes absent from empty; use the provider's removal operation.
             Remove-Item -LiteralPath "Env:$key" -ErrorAction SilentlyContinue
         }
-        & $Action
+        & $EnvironmentBody
     } finally {
         foreach($key in $keys) {
             if($saved[$key].Present) { [Environment]::SetEnvironmentVariable($key,$saved[$key].Value,'Process') }

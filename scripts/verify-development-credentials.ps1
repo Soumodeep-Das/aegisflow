@@ -15,6 +15,12 @@ Check { Assert-DevelopmentInitializationSafe $false @('retained') $false } $true
 Check { Assert-DevelopmentInitializationSafe $false @() $true } $true
 Check { Assert-DevelopmentInitializationSafe $false @() $false }
 Check { Assert-DevelopmentInitializationSafe $true @('retained') $true }
+foreach($operation in @('up','status','stop','down','restart-apps')) {
+    Check {
+        $Action=$operation
+        Invoke-WithDevelopmentEnvironment { if($Action -cne $operation) { throw 'Environment helper shadowed lifecycle Action.' } }
+    }
+}
 $old=[Environment]::GetEnvironmentVariable('CORE_DB_PASSWORD','Process')
 try {
     [Environment]::SetEnvironmentVariable('CORE_DB_PASSWORD','test-sentinel','Process')

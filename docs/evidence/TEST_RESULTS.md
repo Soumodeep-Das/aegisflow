@@ -1,5 +1,11 @@
 # Test evidence — P0.4 and preserved completed milestones
 
+## 2026-10-23 — repair lifecycle action shadowing
+
+Host1f526d6 C verifier started/bootstraped infrastructure but erroneously stopped it before apps. Evidence .cache/p05c/10b2bd3c94d84a68b0d8563e6af82a7f preserved. Cause: Invoke-WithDevelopmentEnvironment parameter $Action shadowed dev-stack's string action through PowerShell dynamic scope; switch default performed stop. Renamed helper parameter EnvironmentBody, captured stackOperation separately, restricted stop branch explicitly to stop/down and made default throw without lifecycle operations. No containers/volumes/private files deleted; infrastructure may currently be stopped from failed run.
+
+Actual local checks:27 credential/file/ACL/environment/Compose tests pass including5 action-shadow regressions; corrected static unified Compose passes (.cache/p05c/3b26ec114716427b8d9f709357596438); lifecycle parser passes. No Java/business/source/credential changes or actual Docker integration pass. C remains unverified. Next rerun verify-development-stack.ps1: up restores retained infrastructure before app startup. No need to regenerate credentials, rebuild images or repeat A/B restart suites. B remains complete despite stale helper console wording. This following local repair starts clean1f526d6; no push/D work.
+
 ## 2026-10-23 — P0.5-C nine-service deployment implemented, live gate pending
 
 Entry clean main114b945 synchronized with origin/main; A/B remain complete within recorded scopes. Added compose.apps.yaml with four verified :local images, postgres profile, UID10001/read-only/cap-drop/no-new-privileges/resource limits, loopback8080–8083, own-only DB migration/runtime credentials and networks plus kafka-events. Internal JDBC uses owner-db:5432; Kafka kafka:9092. Enables all3 relays and Core inbox/projection/detection/incidents for fixed synthetic demo-tenant, stable aegisflow-core-inbox-v1/local-kafka-v1 identities. No private-file or infrastructure Compose changes. Existing schemas are migrated by existing Flyway when apps start, never reset. No application Java changes or reactor rebuild.
