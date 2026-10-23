@@ -1,5 +1,7 @@
 # Codebase guide
 
+2026-10-23 database verifier repair: host run on740201b failed Core before any completed database pass/restart; retained .cache/p05b-db/6258f061279843eda909221ee008acec/results.json has Passed=false and empty Passes. Repeated infrastructure/role/topic bootstrap succeeded. Probe used loopback TCP, which can match initdb trusted-local HBA rules and is unsuitable for proving deployed password authentication. Changed PGHOST to the explicit owner service DNS address and added allowlisted FAIL_STAGE evidence without printing raw potentially private errors. No pg_hba, role, credential or storage changes. Root cause of the prior generic failure remains unconfirmed; no database pass claimed. PowerShell parse and whitespace checks pass. Next rerun verify-development-databases.ps1; B/C remain incomplete. Following local checkpoint starts from740201b; no push.
+
 Persistent database verifier: scripts/verify-development-databases.ps1 uses TCP127.0.0.1 inside each database container so PostgreSQL password authentication is exercised, not local socket trust. It tests schema privileges without creating tables, checks explicit wrong-password errors, then compares pg_control_system system identifiers across retained-volume restart. Debugging: a generic network failure must not count as successful authentication rejection. This is not Kafka, application migration or business durability acceptance.
 
 ## 2026-10-23 — fix empty environment overrides

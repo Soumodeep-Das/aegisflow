@@ -10,22 +10,30 @@ New-Item -ItemType Directory -Force -Path $evidence | Out-Null
 $result=[ordered]@{Passed=$false;Passes=@();Scope='persistent database authentication/roles/restart only'}
 $probe=@'
 set -eu
+stage=bootstrap-login
+trap 'code=$?; if [ "$code" -ne 0 ]; then printf "FAIL_STAGE=%s\n" "$stage" >&2; fi' EXIT
 export PGCONNECT_TIMEOUT=5
+# Use the service address, not initdb's potentially trusted loopback HBA entry.
+export PGHOST="$1"
 export PGPASSWORD="$POSTGRES_PASSWORD"
-identity=$(psql -X -h 127.0.0.1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atq -v ON_ERROR_STOP=1 -c 'SELECT system_identifier FROM pg_control_system()')
+identity=$(psql -X -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atq -v ON_ERROR_STOP=1 -c 'SELECT system_identifier FROM pg_control_system()')
 test -n "$identity"
 for role in migration runtime; do
   if [ "$role" = migration ]; then user="$MIGRATION_DB_USER"; password="$MIGRATION_DB_PASSWORD"; expected=t; else user="$RUNTIME_DB_USER"; password="$RUNTIME_DB_PASSWORD"; expected=f; fi
   export PGPASSWORD="$password"
-  actual=$(psql -X -h 127.0.0.1 -U "$user" -d "$POSTGRES_DB" -Atq -v ON_ERROR_STOP=1 -c "SELECT NOT rolsuper AND NOT rolcreatedb AND NOT rolcreaterole AND NOT rolreplication FROM pg_roles WHERE rolname=current_user")
+  stage="$role-role-flags"
+  actual=$(psql -X -U "$user" -d "$POSTGRES_DB" -Atq -v ON_ERROR_STOP=1 -c "SELECT NOT rolsuper AND NOT rolcreatedb AND NOT rolcreaterole AND NOT rolreplication FROM pg_roles WHERE rolname=current_user")
   test "$actual" = t
-  actual=$(psql -X -h 127.0.0.1 -U "$user" -d "$POSTGRES_DB" -Atq -v ON_ERROR_STOP=1 -c "SELECT has_schema_privilege(current_user,'aegisflow','USAGE')")
+  stage="$role-schema-usage"
+  actual=$(psql -X -U "$user" -d "$POSTGRES_DB" -Atq -v ON_ERROR_STOP=1 -c "SELECT has_schema_privilege(current_user,'aegisflow','USAGE')")
   test "$actual" = t
-  actual=$(psql -X -h 127.0.0.1 -U "$user" -d "$POSTGRES_DB" -Atq -v ON_ERROR_STOP=1 -c "SELECT has_schema_privilege(current_user,'aegisflow','CREATE')")
+  stage="$role-schema-create"
+  actual=$(psql -X -U "$user" -d "$POSTGRES_DB" -Atq -v ON_ERROR_STOP=1 -c "SELECT has_schema_privilege(current_user,'aegisflow','CREATE')")
   test "$actual" = "$expected"
   # A deliberate wrong password must fail for authentication, not a network outage.
   export PGPASSWORD=deliberately-invalid-verification-password
-  error=$(psql -X -h 127.0.0.1 -U "$user" -d "$POSTGRES_DB" -Atq -c 'SELECT 1' 2>&1) && exit 1
+  stage="$role-wrong-password"
+  error=$(psql -X -U "$user" -d "$POSTGRES_DB" -Atq -c 'SELECT 1' 2>&1) && exit 1
   case "$error" in *'password authentication failed'*) ;; *) exit 1;; esac
 done
 printf '%s\n' "$identity"
@@ -41,8 +49,13 @@ try {
             # Reuses the real bootstrap on each pass; no separate verification database.
             & "$PSScriptRoot/dev-infrastructure-up.ps1"
             foreach($owner in @('core','order','payment','warehouse')) {
-                $output=@(& docker @compose exec -T "$owner-db" sh -c ($probe.Replace("`r","")) 2>&1)
-                if($LASTEXITCODE -ne 0 -or $output.Count -ne 1 -or "$($output[0])" -notmatch '^\d+$') { throw "Database authentication/role checks failed for $owner; values withheld." }
+                $output=@(& docker @compose exec -T "$owner-db" sh -c ($probe.Replace("`r","")) db-probe "$owner-db" 2>&1)
+                if($LASTEXITCODE -ne 0 -or $output.Count -ne 1 -or "$($output[0])" -notmatch '^\d+$') {
+                    $stage=@($output | ForEach-Object { if("$_" -match '^FAIL_STAGE=([a-z-]+)$') { $Matches[1] } }) -join ','
+                    if(-not $stage) { $stage='probe-launch-or-output' }
+                    $result.Failure=@{Owner=$owner;Pass=$pass;Stage=$stage}
+                    throw "Database checks failed for $owner at $stage; secret-bearing output withheld."
+                }
                 if($pass -eq 1) { $identities[$owner]="$($output[0])" }
                 elseif($identities[$owner] -ne "$($output[0])") { throw 'Database storage identity changed across restart.' }
                 $result.Passes+=@{Pass=$pass;Owner=$owner;Authentication='Passed';LeastPrivilege='Passed';WrongPasswords='Rejected';StorageIdentity=$identities[$owner]}
