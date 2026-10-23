@@ -1,5 +1,13 @@
 # Handoff — P0.5-A image tooling implemented; live gate pending
 
+## Diagnostic continuation — 2026-10-23, Codex
+
+Entry clean main fd9c75d. Owner run passed172 default tests (zero failures/errors/skips) and built all4 images; build evidence .cache/application-images/53a9f1e95d564ca2b69323093ea15980. Runtime evidence .cache/application-image-verification/aegisflow-images-e76d1f8b61ec42e4a1d8be75c44a5c4a shows Core started in16.588s but health wait expired. Its log has no startup exception; probe response was not retained. Root cause remains UNKNOWN, not proven to be ports, memory or parsing. Other3 runtime gates were not reached.
+
+This following local diagnostic commit adds bounded probe failure output and saves only Docker State (not secret-bearing Config.Env) before owned-container cleanup. Policy verifier passes6 probe cases,4 archive checks,port/policy/parser checks; no Maven rerun. A local existing-JAR diagnostic failed because sandbox loopback socket access is denied (first launch also needed quoting of the JVM timezone argument); it is not evidence of a host application regression. No active diagnostic process remains.
+
+Next: run scripts/verify-application-images.ps1 -UseExistingArtifacts using the same Java21/PS7 command below. This skips the already-passing172-test reactor, rebuilds the small changed probe layer, and captures *.state.json plus *.log if health fails. Inspect Health.Log HTTP status/rejected body/exception before choosing a fix; do not merely lengthen timeout or weaken health. A remains incomplete; B/C/D wait. Preserve all prior evidence, volumes and private files. No push. Resolve closing diagnostic commit with git rev-parse HEAD; intended tree clean after commit.
+
 ## Current checkpoint — 2026-10-22, Codex
 
 Entry clean main1d0b1f535908bfdcdf8bf773382f83b3aa41ab05, synchronized with origin/main. Owner explicitly authorized full P0.5. Inspected deployment-related configuration, bootstrap/Kafka helpers, prior artifact/port guards and final P0.4 evidence; no completed business suites repeated. P0.4 remains verified. This following local checkpoint is implementation plus static checks, NOT verified images or a persistent-stack deployment; resolve closing hash with git rev-parse HEAD.

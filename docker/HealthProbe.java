@@ -15,11 +15,23 @@ public final class HealthProbe {
             connection.setInstanceFollowRedirects(false);
             try {
                 int status=connection.getResponseCode();
-                if(status!=200) System.exit(1);
+                if(status!=200) {
+                    System.err.println("Health HTTP status: " + status);
+                    System.exit(1);
+                }
                 try(var stream=connection.getInputStream()) {
-                    if(!healthy(status,new String(stream.readNBytes(4097),StandardCharsets.UTF_8))) System.exit(1);
+                    String body=new String(stream.readNBytes(4097),StandardCharsets.UTF_8);
+                    if(!healthy(status,body)) {
+                        // Health details are disabled by application policy; retain the bounded
+                        // response in Docker health history to distinguish parsing from DOWN.
+                        System.err.println("Health response rejected: " + body);
+                        System.exit(1);
+                    }
                 }
             } finally { connection.disconnect(); }
-        } catch(Exception unavailable) { System.exit(1); }
+        } catch(Exception unavailable) {
+            System.err.println("Health request failed: " + unavailable.getClass().getSimpleName());
+            System.exit(1);
+        }
     }
 }

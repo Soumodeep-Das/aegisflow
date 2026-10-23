@@ -14,10 +14,10 @@ From the existing repository, with Docker Desktop running and PowerShell7 availa
 
 ```powershell
 $env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
-& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-application-images.ps1
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-application-images.ps1 -UseExistingArtifacts
 ```
 
-This builds/tests the existing Maven reactor once, creates four images, and verifies four temporary foundation containers using dynamic loopback ports and a private test bridge. It stops/removes only those temporary containers/network; no persistent volumes or private environment files are used. This is **not** a nine-service deployment or a database/Kafka/business-readiness claim. Actual Docker execution remains pending; the coding session has no Docker-engine access.
+The owner already passed172 reactor tests and built four images. This retry skips Maven, refreshes the diagnostic probe image layer, and verifies temporary foundation containers using dynamic loopback ports and a private bridge. Core previously started but timed out waiting for health; the cause is not established. Health history is now saved before cleanup. Only owned temporary containers/network are removed; no persistent volumes or private files are used. This is **not** a nine-service deployment or business-readiness claim.
 
 ## Implemented business path
 

@@ -1,5 +1,9 @@
 # Codebase guide
 
+## Image health debugging continuation — 2026-10-23
+
+A Spring Started log and Docker healthy state are different observations. docker/HealthProbe.java now reports non-200 status, bounded rejected response or exception type. scripts/verify-application-images.ps1 preserves *.state.json with Health.Log and exit/OOM fields before cleanup, alongside application logs. It intentionally does not save full docker inspect with Config.Env. Debugging exercise: rerun with -UseExistingArtifacts, compare Started timing against Health.Log; identify HTTP failure versus response parsing versus probe timeout before changing configuration. Expected current result is diagnostic evidence, not an assumed fix. The172-test reactor and4 image builds passed; Core health is still unverified.
+
 ## P0.5-A image packaging walkthrough — 2026-10-22
 
 Implemented, Docker gate pending. scripts/dev-build-images.ps1 runs the existing reactor once (unless explicitly reusing current artifacts), validates each owner executable via scripts/lib/application-images.ps1 and the existing packaged-artifact guard, compiles docker/HealthProbe.java, and copies four files per owner into .cache/application-images/<id>/<owner>. docker/Dockerfile packages the selected JAR in the existing pinned Java21 runtime, runs UID/GID10001 and exec-form Java PID1/UTC. .dockerignore is a deny-all/explicit-file allowlist. No workspace credentials, sources or Git history enter the build context; no Maven dependency download occurs at application startup.

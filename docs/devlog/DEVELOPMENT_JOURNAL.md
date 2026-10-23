@@ -1,5 +1,9 @@
 # Development journal
 
+## 2026-10-23 — preserve successful image build; instrument health failure
+
+Resumed clean fd9c75d. Preserved owner's172 successful tests and4 builds. Core log proves startup but not health; previous cleanup discarded Docker health history. Added bounded HTTP/parser/exception diagnostics and State-only saved evidence without dumping environment. Static policy checks pass; local runtime diagnosis blocked by sandbox loopback permissions. Root cause not yet established. Next owner retry uses -UseExistingArtifacts; no repeat Maven suite, no volume/private configuration changes. P0.5-A remains incomplete; no B/C/D or push.
+
 ## 2026-10-22 — start approved P0.5 with narrow application image gate
 
 Confirmed local/GitHub baseline1d0b1f5 and clean tree. Read owner's P0.5 master and targeted deployment sources. Chose one host reactor build plus four minimal staged image contexts, retaining existing official Java21 digest and artifact freshness checks. Kept host foundation binding unchanged; container-only overrides solve bridge access. Added non-root direct Java PID1, read-only verifier runtime, bounded HTTP probe, dynamic loopback ports and independent bridge checks. No permanent credentials or Compose storage touched.

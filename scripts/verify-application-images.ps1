@@ -63,6 +63,9 @@ try {
     foreach($id in $owned) {
         $label=& docker inspect --format '{{index .Config.Labels "com.aegisflow.verification"}}' $id 2>$null
         if($LASTEXITCODE -eq 0 -and $label -eq $run) {
+            # Preserve bounded health failures/OOM/exit evidence before removing this owned container.
+            # Do not dump full inspect: its Config.Env may contain private values in future profiles.
+            & docker inspect --format '{{json .State}}' $id | Set-Content "$evidence/$id.state.json"
             & docker logs --tail 300 $id 2>&1 | Set-Content "$evidence/$id.log"
             & docker stop --time 30 $id 2>$null | Out-Null
             & docker rm $id 2>$null | Out-Null

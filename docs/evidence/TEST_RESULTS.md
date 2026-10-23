@@ -1,5 +1,9 @@
 # Test evidence — P0.4 and preserved completed milestones
 
+## 2026-10-23 — image host result and diagnostic continuation
+
+Owner output on fd9c75d:172 reactor tests passed,0 failures/errors/skips; all4 images built (.cache/application-images/53a9f1e95d564ca2b69323093ea15980). Core runtime health timeout stopped A before remaining3 applications. Retained .cache/application-image-verification/aegisflow-images-e76d1f8b61ec42e4a1d8be75c44a5c4a log independently shows successful Core startup in16.588s, not the health response. Cause unproven. Added probe diagnostics and State-only capture before cleanup. Java21 scripts/verify-image-policy.ps1 exit0:6 probe cases,4 archive identities and existing port/policy/PowerShell checks pass. No reactor repeated. Local JAR diagnostic could not bind due sandbox SocketException permission denial; initial unquoted JVM argument failed parsing, corrected launch reached restricted socket operation. Live diagnostic rerun still needed: verify-application-images.ps1 -UseExistingArtifacts. No Docker pass inferred.
+
 ## 2026-10-22 — P0.5-A static packaging checkpoint, Docker unavailable
 
 Entry1d0b1f5 clean main/origin. Java21 existing artifacts inspected, no completed P0.4 suite repeated. Command (JAVA_HOME Temurin21.0.12.101-hotspot, bundled PowerShell7): scripts/verify-image-policy.ps1. Exit0:6 Java health-response checks;4 actual executable owner manifests/classes and forbidden-private-entry checks; distinct4 mappings; loopback valid case and5 rejected forms; digest/user/COPY/context policies;4 PowerShell parser checks. This is static/Java verification, NOT image build/start.
