@@ -1,5 +1,33 @@
 # Codebase guide
 
+## Persistent D walkthrough — implemented, live host acceptance pending
+
+scripts/verify-development-pipeline.ps1 builds fresh images through dev-build-images.ps1, uses dev-stack.ps1 to establish prerequisites, and applies a secret-free exact-tenant Compose overlay. Each simulator's LocalDemo.java starts a non-web owner-only context in a transient command container. awaitBarrier writes /tmp readiness and waits at most180 seconds; the runner releases Order first, then Payment/Warehouse, checking real occurrence timestamps rather than altering the45-second deadline. LocalDemoTests covers release/timeout without Docker. scripts/test-development-pipeline.ps1 extracts only helper definitions and mocks Docker; it never executes the deployment body.
+
+Flow: owner business service → owner transaction/state/outbox → ordinary running relay → Kafka → ordinary Core inbox/projector/detection/incident workers. Missing-case Warehouse holds transport atomically. Read-Database invokes psql inside each owning database using its runtime login and default_transaction_read_only=on. Queries constrain every business result to this run's tenant/transaction. After Core stops, Warehouse release preserves the original envelope, then Core restart consumes backlog and records new evidence without resolving the historical incident. Initial/late timeline JSON, fact references, projections and event IDs are retained under .cache/p05d/<run>. Full retained-stack restart and base trust restoration follow only on success.
+
+Debug exercise: after the host runner stops at a failed stage, inspect results.json and the corresponding owner-scenario-mode.log/.err, not private environment files. If no ready marker was reached, diagnose command startup before blaming Kafka. If facts exist but SATISFIED does not, compare effective_at with due_at and inspect explanation codes. Preserve tenant.compose.json on failure; removing a still-needed trust mapping can quarantine pending evidence. Successful expected output is a healthy enforced decision with no incident, one missing-observation DETECTED incident, and the same incident retaining its history after late SATISFIED. This expectation is not yet measured acceptance.
+
+### Q86. Why warm all command contexts before creating the Order?
+
+JVM/database startup time is unrelated to the business invariant. A bounded readiness barrier excludes that setup delay without replacing the real clock or extending the deadline.
+
+### Q87. Why is a held outbox event different from creating a late reservation?
+
+The held event records a genuinely on-time business outcome but delayed observation. A reservation created after the deadline is a different outcome and must not be backdated to manufacture SATISFIED.
+
+### Q88. Why use owner-only command containers rather than Core inserting simulator rows?
+
+The commands invoke existing owner business transactions under that service's credentials. Core never receives sibling database credentials or bypasses the simulator's state/outbox invariants.
+
+### Q89. Why can late SATISFIED coexist with a DETECTED incident?
+
+New evidence changes the current assessment; it does not erase what was missing at enforcement or establish fresh authoritative recovery. Evaluations and the evidence timeline remain durable history.
+
+### Q90. What does a passing mocked script test prove?
+
+Only helper behavior such as argument routing, query scope and bounded waiting. It does not prove container startup, SQL execution, Kafka delivery or the persistent business workflow; those require the host acceptance run.
+
 Fixture debugging correction (2026-10-24): LocalDemoIT must parse the pinned image with DockerImageName and explicitly declare asCompatibleSubstituteFor("postgres"), as existing tests do. A String constructor compiled but rejected this digest reference during static initialization, before any PostgreSQL test ran. LocalDemoTests now constructs the fixture without starting Docker, catching that error in the focused unit gate (3 passed). This still cannot prove container startup or SQL assertions.
 
 ## D fixture safety gate (2026-10-24; real database execution pending)

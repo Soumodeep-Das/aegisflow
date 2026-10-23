@@ -32,8 +32,29 @@ final class LocalDemo {
         launch.add("--aegisflow.order.relay.enabled=false");
         launch.add("--spring.flyway.enabled=false");
         try(var context=app.run(launch.toArray(String[]::new))) {
+            if (java.util.Arrays.asList(args).contains("--aegisflow.demo.barrier=true")) {
+                awaitBarrier(java.nio.file.Path.of("/tmp/aegisflow-demo-" + run + "-" + scenario),
+                        java.time.Duration.ofSeconds(180));
+            }
             UUID event=execute(context,tenant,tx,order,resource,mode);
             System.out.println("DEMO_RESULT owner=order tenant="+tenant+" transaction="+tx+" event="+event);
+        }
+    }
+    static void awaitBarrier(java.nio.file.Path prefix, java.time.Duration timeout) {
+        var ready = prefix.resolveSibling(prefix.getFileName() + ".ready");
+        var go = prefix.resolveSibling(prefix.getFileName() + ".go");
+        try {
+            java.nio.file.Files.createFile(ready);
+            long end = System.nanoTime() + timeout.toNanos();
+            while (!java.nio.file.Files.exists(go)) {
+                if (System.nanoTime() >= end) throw new IllegalStateException("Demo readiness barrier timed out");
+                Thread.sleep(50);
+            }
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Demo readiness barrier interrupted", interrupted);
+        } catch (java.io.IOException failure) {
+            throw new IllegalStateException("Cannot establish demo readiness barrier", failure);
         }
     }
     static void validate(String scenario,String mode) {
