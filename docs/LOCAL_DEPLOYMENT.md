@@ -1,5 +1,9 @@
 # Local deployment — P0.5 in progress
 
+Current C (2026-10-23): unified apps implemented, live verification pending. First run scripts/verify-development-stack.ps1 under bundled PS7. Lifecycle: scripts/dev-stack.ps1 -Action up|status|stop|down|restart-apps. Both stop and down preserve all named volumes, networks and containers; up repeats safe prerequisite bootstrap/provisioning before applications. Ports8080–8083 bind only127.0.0.1; tenant demo-tenant is explicitly trusted. Never bypass orchestration with a direct first-time Compose app start.
+
+The verifier leaves all nine long-running services up after success. kafka-init is a tenth, exited one-shot job, not a long-running service. Four application containers have only their owner's DB network plus kafka-events and receive no bootstrap/sibling passwords. C health is not D business acceptance. No persistent forbidden-write injection is attempted; that remains a D limitation.
+
 Current2026-10-23: A/B complete; five persistent infrastructure services verified. No need to repeat successful B gates. Next C adds four application containers and unified lifecycle; these are not implemented yet. Preserve .env.development and all project volumes. Earlier pending/retry instructions below are history; latest HANDOFF is authoritative.
 
 Latest2026-10-23: owner read-only preflight passed. Next run scripts/dev-infrastructure-up.ps1 under bundled PowerShell7. It creates ignored .env.development with18 distinct passwords and a stable cluster ID under protected Windows ACL, starts the four databases and Kafka, bootstraps roles and provisions topics/ACLs. It preserves all storage/configuration and does not start application containers. Do not share the private file. Startup is not yet executed/verified; B auth/restart acceptance and C remain unfinished. Earlier CheckOnly-only advice below is historical.

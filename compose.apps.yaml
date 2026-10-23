@@ -1,0 +1,128 @@
+name: aegisflow-foundation
+
+# Start through scripts/dev-stack.ps1: role bootstrap and Kafka provisioning precede apps.
+x-app: &app
+  profiles: [apps]
+  user: "10001:10001"
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  mem_limit: 768m
+  cpus: 1
+  pids_limit: 256
+  tmpfs: ["/tmp:rw,noexec,nosuid,nodev,size=64m,mode=1777"]
+  stop_grace_period: 30s
+  restart: "no"
+
+services:
+  core:
+    <<: *app
+    image: aegisflow/core:local
+    pull_policy: never
+    networks: [core-data, kafka-events]
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on:
+      core-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      SERVER_ADDRESS: 0.0.0.0
+      SERVER_PORT: "8080"
+      CORE_DB_URL: jdbc:postgresql://core-db:5432/aegisflow_core
+      CORE_DB_RUNTIME_USER: aegisflow_core_runtime
+      CORE_DB_MIGRATION_USER: aegisflow_core_migrator
+      CORE_DB_RUNTIME_PASSWORD: ${CORE_DB_RUNTIME_PASSWORD:?Run dev-init.ps1}
+      CORE_DB_MIGRATION_PASSWORD: ${CORE_DB_MIGRATION_PASSWORD:?Run dev-init.ps1}
+      CORE_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_CORE_PASSWORD: ${KAFKA_CORE_PASSWORD:?Run dev-init.ps1}
+      CORE_INBOX_ENABLED: "true"
+      CORE_PROJECTION_ENABLED: "true"
+      CORE_DETECTION_ENABLED: "true"
+      CORE_INCIDENTS_ENABLED: "true"
+      CORE_INBOX_GROUP: aegisflow-core-inbox-v1
+      CORE_INBOX_CHANNEL: local-kafka-v1
+      CORE_INBOX_ORDER_TENANTS: demo-tenant
+      CORE_INBOX_PAYMENT_TENANTS: demo-tenant
+      CORE_INBOX_WAREHOUSE_TENANTS: demo-tenant
+  order:
+    <<: *app
+    image: aegisflow/order:local
+    pull_policy: never
+    networks: [order-data, kafka-events]
+    ports: ["127.0.0.1:8081:8080"]
+    depends_on:
+      order-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      SERVER_ADDRESS: 0.0.0.0
+      SERVER_PORT: "8080"
+      ORDER_DB_URL: jdbc:postgresql://order-db:5432/aegisflow_order
+      ORDER_DB_RUNTIME_USER: aegisflow_order_runtime
+      ORDER_DB_MIGRATION_USER: aegisflow_order_migrator
+      ORDER_DB_RUNTIME_PASSWORD: ${ORDER_DB_RUNTIME_PASSWORD:?Run dev-init.ps1}
+      ORDER_DB_MIGRATION_PASSWORD: ${ORDER_DB_MIGRATION_PASSWORD:?Run dev-init.ps1}
+      ORDER_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_ORDER_PASSWORD: ${KAFKA_ORDER_PASSWORD:?Run dev-init.ps1}
+      ORDER_OUTBOX_RELAY_ENABLED: "true"
+      ORDER_OUTBOX_ALLOWED_TENANTS: demo-tenant
+  payment:
+    <<: *app
+    image: aegisflow/payment:local
+    pull_policy: never
+    networks: [payment-data, kafka-events]
+    ports: ["127.0.0.1:8082:8080"]
+    depends_on:
+      payment-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      SERVER_ADDRESS: 0.0.0.0
+      SERVER_PORT: "8080"
+      PAYMENT_DB_URL: jdbc:postgresql://payment-db:5432/aegisflow_payment
+      PAYMENT_DB_RUNTIME_USER: aegisflow_payment_runtime
+      PAYMENT_DB_MIGRATION_USER: aegisflow_payment_migrator
+      PAYMENT_DB_RUNTIME_PASSWORD: ${PAYMENT_DB_RUNTIME_PASSWORD:?Run dev-init.ps1}
+      PAYMENT_DB_MIGRATION_PASSWORD: ${PAYMENT_DB_MIGRATION_PASSWORD:?Run dev-init.ps1}
+      PAYMENT_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_PAYMENT_PASSWORD: ${KAFKA_PAYMENT_PASSWORD:?Run dev-init.ps1}
+      PAYMENT_OUTBOX_RELAY_ENABLED: "true"
+      PAYMENT_OUTBOX_ALLOWED_TENANTS: demo-tenant
+  warehouse:
+    <<: *app
+    image: aegisflow/warehouse:local
+    pull_policy: never
+    networks: [warehouse-data, kafka-events]
+    ports: ["127.0.0.1:8083:8080"]
+    depends_on:
+      warehouse-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      SERVER_ADDRESS: 0.0.0.0
+      SERVER_PORT: "8080"
+      WAREHOUSE_DB_URL: jdbc:postgresql://warehouse-db:5432/aegisflow_warehouse
+      WAREHOUSE_DB_RUNTIME_USER: aegisflow_warehouse_runtime
+      WAREHOUSE_DB_MIGRATION_USER: aegisflow_warehouse_migrator
+      WAREHOUSE_DB_RUNTIME_PASSWORD: ${WAREHOUSE_DB_RUNTIME_PASSWORD:?Run dev-init.ps1}
+      WAREHOUSE_DB_MIGRATION_PASSWORD: ${WAREHOUSE_DB_MIGRATION_PASSWORD:?Run dev-init.ps1}
+      WAREHOUSE_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_WAREHOUSE_PASSWORD: ${KAFKA_WAREHOUSE_PASSWORD:?Run dev-init.ps1}
+      WAREHOUSE_OUTBOX_RELAY_ENABLED: "true"
+      WAREHOUSE_OUTBOX_ALLOWED_TENANTS: demo-tenant

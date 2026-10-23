@@ -1,5 +1,28 @@
 # Codebase guide
 
+## P0.5-C deployment walkthrough (implemented, live verification pending)
+
+Actual paths: compose.apps.yaml defines the four app services; scripts/dev-stack.ps1 orchestrates lifecycle; scripts/verify-development-stack.ps1 verifies configuration and actual runtime/restart. dev-init.ps1 owns private initialization; dev-infrastructure-up.ps1 owns role/bootstrap and Kafka provisioning. No new Java business modules.
+
+Flow: explicit private file -> five infrastructure services healthy -> database role bootstrap and Kafka job complete -> four postgres-profile images start -> existing Flyway migrations -> existing workers consume only demo-tenant -> health gates. Business-event success is D, not inferred from HTTP UP.
+
+Debug exercise: if Core fails startup, keep its container and read its local logs privately; check own database migration access and kafka:9092 without printing environment configuration. If HTTP is UP but no event appears, check trusted tenant and worker flags, then existing inbox/quarantine and relay evidence. Do not broaden tenant trust or reset storage to hide a failure.
+
+### Q81. Why use internal service names rather than localhost?
+Inside a container localhost is itself. owner-db:5432 and kafka:9092 resolve on the deliberately attached networks.
+
+### Q82. Why does dev-stack up run provisioning before applications?
+Healthy infrastructure does not prove roles, topics or ACLs exist. Explicit successful provisioning precedes app startup and Flyway.
+
+### Q83. Why keep consumer group and channel stable across restart?
+They identify durable consumption and intake provenance. Randomizing them could replay retained history or alter source identity unexpectedly.
+
+### Q84. Does a healthy app prove the business pipeline works?
+No. C checks startup, wiring and restart. D must demonstrate actual owner business operations through detection and evidence.
+
+### Q85. Why does down stop rather than remove the stack?
+The conservative local command retains containers, networks, volumes and credentials. Up resumes them; deleting storage is never an implicit lifecycle action.
+
 P0.5-B now verified2026-10-23: live owner-only DB topology, twelve sibling-route exclusions, seven explicit Kafka metadata authorization denials with four positive controls supplement the earlier persistent authentication/restart gates. Application-container credential isolation awaits C. Exact ACL inventory plus metadata denials is not a new forbidden-write execution claim. Kafka-only Compose orphan warnings refer to legitimate database services: never delete them with --remove-orphans.
 
 2026-10-23 boundary discovery repair: owner b2b878c run failed before topology assertions because docker inspect received no ID. Evidence .cache/p05b-boundaries/2e86b05e2abd4992b0c429c35cb6f9e7 retained. Exact reason discovery returned empty is unconfirmed; do not claim network failure. Added scripts/lib/development-boundaries.ps1 strict single-ID normalization/count/native-exit guard, ps --all to include stopped containers, and explicit running-state check with non-destructive startup instruction. verify-boundary-guards.ps1 passed8 discovery cases and3 parser checks; no Docker operations. Next rerun verify-development-boundaries.ps1; if stopped, use existing dev-infrastructure-up.ps1 before retry. Credentials/volumes unchanged, no restart or passed gates repeated; B/C still incomplete. This local checkpoint follows b2b878c; no push.
