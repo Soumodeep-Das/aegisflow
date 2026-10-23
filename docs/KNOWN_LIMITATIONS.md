@@ -173,3 +173,7 @@ Until supported by dated reproducible evidence, do not claim:
 - support for real financial recovery.
 
 Future milestones should convert a limitation to a demonstrated capability only by linking the implementing paths, exact test/benchmark command, factual result, environment and remaining boundary.
+# P0.5-D current limitation — 2026-10-24
+
+Persistent business acceptance remains incomplete. New LocalDemo CLI guards passed6 unit cases, but database-backed hold/release, live CLI wiring, per-run tenant orchestration, full reactor regression, image refresh and scenarios A/B/C/full-stack retention have not run. Existing nine-service C images remain unchanged and do not contain the new driver. Do not invoke demo commands manually against the existing demo-tenant trust policy; the pending orchestrator must configure the exact new synthetic tenant. No end-to-end or P0.5 completion claim.
+

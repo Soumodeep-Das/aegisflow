@@ -7,6 +7,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class OrderSimulatorApplication {
 
     public static void main(String[] args) {
+        if (java.util.Arrays.asList(args).contains("--aegisflow.local-demo=true")) {
+            LocalDemo.run(args);
+            return;
+        }
         SpringApplication.run(OrderSimulatorApplication.class, args);
     }
 }

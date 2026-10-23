@@ -4,6 +4,8 @@ A Java 21/Spring Boot control plane that observes independently owned Order, Pay
 
 ## Current status
 
+2026-10-24: D is in progress, not verified. An opt-in local simulator CLI driver is implemented with six passing guard tests; the persistent demonstration runner and database-backed driver verification remain unfinished. No new owner demo command is ready. Existing C images/stack remain unchanged.
+
 P0.5-C is live verified on `a3e4a2b`: all nine persistent services healthy, four applications checked before/after clean application-only restart, infrastructure and credentials retained. No verification rerun needed. Lifecycle commands use scripts/dev-stack.ps1 -Action up, status, stop, down or restart-apps; storage is retained. P0.5-D full business demonstration remains unimplemented/unverified; full P0.5 is not complete.
 
 P0.4 is complete at `1d0b1f5`. P0.5-A/B/C are verified within their documented scopes. The local stack now includes Core, Order, Payment, Warehouse, four owner databases and Kafka. D must prove business behavior on that ordinary persistent deployment.

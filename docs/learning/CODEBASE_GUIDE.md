@@ -1,5 +1,11 @@
 # Codebase guide
 
+## P0.5-D partial driver (2026-10-24)
+
+Each simulator now has LocalDemo.java alongside its application main. Only the explicit --aegisflow.local-demo=true command selects it; ordinary startup does not seed data. It starts a separate non-web postgres context with relay/Flyway disabled, then calls the existing owner business method and closes. UUID-scoped tenant/transaction/resource identities make later replay assertions traceable. The Warehouse driver's TransactionTemplate encloses both reservation/outbox creation and the delivery hold, so a running relay cannot claim the uncommitted event between those steps. Release changes scheduling only, never event occurrence or identity. There is no public mutation API.
+
+Debugging: distinguish a late business occurrence from late delivery. A newly created Warehouse outcome after the inventory deadline cannot simply be relabelled on-time; D must hold and release an originally on-time event. The host orchestration and database-backed tests are still pending. Six guard tests prove only argument/operation rejection, not transaction or scenario correctness. Existing C trust list demo-tenant does not include new demo-UUID tenants; do not run the new driver before the scoped orchestrator configures matching trust.
+
 P0.5-C live acceptance now passed on a3e4a2b (2026-10-23): nine healthy services, eight app/pass records around clean app-only restart, unchanged infrastructure identities/private credentials. This validates the deployment walkthrough below, not D business-flow behavior. Optional status command: scripts/dev-stack.ps1 -Action status. Synthetic tenant is demo-tenant; consumer group/channel remain stable across restart.
 
 ## 2026-10-23 — repair lifecycle action shadowing
