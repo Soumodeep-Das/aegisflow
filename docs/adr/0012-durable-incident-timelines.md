@@ -1,5 +1,7 @@
 # ADR 0012: Recoverable incident creation and immutable timeline
 
+> **Implementation evidence update — 2026-10-24:** The 21 P0.4-C PostgreSQL cases passed across the recorded 20-case run and separate restart run. P0.4-D/P0.5 then demonstrated incidents and late-evidence timelines end-to-end. Lifecycle remains DETECTED; SATISFIED is not authoritative resolution. See [current status](../STATUS.md) and the [preserved evidence ledger](../evidence/TEST_RESULTS.md). The original decision, date, context and consequences below are unchanged.
+
 - **Status:** Accepted; P0.4-C PostgreSQL gate verified across20 earlier passes plus1 successful restart-only rerun on2026-10-21. Full D pipeline gate remains separate.
 - **Date:** 2026-10-21
 - **Scope:** detection only, based on verified A/B and ADR0010/0011

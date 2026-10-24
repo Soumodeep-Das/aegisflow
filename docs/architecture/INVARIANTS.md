@@ -1,24 +1,24 @@
-# Business and Safety Invariants
+# Business and safety invariants
 
-**P0.4 COMPLETE — 2026-10-21.** Final packaged acceptance on `ab1089c` passed1/0/0/0 at22:55:29IST: actual simulator relays, Core intake/projection/detection/incidents, healthy workflow, missing observed outcome, and Core process restart with late evidence. Component pipeline7 cases passed across6+1 runs; A/B/C gates remain verified. Prior clean reactor168 plus scoped clock-fix6 regressions are separate results, not a new combined run. Historical failed attempts below are preserved and superseded by their documented successful reruns. No further verification command is required now. STOP: P0.5, recovery, AI, deployment and pushes require new authorization.
+[Current P0.5 status](../STATUS.md): INV-002 is implemented and verified; other business rules and recovery-specific SAFE controls remain design contracts. Prior milestone notes are preserved in [reference history](../history/REFERENCE_THROUGH_P05.md).
 
-**Current status,2026-10-21:** P0.4-A/B/C are implemented and verified, including C's successful restart-only gate. The earlier implementation/pending statements below are historical. INV-002 evaluates pinned45-second duration plus15-second lateness with pending projection suppression; immutable evaluation and DETECTED incident history preserve what was observed, not authoritative remote failure. New D real pipeline and executable acceptance tests are implemented but unverified because Docker/loopback access is denied here. No invariant semantics or production code changed in D; P0.4 remains incomplete pending host acceptance.
+## Implemented INV-002
 
-**Current P0.4-C checkpoint,2026-10-21:** A/B remain verified. C durable incident/timeline implementation has10 focused policy/architecture passes;21 database checks skipped due Docker access denial. Run `scripts/verify-incidents.ps1` for the pending17 C +4 Core PostgreSQL checks. No permanent .env or dedicated Compose apps needed. C/D and full P0.4 are not complete; no P0.5/recovery/AI/push. Earlier checkpoints below are history.
+| Observation at a consistent snapshot | Current decision |
+|---|---|
+| Pending or BLOCKED projection work | UNKNOWN / PROJECTION_UNSETTLED |
+| Missing/ambiguous Order or unsupported/time-inconsistent evidence | UNKNOWN; no new incident |
+| Matching on-time InventoryReserved with exact SKUs/quantities | SATISFIED |
+| Matching on-time InventoryRejected with OUT_OF_STOCK | SATISFIED without inventing item quantities |
+| Missing/mismatched/contradictory/late outcome before enforcement | UNKNOWN / AWAITING_ENFORCEMENT |
+| Same defect at/after enforcement with settled evidence | VIOLATED with the specific explanation code |
+| On-time Warehouse outcome observed after a violation | New SATISFIED evaluation; original DETECTED incident/history retained |
 
-## Active P0.4-A boundary — 2026-10-21
+The inventory deadline is 45 seconds after Order occurrence; enforcement adds 15 seconds once. Core persists contract/configuration, fact provenance and evaluation time. An injected Java Clock supports deterministic tests; the persistent demonstration uses actual elapsed time. Only VIOLATED opens an incident. No authoritative read, repair or RESOLVED transition is implemented.
 
-No INV-002 evaluator or incident exists yet. New correlation code persists configurable 45-second inventory duration plus 15-second lateness exactly once, pinned to a configuration version per transaction. InventoryRejected is observed evidence, never automatically absence; mismatched quantities are retained for the future detector, not labelled SATISFIED. Unsupported changes between terminal source outcomes and identity conflicts stay CONFLICT. A's pure tests pass; actual PostgreSQL gate remains skipped/unverified.
+## Design catalog — scope labels
 
-P0.4-B must check pending/BLOCKED inbox projection work under the shared transaction gate before concluding missing observed evidence. Event absence is not authoritative Warehouse failure. Durably stored deadlines must remain discoverable after crashes. The older dated unverified P0.3 snapshots below are historical; its gates have since passed.
-
-**Core P0.3 source update,2026-10-20:** IntakePolicy validates source/tenant authority, InboxStore uses a tenant/source/event composite unique key and immutable canonical comparison, and KafkaInboxConsumer acknowledges only after committed acceptance/quarantine. Core V2 grants append-only evidence writes and checks payload/relational identities.36 unit/boundary/port tests pass; real Core database/transport gates remain unverified here. SAFE-001/002/004 intake guards do not implement business invariant evaluation, projection or recovery. Source-relay live gates are already passed.
-
-**Status:** Phase 0 specification. Deadlines are configurable design assumptions until product values are chosen. No invariant engine or measured result exists yet.
-
-**P0.3-B verified subset, 2026-10-19:** the opt-in Order relay's SAFE-005 claim/completion mechanism uses DB-clock leases and tenant/owner/fencing compare-and-set. All nine real PostgreSQL relay ITs now pass on the host, proving the recorded SQL concurrency/stale-completion cases. Actual Kafka replay and inbox idempotency remain unverified; no recovery worker or invariant engine was added. Older no-worker text below is superseded only for this Order transport worker.
-
-P0.2 adds storage guards relevant to SAFE-001/002/004 and INV-005: separate database roles, composite tenant references, stable replay/event identities, optimistic versions, and same-aggregate/version outbox uniqueness. Producer input/hash vectors and real PostgreSQL assertions passed at the 2026-10-16 host gate. This proves the recorded storage scenarios, not an invariant engine or complete tenant authentication. No invariant evaluation, authenticated API, worker, recovery or resolution implementation exists yet. See [ADR 0008](../adr/0008-persistence-primitives-and-database-roles.md) and [test evidence](../evidence/TEST_RESULTS.md).
+The following original rule/safety catalog defines broader target behavior. INV-001/003/004/005 are not separate implemented evaluators. Full confirmation/cancellation choreography and recovery preconditions are planned. The current implementation details above and ADRs 0011/0012 take precedence over generic future lifecycle language.
 
 ## 1. Evaluation model
 
@@ -32,7 +32,7 @@ An invariant is a versioned, machine-evaluable rule with:
 - allowed outcomes and explicit `SATISFIED`, `VIOLATED`, or `UNKNOWN` result;
 - evidence freshness requirements, severity, and permitted recovery classes.
 
-The evaluator records the exact fact IDs, invariant version, configuration version, `evaluatedAt`, base `dueAt`, and `enforceAfter = dueAt + applicable lateness allowance`. It does not silently reinterpret old incidents when rules change. Until `enforceAfter`, an absent outcome is pending. The decision lateness allowance is applied exactly once; closure/cleanup have no additional allowance in this contract. Contradictory facts or insufficient authority produce an ambiguity incident and prohibit automatic recovery.
+The evaluator records the exact fact IDs, invariant version, configuration version, `evaluatedAt`, base `dueAt`, and `enforceAfter = dueAt + applicable lateness allowance`. It does not silently reinterpret old incidents when rules change. Until `enforceAfter`, an absent outcome is pending. The decision lateness allowance is applied exactly once; closure/cleanup have no additional allowance in this contract. For the broader planned workflow, contradictions prohibit recovery. Current INV-002 uses the explicit UNKNOWN/VIOLATED rules above, and UNKNOWN alone does not open an incident.
 
 ## 2. Initial `ECOM_ORDER_V1` workflow
 
@@ -49,7 +49,7 @@ Suggested short demo durations make tests observable; they are not production pr
 | `eventLatenessAllowance` | 15 seconds | Payment and inventory decision deadlines |
 | `evidenceMaxAge` | 30 seconds at execution | authoritative read `collectedAt` |
 
-All values are stored in the workflow contract used for an evaluation. Tests use a controllable clock rather than sleeping.
+Current projections/evaluations persist inventory duration and lateness; other parameters remain future configuration. Focused evaluator tests use a controllable clock, while the persistent deployment demonstration verifies real elapsed deadlines.
 
 ## 3. Business invariants
 

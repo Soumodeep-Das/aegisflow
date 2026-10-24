@@ -1,5 +1,7 @@
 # ADR 0010: Durable projection after immutable inbox acceptance
 
+> **Implementation evidence update — 2026-10-24:** Immutable ACCEPTED intake remains independent from atomic fact/projection/progress transactions. P0.4 and P0.5 verified durable continuation without reinterpreting the inbox as a mutable PROCESSED queue. See [current status](../STATUS.md) and the [preserved evidence ledger](../evidence/TEST_RESULTS.md). The original decision, date, context and consequences below are unchanged.
+
 - **Status:** Accepted for approved P0.4-A; real PostgreSQL gate required before detection
 - **Date:** 2026-10-20
 - **Supersedes:** old same-transaction inbox/PROCESSED wording in DATA_MODEL, EVENT_CONTRACTS and FR-002; preserves P0.3 behavior

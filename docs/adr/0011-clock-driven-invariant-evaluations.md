@@ -1,5 +1,7 @@
 # ADR 0011: Clock-driven immutable invariant evaluations
 
+> **Implementation evidence update — 2026-10-24:** P0.4-B Clock-driven INV-002 and durable evaluation gates passed, followed by packaged and persistent local demonstrations. Other invariants and authoritative recovery semantics remain outside the delivered scope. See [current status](../STATUS.md) and the [preserved evidence ledger](../evidence/TEST_RESULTS.md). The original decision, date, context and consequences below are unchanged.
+
 - **Status:** Accepted; real PostgreSQL gate passed on892ac17 (2026-10-21), see TEST_RESULTS for scope
 - **Date:** 2026-10-21
 - **Builds on:** ADR0010 and verified P0.4-A; no intake or projection contract replacement

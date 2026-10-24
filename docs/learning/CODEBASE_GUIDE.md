@@ -1,8 +1,100 @@
 # Codebase guide
 
+Use this guide to follow real code through the delivered detection pipeline. [Current status](../STATUS.md) and the [runbook](../LOCAL_DEPLOYMENT.md) are the current authority for scope and commands. Milestone tutorials below preserve what was learned, including resolved failures and earlier limits; their pending/next-step prose describes its original checkpoint, not today's work queue.
+
+## Learning navigation
+
+| Topic | Start here | Interview questions |
+|---|---|---|
+| Build and module foundation | [Reactor](#maven-reactor-and-four-deployables), [current module map](../architecture/MODULE_BOUNDARIES.md) | Q1, Q11–Q15 |
+| Transactional persistence | [JPA, Hibernate and SQL](#spring-data-jpa-hibernate-and-explicit-sql) | Q16–Q20 |
+| Outbox and Kafka delivery | [Order relay](#p03-b-order-outbox-relay--historical-implementation-checkpoint-2026-10-19), [real broker verification](#verified-order-outbox-to-kafka-gate-2026-10-19) | Q21–Q45 |
+| Core inbox and quarantine | [Intake](#core-durable-intake--verified-in-p03-original-implementation-notes-2026-10-20) | Q46–Q50 |
+| Packaged workers and ports | [Executable scheduling](#final-executable-jar-scheduling-check-verified2026-10-20) | Q51–Q55 |
+| Correlation and projections | [P0.4-A](#p04-a-from-accepted-message-to-durable-projection) | Q56–Q60 |
+| Clock-driven invariant detection | [P0.4-B](#p04-b-time-driven-decisions-not-incidents) | Q61–Q65 |
+| Incidents and evidence | [P0.4-C](#p04-c-durable-incident-and-evidence-timeline), [P0.4-D](#p04-d-acceptance-walkthrough--verified-original-gate-notes-preserved) | Q66–Q75 |
+| Docker packaging and credentials | [P0.5-A](#p05-a-image-packaging-walkthrough--2026-10-22), [security](../security/THREAT_MODEL.md#current-control-status) | Q76–Q80 |
+| Persistent deployment | [P0.5-C](#p05-c-deployment-walkthrough--verified-original-gate-notes-preserved), [P0.5-D](#persistent-d-walkthrough--verified-2026-10-24) | Q81–Q90 |
+| Debugging/faults | [Current exercise](#debugging-exercise-follow-a-missing-outcome), plus preserved exercises in each milestone | Q6, Q8, Q10, Q36–Q40, Q70–Q75, Q90 |
+| Future recovery/AI concepts | [Historical Phase 0 concepts](#historical-phase-0-design-concepts); not implemented | Q2–Q5, Q7, Q9 |
+
+All 90 numbered questions and answers are retained. They appear with their milestone, not in numeric page order. Future-design questions teach constraints; they do not imply the feature exists.
+
+## Current end-to-end walkthrough
+
+### 1. Owner command and transactional state
+
+The persistent demonstration starts at [verify-development-pipeline.ps1](../../scripts/verify-development-pipeline.ps1). It warms three opt-in `LocalDemo.java` command contexts, releases Order first, then Payment/Warehouse. Each context receives only its owner's database credentials. These are real business operations, not Core SQL writes or a public command API:
+
+- [Order LocalDemo](../../simulators/order-service/src/main/java/com/aegisflow/simulator/order/LocalDemo.java) calls `OrderPersistenceService.create`.
+- [Payment LocalDemo](../../simulators/payment-service/src/main/java/com/aegisflow/simulator/payment/LocalDemo.java) calls `PaymentCreation.recordInitialOutcome`.
+- [Warehouse LocalDemo](../../simulators/warehouse-service/src/main/java/com/aegisflow/simulator/warehouse/LocalDemo.java) calls `ReservationApplicationService.createReservation`.
+
+Spring Data JPA supplies aggregate persistence; Hibernate maps entities and optimistic versions; JDBC handles explicit SQL where atomic replay/outbox behavior needs database control. A local transaction commits business state, the idempotency result and outbox intent together. A rollback cannot leave only one side committed. Tenant-scoped unique keys arbitrate repeated/concurrent commands; stable IDs make their results replayable.
+
+Four databases preserve four authorities. Core observes history in its own database; it cannot fix a simulator by writing its tables. Flyway migrates each owner's schema independently with a migration role; ordinary business work uses its restricted runtime role.
+
+### 2. Outbox to Kafka
+
+The three owner `*OutboxRelay` classes claim pending rows using a bounded lease/fencing token. They publish outside the short claim transaction and record PUBLISHED only after broker acknowledgement. If Kafka accepts an event but completion rolls back, the same event ID can be sent again. That is **at-least-once delivery**, not a bug that Kafka producer idempotence can universally remove.
+
+Kafka source topics/ACLs constrain which service may publish where. They do not authenticate payload tenant IDs; Core also checks trusted source-to-tenant allowlists. Host applications use the host listener; containers use `kafka:9092`. See [contracts](../architecture/EVENT_CONTRACTS.md) and [network boundaries](../architecture/SYSTEM_ARCHITECTURE.md).
+
+### 3. Durable intake before offsets
+
+[KafkaInboxConsumer](../../control-plane/src/main/java/com/aegisflow/core/eventing/internal/KafkaInboxConsumer.java) validates via the eventing module and [InboxStore](../../control-plane/src/main/java/com/aegisflow/core/eventing/internal/InboxStore.java). Accepted intake is immutable; invalid/unsupported input has a durable technical quarantine outcome. PostgreSQL uniqueness and content checks distinguish a legitimate duplicate from conflicting reuse of an identity.
+
+Kafka offsets advance only after durable handling. A crash after commit but before acknowledgement causes safe redelivery; a database rollback leaves the record retryable. Kafka offsets and PostgreSQL are not one distributed transaction.
+
+### 4. Facts and projection in a separate transaction
+
+[CorrelationProjector](../../control-plane/src/main/java/com/aegisflow/core/correlation/internal/CorrelationProjector.java) reads uncompleted accepted intake through the eventing public port. It atomically writes immutable facts, updates the tenant/transaction projection and records independent durable progress. It does not mutate ACCEPTED into PROCESSED.
+
+This separation lets intake remain durable while projection retries after rollback or restart. A source event arriving before Order can be retained and incorporated later. Bounded or blocked projection work remains visible as unsettled, not silent proof of a missing Warehouse outcome.
+
+### 5. Clock-driven INV-002
+
+[DeadlineDetector](../../control-plane/src/main/java/com/aegisflow/core/detection/internal/DeadlineDetector.java) discovers durable due work; [InventoryInvariant](../../control-plane/src/main/java/com/aegisflow/core/detection/internal/InventoryInvariant.java) evaluates a consistent tenant-scoped snapshot. Versioned demo settings give inventory 45 seconds from Order occurrence, with another 15 seconds for observation lateness before enforcement.
+
+An injectable Java `Clock` makes boundary tests deterministic without sleeping 60 seconds. The persistent demonstration uses actual time and holds transport of an originally on-time Warehouse outcome; it does not backdate an operation. Matching on-time InventoryReserved or a valid definitive InventoryRejected can satisfy the outcome contract. Missing observed evidence after enforcement can violate it; pending projector work or contradictory evidence can require UNKNOWN. See the [decision table](../architecture/INVARIANTS.md).
+
+The durable sweep and shared database coordination prevent restart or racing workers from losing work or evaluating an avoidably stale projection as a final absence.
+
+### 6. Incident and immutable evidence
+
+[IncidentRecorder](../../control-plane/src/main/java/com/aegisflow/core/detection/internal/IncidentRecorder.java) finds eligible evaluations not yet recorded, so a crash after evaluation cannot permanently lose the incident. A local transaction creates/deduplicates the episode and appends its timeline and supporting fact references. PostgreSQL uniqueness is the final duplicate guard.
+
+The recorded P0.5 missing case produced one MEDIUM DETECTED incident with `MISSING_OBSERVED_OUTCOME`, INV-002/contract/config versions, tenant/transaction scope and deadline timestamps. Its timeline retained UNKNOWN → VIOLATED → UNKNOWN (projection unsettled) → SATISFIED and nine supporting fact references. The later assessment did not delete the violation.
+
+SATISFIED means the newly observed evidence satisfies the rule. RESOLVED would require an independent authoritative service-state check and an approved lifecycle implementation. Neither exists in P0; the original incident stays DETECTED.
+
+### 7. Deployment preserves these boundaries
+
+[dev-stack.ps1](../../scripts/dev-stack.ps1) provisions roles/topics before starting four apps alongside four PostgreSQL services and Kafka. Each app joins only its owner database network and the Kafka events network. Core has no sibling database credentials. The retained private file supplies stable generated credentials; `stop` and the intentionally non-destructive `down` preserve storage.
+
+Separate bootstrap/migration/runtime identities, non-root/read-only application containers and loopback host publishing reduce local risks; they do not make plaintext SASL or trusted local operators a production security boundary.
+
+## Debugging exercise: follow a missing outcome
+
+Use existing evidence first; do not rerun a destructive or state-changing command just to inspect a result.
+
+1. Locate the recorded P0.5 run in [TEST_RESULTS](../evidence/TEST_RESULTS.md#p05-acceptance-evidence). Open its ignored `results.json` and scenario/timeline evidence locally; do not share credentials.
+2. Follow the same tenant/transaction and six event IDs through owner outbox results, Core accepted events, immutable facts and projections. Expected: original event identity survives delivery hold and restart.
+3. Compare Order occurrence, `due_at`, enforcement and Warehouse occurrence/observation times. Expected: the held outcome occurred on time but was not observed at enforcement.
+4. Read evaluation explanation codes before inferring a remote failure. Expected: MISSING_OBSERVED_OUTCOME describes absent observation; PROJECTION_UNSETTLED is a conservative intermediate result.
+5. Compare the incident ID and timeline before/after late evidence. Expected: one unchanged DETECTED incident with appended history, not a new incident or RESOLVED.
+6. If a fresh intentional run fails, preserve its directory and trust overlay. Check command readiness before blaming Kafka, then relay publication, intake/quarantine, projection progress and deadline evaluation in that order. Follow the [runbook](../LOCAL_DEPLOYMENT.md) before retrying.
+
+This exercise reads retained evidence. New runs of `verify-development-pipeline.ps1` deliberately create synthetic business data and perform controlled restarts; they are not read-only diagnostics.
+
+## Preserved milestone tutorials and resolved debugging history
+
+The following material retains the original explanations, exercises, commands, counts and Q&As. Earlier “pending,” “next,” and environment-denial sentences describe their dated checkpoint. Do not use those sentences to resume completed work; use [HANDOFF](../HANDOFF.md). Tutorial gate headings below now identify recorded completion, while failure details remain visible.
+
 Verified2026-10-24: the persistent D walkthrough below now has actual host evidence at .cache/p05d/7cf1bf26-a614-4bb1-93fa-31c2bf3033f7. All six real owner events traversed outbox/Kafka/Core. The same incident preserved UNKNOWN → VIOLATED → UNKNOWN(PROJECTION_UNSETTLED) → SATISFIED evaluations while remaining DETECTED through Core and full-stack restart. Fresh reactor182/0/0/0. The projection-backlog UNKNOWN is a safe intermediate assessment, not another incident. Historical implementation-only labels below describe their original checkpoints; latest TEST_RESULTS/HANDOFF record closure. Q86–Q90 and the deployment debugging exercise remain applicable.
 
-## Persistent D walkthrough — implemented, live host acceptance pending
+## Persistent D walkthrough — verified 2026-10-24
 
 scripts/verify-development-pipeline.ps1 builds fresh images through dev-build-images.ps1, uses dev-stack.ps1 to establish prerequisites, and applies a secret-free exact-tenant Compose overlay. Each simulator's LocalDemo.java starts a non-web owner-only context in a transient command container. awaitBarrier writes /tmp readiness and waits at most180 seconds; the runner releases Order first, then Payment/Warehouse, checking real occurrence timestamps rather than altering the45-second deadline. LocalDemoTests covers release/timeout without Docker. scripts/test-development-pipeline.ps1 extracts only helper definitions and mocks Docker; it never executes the deployment body.
 
@@ -32,7 +124,7 @@ Only helper behavior such as argument routing, query scope and bounded waiting. 
 
 Fixture debugging correction (2026-10-24): LocalDemoIT must parse the pinned image with DockerImageName and explicitly declare asCompatibleSubstituteFor("postgres"), as existing tests do. A String constructor compiled but rejected this digest reference during static initialization, before any PostgreSQL test ran. LocalDemoTests now constructs the fixture without starting Docker, catching that error in the focused unit gate (3 passed). This still cannot prove container startup or SQL assertions.
 
-## D fixture safety gate (2026-10-24; real database execution pending)
+## D fixture safety gate — verified; original preparation notes (2026-10-24)
 
 Warehouse LocalDemoIT lives beside LocalDemoTests in the simulator's root test package. It calls the exact package-local LocalDemo.execute method used by the CLI, using a non-web Spring context and the existing restricted PostgreSQL roles. TransactionTemplate joins ReservationApplicationService's local transaction: business state and the held retry schedule must commit or roll back together. Releasing transport changes next_attempt_at, never the event envelope or occurrence time. The new tests check replay, rollback, tenant isolation and refusal to release nonexistent state. They do not prove a separate CLI process starts correctly, Kafka delivery or persistent P0.5-D acceptance.
 
@@ -52,7 +144,7 @@ Host1f526d6 C verifier started/bootstraped infrastructure but erroneously stoppe
 
 Actual local checks:27 credential/file/ACL/environment/Compose tests pass including5 action-shadow regressions; corrected static unified Compose passes (.cache/p05c/3b26ec114716427b8d9f709357596438); lifecycle parser passes. No Java/business/source/credential changes or actual Docker integration pass. C remains unverified. Next rerun verify-development-stack.ps1: up restores retained infrastructure before app startup. No need to regenerate credentials, rebuild images or repeat A/B restart suites. B remains complete despite stale helper console wording. This following local repair starts clean1f526d6; no push/D work.
 
-## P0.5-C deployment walkthrough (implemented, live verification pending)
+## P0.5-C deployment walkthrough — verified; original gate notes preserved
 
 Actual paths: compose.apps.yaml defines the four app services; scripts/dev-stack.ps1 orchestrates lifecycle; scripts/verify-development-stack.ps1 verifies configuration and actual runtime/restart. dev-init.ps1 owns private initialization; dev-infrastructure-up.ps1 owns role/bootstrap and Kafka provisioning. No new Java business modules.
 
@@ -169,7 +261,7 @@ Clock wiring lesson: control-plane/src/main/java/com/aegisflow/core/CoreClockCon
 
 **Latest repair checkpoint,2026-10-21:** owner host on57ad5b1 passed the clean168-test reactor and6 of7 D pipeline cases. The sole error was a faulty contradiction fixture attempting a second reservation forbidden by uq_reservations_business_transaction. Test-only repair now injects an explicitly contradictory Warehouse Kafka claim while preserving the single authoritative RESERVED row. Two fixture unit tests passed; live rerun pending. Use `scripts/verify-p04-final.ps1 -Gate Remaining` for only the corrected1-case gate followed by the unverified packaged1-case gate. Do not repeat clean168 or the6 passing cases. P0.4 remains incomplete; older full-rerun instructions below are historical. No production/schema/grant changes.
 
-## P0.4-D acceptance walkthrough (implemented, live verification pending)
+## P0.4-D acceptance walkthrough — verified; original gate notes preserved
 
 Repair lesson: a valid service-owned uniqueness constraint can reject an invalid test setup before the intended assertion. WarehouseContradictionFixture.java now preserves the real original reservation and clones its envelope into a deliberately faulty source claim with a new event ID and conflicting outcome for the same reservation/version. Its two unit tests prove the original envelope and business identity are not mutated. DetectionPipelineScenario.contradictoryWarehouseEvidenceCreatesIncident sends that claim through authenticated Kafka and verifies one authoritative RESERVED row remains. A contradiction test is not permission to weaken tenant/transaction uniqueness. Six pipeline cases have since passed on the owner host; only this repaired case and packaged acceptance remain.
 
@@ -441,7 +533,7 @@ The host run on `c96dc5c` passed all36 Core unit/boundary/port checks and10 real
 Debug exercise: compare the saved Core startup report's offending Warehouse/Order V1 paths with `control-plane/target/classes/db/migration`, which contains Core V1/V2 only. The extra migrations were classpath entries, not files copied into Core or histories needing deletion. Resume with `verify-core-inbox.ps1 -CoreStartupOnly`; expected4 fresh passes. Do not repeat the successful pipeline or rename historical migrations. The prior implementation checkpoint below is preserved history; its local-only/unverified statements are superseded by this real pipeline evidence.
 
 
-## Core durable intake implementation (2026-10-20; live gate pending)
+## Core durable intake — verified in P0.3; original implementation notes (2026-10-20)
 
 Actual paths:
 
@@ -602,7 +694,7 @@ Manual calls place the broker outage and completion rollback at precise points w
 
 The outage poll has a duration bound and persists a retry timestamp between DB-clock observations plus the first backoff. Setting that test row's retry time in the future proves repeated polls do not claim it; making it due after broker restart allows delivery with unchanged identity. This bounds retry rate, not total lifetime attempts.
 
-## Current P0.3-B slice: Order outbox relay (2026-10-19)
+## P0.3-B Order outbox relay — historical implementation checkpoint (2026-10-19)
 
 The Order host gate now passes on source `b0f1a16`: **27 default +17 real PostgreSQL tests**, zero failures/errors/skips, including all nine relay ITs. Saved XML reports independently confirm the owner's run finished2026-10-19 at02:48:14IST. Earlier sandbox loopback errors/skips remain in evidence; no rerun is needed. Actual Order DB→Kafka delivery/outage/ack-crash testing and enabled-profile startup are next, followed by Payment/Warehouse relays and Core inbox. This is not a completed P0.3 delivery flow.
 
@@ -672,7 +764,7 @@ Primary references for this slice: [PostgreSQL locking clauses](https://www.post
 
 **Resolved image setup lesson (2026-10-16):** an earlier host run passed five Core default tests and connected Testcontainers to Docker, then failed PostgreSQL image compatibility validation before database startup. All four ITs now explicitly declare the unchanged digest pin compatible with `postgres`. `control-plane/src/test/java/com/aegisflow/core/PostgresImageConfigurationTests.java` checks container initialization without Docker. That regression alone cannot prove transactions; the later real PostgreSQL results above supply the database evidence.
 
-## Read this first: the P0.2 checkpoint
+## Historical P0.2 starting checkpoint
 
 P0.1's four application foundations and ten control-plane module boundaries are preserved. P0.2 now has source for independent Flyway migrations, database role bootstrap, and local transactional state/idempotency/outbox paths in Order, Payment, and Warehouse. These application methods are Java boundaries for later HTTP workflows; no business HTTP controller, authentication, Kafka publisher/consumer, incident detection, recovery, or AI behavior exists.
 
@@ -1229,6 +1321,6 @@ Dependencies describe capabilities available to the artifact; a profile selects 
 
 It uses several independent layers: Maven modules avoid compile-time implementation sharing; Enforcer bans deployable artifacts as dependencies; package placement limits component scanning; Spring Modulith verifies ten control-plane modules and their allowed dependencies; and ArchUnit/bytecode tests reject forbidden package references. No single mechanism proves everything, so the layers cover different accidental-coupling paths.
 
-## Honest next step
+## Historical P0.4-A next-step note — superseded
 
 P0.4-A now needs actual PostgreSQL proof through `verify-projection.ps1`;43 focused tests do not replace it. After that gate, implement B clock-driven INV-002 and prove restart/backlog freshness before C durable incidents/evidence, then D full integration. Intake acceptance is not an incident or an authoritative business outcome. Stop before P0.5.

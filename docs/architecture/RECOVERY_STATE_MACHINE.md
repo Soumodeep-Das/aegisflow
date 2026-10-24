@@ -1,6 +1,14 @@
 # Recovery State Machine
 
-**Current P0.4-C:** DETECTED creation is implemented, actual PostgreSQL gate pending. No transition from DETECTED is implemented. V5 restricts runtime state mutation; late evaluation context increments incident_revision and appends timeline while state_version remains1. The full canonical transition design below remains future work, not an executed recovery system. Terminal recurrence requires that later authorized workflow/schema, never implicit resolution from an event.
+## Current boundary through P0.5
+
+Only durable **DETECTED** incident creation and evidence revision are implemented and verified. V5 restricts lifecycle mutation; later context appends timeline/evidence and increments `incident_revision`, while `state_version` remains 1. Late valid Warehouse evidence can yield SATISFIED without declaring RESOLVED. See [current data model](DATA_MODEL.md), [status](../STATUS.md) and [test evidence](../evidence/TEST_RESULTS.md).
+
+The earlier P0.4-C note that “actual PostgreSQL gate pending” was a historical implementation checkpoint, superseded by its recorded 20-case pass plus successful separate-JVM restart case.
+
+## Planned P1 lifecycle — not executable today
+
+All diagrams, action/attempt states and guards below are future recovery design. P0 creates incidents for eligible verified INV-002 violations, **not** for every UNKNOWN/ambiguous evaluation. The broader ambiguity routing in this future diagram must not be read as current behavior. No investigation, policy, approval, dispatch, authoritative resolution or terminal recurrence is authorized by this documentation update.
 
 ## 1. Separation of concerns
 

@@ -1,5 +1,7 @@
 # ADR 0007: P0.1 startup profiles and infrastructure boundary
 
+> **Implementation evidence update — 2026-10-24:** Foundation and PostgreSQL profiles, packaging and module guards were implemented. Later P0.2–P0.5 completed persistence, event processing and local deployment; the original stage restrictions describe their time, not current missing features. See [current status](../STATUS.md) and the [preserved evidence ledger](../evidence/TEST_RESULTS.md). The original decision, date, context and consequences below are unchanged.
+
 - **Status:** Accepted within the owner's P0.1 authorization
 - **Date:** 2026-10-12
 - **Complements:** ADRs 0001, 0004, and 0006; no earlier decision is superseded

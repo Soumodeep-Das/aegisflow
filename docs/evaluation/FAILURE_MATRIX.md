@@ -1,6 +1,26 @@
 # Failure and Resilience Evaluation Matrix
 
-**Status:** Phase 0 test specification; no scenarios have been executed
+## Current coverage
+
+Reviewed 2026-10-24. The 16 definitions below and their original Phase 0 ledger are preserved. They include future recovery/AI assertions; the 182-test default reactor is **not** proof that all scenarios passed. “Partial” means only the identified P0 behavior is evidenced, not the entire original scenario contract.
+
+| Scenario | Classification through P0.5 | Evidence and remaining scope |
+|---|---|---|
+| FM-001 duplicate delivery | Partially verified | P0.3 inbox replay/concurrency and P0.4 fact/incident uniqueness; [P0.3/P0.4 evidence](../evidence/TEST_RESULTS.md). Recovery side-effect/attempt assertions are future |
+| FM-002 reordered events | Partially verified | P0.4 projection/detection tests cover supported initial service outcomes and backlog; [P0.4 evidence](../evidence/TEST_RESULTS.md). Cancellation/release choreography is absent |
+| FM-003 Kafka outage | Partially verified | Real source relay outage/restart and bounded retry; [Order relay evidence](../evidence/TEST_RESULTS.md). Broad operational telemetry/SLO assertions are not measured |
+| FM-004 commit before publication | Partially verified | Real PostgreSQL→Kafka ack/completion-rollback redelivery with stable IDs, plus [persistent pipeline acceptance](../evidence/TEST_RESULTS.md#p05-acceptance-evidence). The original exact process-kill window is not asserted by this mapping; no universal exactly-once claim |
+| FM-005, FM-006, FM-007, FM-008 | Planned for P1 | Remote recovery timeout, unknown effect, worker crash and racing action claims are not implemented; relay retry/leases do not substitute for these tests |
+| FM-009 ambiguous/contradictory state | Partially verified | P0.4 wrong-quantity/contradictory evidence and UNKNOWN classification; [P0.4 evidence](../evidence/TEST_RESULTS.md). Authoritative investigation/NEEDS_REVIEW is future |
+| FM-010, FM-011 | Planned for P1 | Fresh authoritative evidence and expiring recovery identity tokens require APIs/authentication not present in P0 |
+| FM-012 incompatible schema | Partially verified | P0.3 durable quarantine and safe offset behavior; [Core intake evidence](../evidence/TEST_RESULTS.md). Authorized replay and complete operational signal requirements remain future |
+| FM-013, FM-014 | Planned for P2 | No AI provider, investigator, prompt corpus or live prompt-injection evaluation |
+| FM-015 access control/tenant isolation | Partially verified | P0 source/tenant intake tests, composite tenant keys, role/network boundaries and local broker authentication/ACL checks; [P0.5 evidence](../evidence/TEST_RESULTS.md#p05-acceptance-evidence). Persistent forbidden writes, public API authorization and recovery actions are not verified |
+| FM-016 approval replay | Planned for P1 | No approvals, policy execution or recovery dispatch |
+
+No cross-scenario precision/recall, p50/p95, multi-host throughput or availability measurement is claimed here. Targets in §3 are not observations. Original scenarios mentioning RESOLVED, NEEDS_REVIEW or action attempts describe future lifecycle behavior; currently incidents remain DETECTED.
+
+**Original Phase 0 status (2026-10-11):** test specification; no scenarios had been executed at that time.
 
 **Last reviewed:** 2026-10-11
 

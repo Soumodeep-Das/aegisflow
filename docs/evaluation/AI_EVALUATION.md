@@ -1,5 +1,7 @@
 # AI Evaluation Plan
 
+**Current applicability, 2026-10-24:** this remains a future P2 evaluation specification. P0.5 has deterministic detection, not an AI or deterministic recovery investigator. No model scores, costs or provider results have been measured. See [current status](../STATUS.md) and the [future implementation plan](../roadmap/IMPLEMENTATION_PLAN.md).
+
 **Status:** Phase 0 design; no model has been selected, integrated, or evaluated
 
 **Last reviewed:** 2026-10-11

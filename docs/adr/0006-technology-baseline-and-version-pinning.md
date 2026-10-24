@@ -1,5 +1,7 @@
 # ADR 0006: technology baseline and version pinning
 
+> **Implementation evidence update — 2026-10-24:** The current Java 21, Maven wrapper, Boot/Modulith and Kafka dependency/image selections are pinned in the repository. Candidate AI/frontend/observability technologies in the original baseline are not installed runtime capabilities. See [current status](../STATUS.md) and the [preserved evidence ledger](../evidence/TEST_RESULTS.md). The original decision, date, context and consequences below are unchanged.
+
 - **Status:** Accepted for P0 implementation bootstrap; revalidate on implementation day
 - **Date:** 2026-10-11
 - **Decision owners:** repository owner / implementation lead

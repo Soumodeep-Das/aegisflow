@@ -1,22 +1,24 @@
-# AegisFlow Threat Model
+# Threat model
 
-## P0.5-A container surface — 2026-10-22
+This document combines an implemented-control inventory with the original broader threat requirements. [Current status](../STATUS.md) and [limitations](../KNOWN_LIMITATIONS.md) bound the claims. Earlier implementation notes are in [reference history](../history/REFERENCE_THROUGH_P05.md).
 
-Image contexts are fresh four-file allowlists, not the repository; private .env/.cache/Git data is excluded and selected executable entries are inspected. UID/GID10001 and direct Java PID1 run with container-only HTTP0.0.0.0, host publication loopback-only, no Docker socket/capabilities, read-only filesystem and bounded temporary storage in the verifier. Live enforcement remains unverified until the host A gate. This does not add public auth, TLS or business APIs. Future persistent app containers must keep owner-only credentials/networks; Docker environment secrets remain accessible to privileged local Docker users. Existing-volume/missing-credential recovery guards are mandatory B work, not implemented by A. A health pass proves process networking only, not trusted Kafka delivery or incident correctness.
+## Current control status
 
-**Core intake implementation,2026-10-20:** fixed source-owned topic mapping plus operator-configured source-specific tenant allowlists gate acceptance. Missing bindings deny; all missing blocks opt-in startup. Kafka/header payload claims alone do not authorize a tenant. Raw-byte parsing, size/depth/string/number bounds, duplicate-key rejection, PostgreSQL-safe text/numbers and strict initial schemas prevent known poison paths. Technical quarantine keeps only digest/coordinates/size/reason, never raw invalid content or claimed tenant authority. Append-only runtime grants protect accepted/quarantined evidence. These controls have local unit/port evidence; real Core isolation/quarantine/transaction tests are pending Docker-capable execution. Existing broker ACL tests remain passed. The local trusted-producer model cannot detect a compromised permitted producer fabricating events within its configured tenant set.
+| Area | Implemented / verified scope | Not implemented or assumed |
+|---|---|---|
+| Owner isolation | Four databases, distinct roles, own-only app networks/credentials, loopback bindings | Protection from privileged host/Docker/DB administrators |
+| Kafka | SASL authentication, source topics/ACLs, Core group policy | TLS; permanent-broker forbidden-write probe (metadata denials are not writes) |
+| Tenant trust | Source-topic mapping, explicit source tenant allowlists, composite keys and scoped queries | Hostile allowed-producer authenticity, public API/JWT tenant authorization |
+| Input and history | Bounded typed validation, durable technical quarantine, immutable accepted/fact/evaluation history and linked incidents | Administrator-proof cryptographic immutability, full retention/replay operations |
+| Local secrets | 18 distinct generated passwords, ignored protected .env.development, missing-file/retained-volume refusal | Secret rotation, CI secret store and public/shared deployment |
+| Containers | Verified non-root/read-only apps, dropped capabilities, bounded temporary storage; no app Docker socket | Complete supply-chain or runtime exploit certification |
+| Recovery/identity/AI | No executable recovery or AI path to grant authority | OIDC/Keycloak, policy, approval, action APIs, independent verification and AI safety controls below |
 
-**Status:** threat design with implemented persistence controls and Kafka infrastructure source; consult dated evidence for verification limits.
+Local trusted operators can inspect Docker environments; do not treat generated passwords as hidden from administrators. Synthetic data and trusted producers are assumptions. Historical disposable Kafka tests include write denial; the persistent deployment has a narrower recorded security scope. See [evidence](../evidence/TEST_RESULTS.md#p05-acceptance-evidence).
 
-**Order relay source update, 2026-10-19:** activation is off by default and requires postgres plus explicit opt-in, an Order-only password and complete allowed-tenant set. The publisher pins username `order`/Order topic and accepts only local loopback or Docker `kafka` bootstrap endpoints. It does not inherit arbitrary Spring Kafka overrides or admin credentials. Invalid/unconfigured-tenant intent is retained FAILED; do not treat producer allowlisting as authenticated business ingress or Core intake provenance. DB/Kafka enabled-mode execution, comprehensive hostile-input schema handling, metrics and operator requeue remain unverified/unimplemented. Raw envelope/exception text is not written by relay diagnostics.
+## Planned threat requirements
 
-P0.2's owner/migration/runtime roles, tenant composite storage keys, versioned request fingerprints and immutable outbox intent passed the recorded host database suites; the separate persistent-Compose gate also passed. Kafka infrastructure adds six distinct SASL credentials and default-deny source-topic/Core-group ACLs; the 2026-10-17 host run passed both routes' delivery and selected authentication/write-denial checks. SASL plaintext is restricted to synthetic local development; TLS, authenticated tenant ingress, payload tenant/source provenance, recovery policy and AI controls below remain planned. Topic ACLs cannot authenticate payload tenant claims. Before durable inbox acceptance, configured trusted source/tenant binding must be enforced or intake blocked. See ADR 0009 and dated evidence; no complete security verification is claimed.
-
-**Last reviewed:** 2026-10-12
-
-**Scope:** AegisFlow control plane and the simulated Order, Payment, and Warehouse services
-
-This document defines the security properties the implementation must preserve. It is a design and test contract, not a claim that AegisFlow is production-secure. See the [system architecture](../architecture/SYSTEM_ARCHITECTURE.md), [failure matrix](../evaluation/FAILURE_MATRIX.md), [known limitations](../KNOWN_LIMITATIONS.md), and [open questions](../OPEN_QUESTIONS.md).
+Sections below preserve the original full-system objectives, actors, STRIDE analysis and verification obligations. API, identity, model-provider, encryption, telemetry and recovery statements are requirements for future stages unless explicitly listed as implemented above. In particular, 'Keycloak is the trust anchor' and encrypted production-like transport are proposed assumptions, not descriptions of the running local stack.
 
 ## 1. Security objectives
 
@@ -90,7 +92,7 @@ This document defines the security properties the implementation must preserve. 
 
 ## 4. STRIDE analysis
 
-All mitigations below are **requirements for later phases** unless a future handoff cites passing tests.
+The mitigations below are the cross-phase requirement catalog; use the current control table above and dated evidence for implemented subsets. No entire STRIDE row is declared satisfied solely because one mechanism exists.
 
 | Category | Threat scenario | Security consequence | Required mitigations | Verification obligation |
 |---|---|---|---|---|

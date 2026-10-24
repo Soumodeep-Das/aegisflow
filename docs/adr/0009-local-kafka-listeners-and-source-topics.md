@@ -1,5 +1,7 @@
 # ADR 0009 — Local Kafka listeners, source topics and verification boundary
 
+> **Implementation evidence update — 2026-10-24:** P0.3 verified both listeners, explicit provisioning, source ACLs and actual forbidden writes on disposable infrastructure. P0.5 verified persistent broker identity/configuration, authentication, ACL inventory, metadata denials and restart. A forbidden metadata request is not a forbidden write: the persistent forbidden-write probe remains deferred. SASL/PLAIN is authenticated but unencrypted local development transport. See [current status](../STATUS.md) and the [preserved evidence ledger](../evidence/TEST_RESULTS.md). The original decision, date, context and consequences below are unchanged.
+
 **Status:** Accepted implementation choice for approved P0.3; real broker verification pending.
 **Date:** 2026-10-17
 **Builds on:** [ADR 0002](0002-transactional-outbox.md), [ADR 0003](0003-at-least-once-idempotency.md), [ADR 0006](0006-technology-baseline-and-version-pinning.md), and [event contracts](../architecture/EVENT_CONTRACTS.md).

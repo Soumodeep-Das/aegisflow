@@ -1,7 +1,25 @@
 # Product requirements document
 
+## Current implementation scope — through P0.5
+
+The original requirements below remain a cross-phase specification, not a claim that recovery, approvals or AI already exist. [Current status](../STATUS.md) describes the delivered detection slice; [evidence](../evidence/TEST_RESULTS.md) records the actual gates.
+
+| Requirements | Current interpretation and verification boundary |
+|---|---|
+| FR-001–FR-003; AT-001, AT-002, AT-010 | P0 intake/quarantine, duplicate handling and tenant-scoped projections are implemented and covered by P0.3/P0.4 tests. Trust is configured source-topic/tenant allowlists, not end-user authentication |
+| FR-004–FR-006 | Partial: INV-002 event-based deadlines, DETECTED incident uniqueness and immutable evidence references are delivered. Service-authoritative queries, the full lifecycle and terminal recurrence remain future work |
+| FR-007–FR-013 | Investigator, AI, policy, approval, recovery APIs, unknown-effect reconciliation and recovery work claims are future scope. Outbox leases are not approval/action dispatch |
+| FR-014–FR-016; AT-006 | Partial: append-only intake/facts/evaluations/timelines, tenant keys/allowlists, owner-role/network isolation and health exist. Full actor audit, authenticated APIs, traces/metrics/dashboards and recovery authorization do not |
+| FR-017; AT-003 | Source transaction/publication failures and other implemented P0 faults have recorded tests; see the [current failure coverage](../evaluation/FAILURE_MATRIX.md#current-coverage). Not all 16 original scenarios passed |
+| AT-004, AT-005, AT-008 | P1 recovery specifications; not implemented |
+| AT-007, AT-009 | P2 AI/investigation specifications; not implemented |
+
+The NFR table remains a set of **targets**, including latency, larger-corpus accuracy and clean-machine reproducibility. Recorded local durability/boundary tests support scoped claims, not blanket satisfaction of every NFR. No p95 benchmark, production availability or disaster-restore result is inferred from a passing reactor.
+
+The workflow in §3 is the original planned choreography. Today's synthetic driver explicitly invokes each owner's business operation: Payment and Warehouse do not consume Order events, and Order does not consume their outcomes. Core observes events and detects INV-002; it never resolves an incident from event evidence alone.
+
 **Document status:** Phase 0 baseline
-**Product status:** not implemented
+**Product status at the original Phase 0 baseline:** not implemented (historical)
 **Audience:** repository owner, reviewers, future coding agents
 **Primary constraint:** build a rigorous, explainable portfolio system within limited assisted-development time; prefer a thin verified slice over broad incomplete code.
 

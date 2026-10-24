@@ -1,5 +1,7 @@
 # ADR 0004: API-Mediated Recovery Against Authoritative Services
 
+> **Implementation evidence update — 2026-10-24:** The API-only recovery ownership boundary is still intentional, but recovery/state-query APIs and execution are not implemented. Owner-only demo command contexts are not Core recovery clients. See [current status](../STATUS.md) and the [preserved evidence ledger](../evidence/TEST_RESULTS.md). The original decision, date, context and consequences below are unchanged.
+
 - **Status:** Accepted
 - **Date:** 2026-10-11
 

@@ -1,61 +1,118 @@
-# Local deployment — P0.5 verified
+# Local development runbook
 
-Current2026-10-24: A/B/C/D passed within local-development scope. Nine services were left healthy after the persistent demonstration and retained restart; kafka-init is an exited one-shot job. No further verification required. From the repo in PowerShell7, use ./scripts/dev-stack.ps1 -Action up to start, status to inspect, restart-apps for application-only restart, and stop (or down) to stop without deleting containers/networks/volumes. For full restart use stop then up. Set JAVA_HOME to Java21 and run ./scripts/verify-development-pipeline.ps1 only for an intentional fresh demonstration (rebuilds images, creates synthetic evidence, briefly restarts stack). Never delete .env.development or volumes to resolve a warning; do not use --remove-orphans on infrastructure-only commands. Earlier pending-stage notes below are preserved history.
+The [P0.5 acceptance](STATUS.md) verified a persistent local deployment. It does not imply that services are running now on your machine. These commands are for Windows PowerShell 7 in the repository root.
 
-Latest2026-10-23: A/B/C verified; owner left nine services healthy/running after application-only restart. No repeat verifier needed. Use scripts/dev-stack.ps1 -Action status to inspect, up to start, stop or down for non-destructive stop, restart-apps for app-only restart. kafka-init is one-shot and may appear exited. D business acceptance remains pending. Earlier pending-C instructions below are historical.
+## Prerequisites
 
-Current C (2026-10-23): unified apps implemented, live verification pending. First run scripts/verify-development-stack.ps1 under bundled PS7. Lifecycle: scripts/dev-stack.ps1 -Action up|status|stop|down|restart-apps. Both stop and down preserve all named volumes, networks and containers; up repeats safe prerequisite bootstrap/provisioning before applications. Ports8080–8083 bind only127.0.0.1; tenant demo-tenant is explicitly trusted. Never bypass orchestration with a direct first-time Compose app start.
+- Windows 11, Docker Desktop using Linux containers, and a running engine (`docker info`).
+- PowerShell 7; Windows PowerShell 5.1 cannot run scripts requiring version 7.
+- Java 21 JDK selected by `JAVA_HOME`; Maven 3.10.0 comes from the repository wrapper.
+- First-run dependency/image downloads require network access. Port conflicts must be resolved explicitly, not by killing unrelated processes.
 
-The verifier leaves all nine long-running services up after success. kafka-init is a tenth, exited one-shot job, not a long-running service. Four application containers have only their owner's DB network plus kafka-events and receive no bootstrap/sibling passwords. C health is not D business acceptance. No persistent forbidden-write injection is attempted; that remains a D limitation.
+If `pwsh` is not on PATH, launch an installed PowerShell 7 executable. The owner used:
 
-Current2026-10-23: A/B complete; five persistent infrastructure services verified. No need to repeat successful B gates. Next C adds four application containers and unified lifecycle; these are not implemented yet. Preserve .env.development and all project volumes. Earlier pending/retry instructions below are history; latest HANDOFF is authoritative.
+```powershell
+& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile
+```
 
-Latest2026-10-23: owner read-only preflight passed. Next run scripts/dev-infrastructure-up.ps1 under bundled PowerShell7. It creates ignored .env.development with18 distinct passwords and a stable cluster ID under protected Windows ACL, starts the four databases and Kafka, bootstraps roles and provisions topics/ACLs. It preserves all storage/configuration and does not start application containers. Do not share the private file. Startup is not yet executed/verified; B auth/restart acceptance and C remain unfinished. Earlier CheckOnly-only advice below is historical.
+That bundled path is machine-specific, not a prerequisite for other installations.
 
-Current B partial checkpoint: run only scripts/dev-init.ps1 -CheckOnly under PowerShell7 for read-only Docker inventory and initialization safety. No private configuration is created in this mode. Existing legacy configuration or retained volumes without .env.development cause a safe stop; share the error, never delete volumes or replace passwords. Infrastructure startup/restart verification and unified C commands are not implemented yet. Do not use non-CheckOnly initialization until remaining file/ACL verification is complete.
-
-## Status and prerequisites
-
-P0.5-A is verified on581da54: all four real images passed non-root/read-only startup, host/bridge health and shutdown. No repeat A command is needed. Next is B guarded credential/bootstrap implementation. Nine-service persistent startup and business demonstrations are not yet available; do not manually fill credentials to work around unfinished B/C/D.
-
-Use Windows11, Docker Desktop Linux containers, Java21 JDK, PowerShell7 and existing Maven wrapper. Run docker info to verify the engine is actually reachable; a Docker client version alone is insufficient. This coding session cannot access the engine pipe, independently of the owner's working Docker Desktop.
-
-From repository root:
+## First initialization and image build
 
 ```powershell
 $env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
-& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-application-images.ps1
+.\scripts\dev-init.ps1 -CheckOnly
+.\scripts\dev-init.ps1
+.\scripts\dev-build-images.ps1
+.\scripts\dev-stack.ps1 -Action up
+.\scripts\dev-stack.ps1 -Action status
 ```
 
-The first run builds/tests/packages the reactor once, pulls the pinned Java runtime if needed, builds four images and tests each sequentially. It prints evidence locations under .cache/application-images and .cache/application-image-verification. Build staging contains exactly the selected executable plus probe and Docker instructions; no credentials. Logs are foundation-only, but keep all .cache evidence private/ignored.
+Change the JDK path for your installation. `CheckOnly` checks Docker inventory and initialization safety; it does not generate a missing file or start containers. Normal initialization creates `.env.development` only when safe, using cryptographically generated distinct credentials and a stable Kafka cluster identity. It validates an existing file without overwriting it.
 
-For a Docker-only retry after an unchanged successful reactor/artifact build, append -UseExistingArtifacts. Freshness/content guards remain active; never use this switch to evade a required source regression. Build-only command is scripts/dev-build-images.ps1; it does not claim startup. Infrastructure-free checks use scripts/verify-image-policy.ps1. Neither build nor static checks are a live acceptance pass.
+No manual password entry or copying into `.env` is required. Existing `.env`/`.env.kafka` can cause a missing-development-file initialization to fail safely; inspect their history privately rather than deleting them.
 
-## What the A verifier does
+`dev-build-images.ps1` runs the clean reactor, verifies reports, then builds four pinned-base Java 21 images. `up` does not build missing images. On an existing verified installation, do not repeat builds or acceptance suites merely to start services.
 
-Images: aegisflow/core:local, aegisflow/order:local, aegisflow/payment:local, aegisflow/warehouse:local. Same Java21 digest, UID/GID10001, direct Java PID1/UTC, read-only root, no added capabilities or socket mount. Temporary /tmp is64MiB. Each application container uses a768MiB memory ceiling,1 CPU and256-process limit; JVM maximum heap is60% of container memory to leave native/metaspace headroom. These are starting bounds, not measured capacity promises; four apps are tested sequentially to reduce load. Image build may still need significant Docker disk/network.
+## Startup sequence and configuration
 
-The image's container HTTP port is8080, bound0.0.0.0 inside its bridge; temporary host ports are OS-assigned and loopback-only. The verifier obtains the real binding after Docker starts, avoiding reserve/release port races. A separate bridge client proves service-name resolution and non-loopback interface access. HTTP health is foundation/process-only: no PostgreSQL, Kafka workers, credentials or business mutations.
+`dev-stack.ps1 -Action up` invokes the existing infrastructure helper:
 
-Docker Desktop shows temporary names beginning aegisflow-images-. The verifier records exact container IDs, then gracefully stops and removes only its labelled test containers/network. It creates no volumes and never touches the existing aegisflow-foundation project. If interrupted before cleanup, inspect the retained evidence/labels; do not prune Docker or delete volumes. Built images and evidence remain.
+1. Validate/generate credentials with retained-volume guards.
+2. Start four databases and Kafka with bounded health waits.
+3. Bootstrap each owner's migration/runtime roles.
+4. Complete the one-shot Kafka topic/ACL provisioning job.
+5. Start the four app images with bounded health waits.
 
-## Persistent stack — not available yet
+The project is `aegisflow-foundation`. The unified configuration combines `compose.yaml`, `compose.kafka.yaml` and `compose.apps.yaml`, using explicit `--env-file .env.development`. The helper clears relevant shell interpolation variables during invocation and restores them afterward. It does not print expanded secret-bearing configuration.
 
-Planned baseline is four application containers, four PostgreSQL containers and one Kafka broker; one-shot bootstrap/topic jobs may appear exited. Planned database URLs use owner service DNS5432 and Kafka kafka:9092, not host localhost. Each app receives only its owner runtime/migration credentials and Kafka principal. Four database networks stay internal.
+There are **nine long-running services** and one additional provisioning job, `kafka-init`, which normally exits successfully. Old helper messages saying “B is NOT complete” describe a historical gate and are not current project status. Infrastructure-only Compose calls may warn that the four app containers are “orphans” because those files omit app definitions; do not use `--remove-orphans`.
 
-Pending B must create/reuse guarded ignored private files without overwriting .env/.env.kafka, refuse missing secrets over retained volumes and test malformed/duplicate inputs. No private file is created/read by A. Compose environment secrets are still visible to privileged local Docker users; this is synthetic trusted-local deployment, not production secret management or encrypted transport.
+## Ports and network boundaries
 
-Pending C supplies start/status/verify/stop/down wrappers, bounded readiness/provisioning checks and stable volume/project identity. No verified command for these exists yet. Do not use down -v, system prune or volume deletion. Stop retains containers and volumes; ordinary Compose down removes project containers/networks but retains named volumes; deleting volumes destroys data. Keep this distinction in the upcoming wrappers.
+All published ports bind to `127.0.0.1`.
 
-Pending D supplies service-owned scenario entrypoints, bounded incident summaries, late-observation/restart demonstrations and full-stack stop/start retention. No unauthenticated mutation HTTP API or fabricated Core rows will be added.
+| Service | Host endpoint | Container endpoint |
+|---|---|---|
+| Core health | 8080/actuator/health | core:8080 |
+| Order health | 8081/actuator/health | order:8080 |
+| Payment health | 8082/actuator/health | payment:8080 |
+| Warehouse health | 8083/actuator/health | warehouse:8080 |
+| Core PostgreSQL | 5433 | core-db:5432 / aegisflow_core |
+| Order PostgreSQL | 5434 | order-db:5432 / aegisflow_order |
+| Payment PostgreSQL | 5435 | payment-db:5432 / aegisflow_payment |
+| Warehouse PostgreSQL | 5436 | warehouse-db:5432 / aegisflow_warehouse |
+| Kafka host listener | 19092 | kafka:9092 for container clients |
 
-## Diagnosis
+Inside an app container, `localhost` means that container, not Windows or a database. Each app joins only its own `<owner>-data` network and `kafka-events`. Core receives only Core DB migration/runtime and Core Kafka credentials. Separate bootstrap, migration and runtime identities remain intentional.
 
-- Engine permission denied: run the host command from your normal PowerShell with Docker Desktop ready; do not reinstall Java/Maven.
-- Java mismatch: set JAVA_HOME21; the scripts reject Java26.
-- Original archive stale: rerun the default image verifier to build once; do not compare normalized executable JAR timestamp alone.
-- Container exits: preserve its exact labelled log in the printed evidence directory. Do not change unrelated ports or reset databases.
-- Host health passes but bridge fails: inspect container SERVER_ADDRESS override;127.0.0.1 inside a container is not its bridge interface.
-- A health pass does not establish database migrations, source ACLs, delivery, invariants or incidents. Those remain B/C/D gates.
+## Routine lifecycle
 
-See [handoff](HANDOFF.md), [decision](adr/0013-local-application-images-and-deployment-gates.md) and [test evidence](evidence/TEST_RESULTS.md) for the exact next checkpoint.
+```powershell
+.\scripts\dev-stack.ps1 -Action status
+.\scripts\dev-stack.ps1 -Action up
+.\scripts\dev-stack.ps1 -Action restart-apps
+.\scripts\dev-stack.ps1 -Action stop
+```
+
+`restart-apps` stops/restarts only the four applications. For a whole-stack restart use `stop`, then `up`.
+
+**Unusual but deliberate:** `-Action down` performs the same non-destructive stop as `stop`. It is not ordinary `docker compose down`: containers, networks, all named volumes and credentials are retained. There is no automatic OS-start restart policy.
+
+Persistent volumes are `aegisflow-foundation_core-db-data`, `order-db-data`, `payment-db-data`, `warehouse-db-data` (each with the same project prefix), and `aegisflow-foundation_kafka-data`. They preserve owner data, Core evidence and broker state across stops.
+
+## Status, health and logs
+
+```powershell
+.\scripts\dev-stack.ps1 -Action status
+Invoke-RestMethod 'http://127.0.0.1:8080/actuator/health'
+docker logs --tail 100 aegisflow-foundation-core-1
+docker logs --tail 100 aegisflow-foundation-kafka-init-1
+```
+
+The named containers above belong to this fixed project. Inspect bounded logs locally; redact before sharing. Do not paste environment files, raw `docker inspect` output or expanded `docker compose config`, which may expose credentials. A health response does not prove an event completed the pipeline.
+
+## Deliberate business demonstration
+
+```powershell
+.\scripts\verify-development-pipeline.ps1
+```
+
+This is not a status command. It runs a fresh reactor/build, refreshes app images, adds an exact synthetic tenant using a secret-free temporary overlay, and invokes real owner business operations. It checks healthy and missing-Warehouse flows, restarts Core with a held on-time event, then stops/starts the full retained stack. Temporary owner command containers have no published ports. Successful completion restores the base tenant mapping and leaves the ordinary stack running.
+
+Evidence is retained in `.cache/p05d/<run-id>`; image/reactor reports are in `.cache/application-images/<run-id>`. Synthetic business rows remain in the persistent databases. The approved run is already recorded; do not rerun it merely to reproduce a README screenshot.
+
+## Failure diagnosis without destructive cleanup
+
+| Symptom | Safe next check |
+|---|---|
+| PowerShell version error | Use PowerShell 7, not 5.1 |
+| Docker client version works but engine fails | Check `docker info`; start Docker Desktop's engine. An unrelated project container is not required |
+| Port already allocated | Identify the conflicting listener/project; do not kill it blindly |
+| App unhealthy | Check bounded app logs, its own database and Kafka provisioning state; preserve failed evidence |
+| Missing credentials with retained volumes | Restore the matching private file from a secure backup; do not generate new passwords against initialized storage |
+| Schema/bootstrap failure | Preserve migration/role errors; do not edit applied migrations, reset databases or grant broad privileges |
+| Pipeline failure with tenant overlay retained | Preserve `tenant.compose.json`, results and command logs; inspect the exact stage before changing allowlists or rerunning |
+| Orphan warning in infrastructure helper | Known apps may be omitted from that partial Compose view; do not remove them |
+
+Do not use volume deletion, `down -v`, prune, credential regeneration or orphan removal as routine troubleshooting. Nothing in this runbook authorizes deleting unrelated resources. See [limitations](KNOWN_LIMITATIONS.md) and [handoff](HANDOFF.md) before changing deployment behavior.

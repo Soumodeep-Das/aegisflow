@@ -1,5 +1,7 @@
 # ADR 0005: AI Is an Evidence-Bound Advisory Investigator
 
+> **Implementation evidence update — 2026-10-24:** AI remains unimplemented and outside the current authorization. This advisory-boundary decision is preserved as a future constraint, not evidence of model evaluation. See [current status](../STATUS.md) and the [preserved evidence ledger](../evidence/TEST_RESULTS.md). The original decision, date, context and consequences below are unchanged.
+
 - **Status:** Accepted
 - **Date:** 2026-10-11
 

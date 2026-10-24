@@ -1,5 +1,7 @@
 # ADR 0001: Modular Spring Boot Control Plane
 
+> **Implementation evidence update — 2026-10-24:** Four independently deployed owner applications and a ten-module Core exist. Eventing, correlation and detection implement the current pipeline; seven other modules remain placeholders. See [current status](../STATUS.md) and the [preserved evidence ledger](../evidence/TEST_RESULTS.md). The original decision, date, context and consequences below are unchanged.
+
 - **Status:** Accepted for initial implementation
 - **Date:** 2026-10-11
 - **Decision owners:** AegisFlow project

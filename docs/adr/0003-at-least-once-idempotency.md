@@ -1,5 +1,7 @@
 # ADR 0003: At-Least-Once Delivery and Database-Enforced Idempotency
 
+> **Implementation evidence update — 2026-10-24:** Durable uniqueness, stable event IDs, replay and post-database-commit offset handling are implemented. At-least-once redelivery remains possible; no cross-database/Kafka exactly-once or external recovery guarantee is claimed. See [current status](../STATUS.md) and the [preserved evidence ledger](../evidence/TEST_RESULTS.md). The original decision, date, context and consequences below are unchanged.
+
 - **Status:** Accepted
 - **Date:** 2026-10-11
 

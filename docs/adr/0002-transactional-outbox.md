@@ -1,5 +1,7 @@
 # ADR 0002: Transactional Outbox for Durable Kafka Events
 
+> **Implementation evidence update — 2026-10-24:** Each simulator commits state and outbox atomically. P0.3 verified its leased/fenced application relay against real PostgreSQL/Kafka; P0.5 demonstrated all three relays in the persistent stack. See [current status](../STATUS.md) and the [preserved evidence ledger](../evidence/TEST_RESULTS.md). The original decision, date, context and consequences below are unchanged.
+
 - **Status:** Accepted for initial implementation
 - **Date:** 2026-10-11
 

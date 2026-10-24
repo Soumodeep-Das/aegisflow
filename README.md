@@ -1,57 +1,92 @@
 # AegisFlow
 
-A Java 21/Spring Boot control plane that observes independently owned Order, Payment and Warehouse events, correlates tenant-scoped facts, detects inventory deadline violations, and preserves explainable incident history.
+A Java backend project that observes distributed business events, detects a missing inventory outcome, and preserves an explainable incident history.
 
-## Current status
+A healthy HTTP endpoint cannot tell you whether an order received the promised Warehouse outcome. AegisFlow demonstrates that distinction: each service owns its state, events may be duplicated or delayed, and a missing observation is not proof that a remote operation failed.
 
-2026-10-24: **P0.5 complete within its local-development scope.** Fresh Java21 reactor:182 tests, zero failures/errors/skips. The actual nine-service deployment passed healthy, missing-Warehouse, Core-restart/late-evidence and full retained-stack restart acceptance on6939e3e. No rerun needed. Incident history remains DETECTED even when later evidence is SATISFIED; no authoritative recovery is claimed.
+## What works today
 
-Lifecycle commands use scripts/dev-stack.ps1 -Action up, status, stop, down or restart-apps; storage is retained. Nine services were left healthy/running after acceptance. kafka-init is an exited one-shot provisioning job. A deliberate new demonstration uses scripts/verify-development-pipeline.ps1; it rebuilds images and briefly restarts the stack. Preserve .env.development and named volumes.
+P0.1–P0.5 implement service-owned PostgreSQL persistence and transactional outboxes, Kafka delivery, durable validated Core ingestion, tenant-scoped projections, deterministic `INV-002` detection, and persistent incident/evidence timelines. Four Java applications run with four databases and one Kafka broker in the verified local Compose stack.
 
-The stack includes Core, Order, Payment, Warehouse, four owner databases and Kafka. Permanent-broker forbidden-write probing remains a documented limitation; prior authentication/ACL inventory/metadata-denial checks are not a write test. Stop at P0.5; no recovery, AI or cloud deployment is implemented.
+[Current status and verification scope](docs/STATUS.md) is the authoritative summary. Recovery, AI, frontend, Keycloak integration and full simulator choreography are **not implemented**.
 
-Read the [local deployment guide](docs/LOCAL_DEPLOYMENT.md) and [exact handoff](docs/HANDOFF.md) before running commands. Historical results and failures are preserved in [test evidence](docs/evidence/TEST_RESULTS.md) and the [development journal](docs/devlog/DEVELOPMENT_JOURNAL.md); they are not current retry instructions.
+## As-built architecture
 
-## Image verifier reference (already passed; no rerun needed)
+```mermaid
+flowchart LR
+    O["Order application"] --> OD[("Order PostgreSQL + outbox")]
+    P["Payment application"] --> PD[("Payment PostgreSQL + outbox")]
+    W["Warehouse application"] --> WD[("Warehouse PostgreSQL + outbox")]
+    OD --> OR["Order relay"]
+    PD --> PR["Payment relay"]
+    WD --> WR["Warehouse relay"]
+    OR --> K["Kafka: three source topics"]
+    PR --> K
+    WR --> K
+    K --> C["Core: inbox / quarantine"]
+    C --> F["Facts + transaction projection"]
+    F --> D["INV-002 evaluations"]
+    D --> I["Incident + evidence timeline"]
+    C --- DB[("Core PostgreSQL")]
+    F --- DB
+    D --- DB
+    I --- DB
+```
 
-From the existing repository, with Docker Desktop running and PowerShell7 available:
+Boxes for relays and Core stages are logical components, not additional deployments. Each application connects only to its own database network plus Kafka; Core receives no simulator database credentials. The [architecture guide](docs/architecture/SYSTEM_ARCHITECTURE.md) explains transaction and trust boundaries.
+
+## Event-to-incident flow
+
+1. An owner business operation commits state and its outbox intent in one PostgreSQL transaction.
+2. Its relay publishes the original event and records completion only after broker acknowledgement.
+3. Core validates source/tenant/schema and commits immutable accepted intake or technical quarantine before acknowledging Kafka.
+4. A separate projector transaction commits facts, projection/deadline and progress together.
+5. A clock-driven detector evaluates observed inventory evidence. Missing evidence after 45 seconds plus 15 seconds of transport allowance can create one durable incident.
+6. Late valid evidence appends a new assessment. `SATISFIED` does **not** erase the incident or imply authoritative `RESOLVED`.
+
+## Technology
+
+Java 21, Maven 3.10.0 via Wrapper, Spring Boot 4.1.1, Spring Modulith 2.1.1, Spring Data JPA/Hibernate and JDBC, Flyway, PostgreSQL 18.6, Kafka broker 4.2.2, and Testcontainers. Versions are repository pins, not recommendations to upgrade. See [ADR 0006](docs/adr/0006-technology-baseline-and-version-pinning.md).
+
+## Local quickstart — Windows PowerShell 7
+
+Prerequisites: Windows 11, Docker Desktop with its Linux engine running, PowerShell 7, Java 21 JDK, and network access for the first dependency/image downloads. Open PowerShell 7 in the repository root. The JDK path below is the verified owner's path; change it for your installation.
 
 ```powershell
 $env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
-& 'C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.exe' -NoProfile -File .\scripts\verify-application-images.ps1 -UseExistingArtifacts
+.\scripts\dev-init.ps1
+.\scripts\dev-build-images.ps1
+.\scripts\dev-stack.ps1 -Action up
+.\scripts\dev-stack.ps1 -Action status
 ```
 
-The owner already passed172 reactor tests and built four images. This retry skips Maven, refreshes the diagnostic probe image layer, and verifies temporary foundation containers using dynamic loopback ports and a private bridge. Core previously started but timed out waiting for health; the cause is not established. Health history is now saved before cleanup. Only owned temporary containers/network are removed; no persistent volumes or private files are used. This is **not** a nine-service deployment or business-readiness claim.
+For an existing verified installation, skip initialization/build unless needed and use `-Action up` or `status`. The initializer generates and preserves ignored `.env.development`; no manual password copying is required. **Never regenerate credentials when retained volumes depend on them.** A missing file with existing storage fails safely.
 
-## Implemented business path
-
-Order/Payment/Warehouse service-owned operation → PostgreSQL state plus transactional outbox → authenticated Kafka source topic → Core durable inbox → observed facts and projection → INV-002 evaluation → durable incident/evidence timeline.
-
-All four databases have separate migration/runtime identities. Core has no simulator database credentials. Delivery is at-least-once with database idempotency, not universal exactly-once effects. Late valid Warehouse evidence can change current evaluation to SATISFIED without erasing history or declaring an incident RESOLVED.
-
-P0.4 evidence comprises separate runs: clean reactor168, component pipeline7 across6+1, clock/configuration regressions6 and packaged restart1. Do not add overlapping runs into a single invented total.
-
-## Foundation development
-
-The default `foundation` profile remains infrastructure-free and host-loopback-bound. Only Actuator health is exposed. With Java21 set:
+Core health is at [localhost:8080/actuator/health](http://127.0.0.1:8080/actuator/health); Order, Payment and Warehouse use 8081–8083. Health is not a business correctness result.
 
 ```powershell
-.\mvnw.cmd -B -ntp clean verify
+# Deliberate new business acceptance run: rebuilds images and briefly restarts the stack.
+.\scripts\verify-development-pipeline.ps1
+
+# Application-only restart; non-destructive whole-stack stop.
+.\scripts\dev-stack.ps1 -Action restart-apps
+.\scripts\dev-stack.ps1 -Action stop
 ```
 
-Root Maven wrapper uses Maven3.10.0. First build may need downloads; the deployment wrapper uses the existing ignored .cache/maven-repository. Container images use internal HTTP8080; ordinary host JAR defaults remain Core8080/Order8081/Payment8082/Warehouse8083.
+The wrapper's `-Action down` also means **stop**, not Docker Compose removal. It preserves containers, networks, volumes and credentials. Read the [complete runbook](docs/LOCAL_DEPLOYMENT.md) for ports, logs, recovery of missing credentials and safe troubleshooting.
 
-## Safety and current limits
+## Verification and limits
 
-Synthetic trusted-local development only. No public authentication, TLS deployment, business mutation HTTP APIs, automatic recovery, AI or permanent-stack readiness claim. Kafka's existing SASL/PLAIN is authenticated but unencrypted. Never commit .env files, credentials, caches or private logs; never remove volumes to fix startup. Existing project identity is aegisflow-foundation.
+Final P0.5 acceptance recorded 182 default reactor tests with zero failures/errors/skips, plus real persistent healthy/missing/late-evidence and restart checks. [Evidence and exact provenance](docs/evidence/TEST_RESULTS.md#p05-acceptance-evidence) distinguish this run from earlier integration suites.
 
-P0.5 will preserve the four internal database networks and source-specific Kafka ACLs. Persistent credential initialization and dev-up/status/verify/down commands are not yet implemented; do not treat older standalone helpers as the finished P0.5 lifecycle.
+This is a production-inspired learning project, not production-certified software. Kafka transport is unencrypted local SASL/PLAIN; the persistent forbidden-write probe is deferred. There is no universal exactly-once guarantee or automatic recovery. See [limitations](docs/KNOWN_LIMITATIONS.md).
 
-## Engineering documentation
+## Explore
 
-- [Architecture](docs/architecture/SYSTEM_ARCHITECTURE.md), [module boundaries](docs/architecture/MODULE_BOUNDARIES.md), [event contracts](docs/architecture/EVENT_CONTRACTS.md), [invariants](docs/architecture/INVARIANTS.md)
-- [Requirements](docs/requirements/PRD.md), [threat model](docs/security/THREAT_MODEL.md), [known limitations](docs/KNOWN_LIMITATIONS.md)
-- [Roadmap](docs/ROADMAP.md), [implementation plan](docs/roadmap/IMPLEMENTATION_PLAN.md), [codebase learning guide](docs/learning/CODEBASE_GUIDE.md)
-- [P0.5 deployment decision](docs/adr/0013-local-application-images-and-deployment-gates.md)
+- [Documentation index and reading paths](docs/README.md)
+- [Codebase walkthrough and 90 answered interview questions](docs/learning/CODEBASE_GUIDE.md)
+- [Data model](docs/architecture/DATA_MODEL.md), [event contracts](docs/architecture/EVENT_CONTRACTS.md), [module boundaries](docs/architecture/MODULE_BOUNDARIES.md)
+- [Threat model](docs/security/THREAT_MODEL.md), [fault scenarios](docs/evaluation/FAILURE_MATRIX.md)
+- [Future roadmap](docs/ROADMAP.md), [maintainer handoff](docs/HANDOFF.md), [development history](docs/devlog/DEVELOPMENT_JOURNAL.md)
 
-Do not push or start recovery/AI work without explicit authorization.
+P1 deterministic recovery and P2 AI/operational surfaces are future, separately approved work.

@@ -1,5 +1,15 @@
 # Development journal
 
+## 2026-10-24 — Documentation-only review after P0.5
+
+Entry checkpoint: `a32a727b964b1c2b3eb3a2edce15f70aa659ee5f`, branch `main`, clean working tree. The owner authorized Markdown refinement, not another implementation or infrastructure gate.
+
+Separated current status/runbook/as-built architecture from historical checkpoints and future recovery/AI specifications. Added a documentation index, current-status summary, two historical archives and a review record. Preserved original decisions, all 16 fault definitions, all 90 answered interview questions and existing test/journal records. The learning guide now traces actual owner command, outbox, Kafka, intake, projection, evaluation and incident classes.
+
+The principal corrections concern old pending labels, nonexistent simulator choreography/PROCESSED inbox claims, DETECTED versus authoritative RESOLVED, and persistent metadata denial versus actual forbidden-write evidence. Resolved historical failures remain visible.
+
+Validation and final counts are in [DOCUMENTATION_REVIEW](../DOCUMENTATION_REVIEW.md). Only the unchanged documentation checker, read-only source/history checks and Git diff checks are used. No Maven, Docker, application, test, configuration, credential or infrastructure mutation is part of this review. A local documentation-only commit follows; no push or new phase is authorized.
+
 ## 2026-10-24 — P0.5 COMPLETE within local-development acceptance scope
 
 Owner ran scripts/verify-development-pipeline.ps1 with Java21/PowerShell7 on6939e3e successfully. Independently inspected .cache/p05d/7cf1bf26-a614-4bb1-93fa-31c2bf3033f7/results.json (Passed=true), projections, initial/late timeline and9 fact-reference rows. Fresh reactor reports under .cache/application-images/8d5a2f9e8262437fa8d36d4697a8173f/{core,order,payment,warehouse}-surefire total182 tests,0 failures/errors/skips; all five reactor modules SUCCESS,1m36s, finished2026-10-24T11:25:20+05:30. Prior-report directories are separate historical evidence, not additional executed tests. Four images built successfully. No suite rerun for this documentation closure.

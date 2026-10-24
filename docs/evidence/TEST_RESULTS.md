@@ -1,4 +1,26 @@
-# Test evidence — P0.4 and preserved completed milestones
+# Test evidence and verification history
+
+This is the evidence ledger, not the current work queue. Entries retain the exact scope and state at their recorded checkpoint, including failed runs, skipped infrastructure gates and successful corrections. Later passing evidence does not rewrite an earlier failure. [STATUS](../STATUS.md) is the current summary.
+
+## P0.5 acceptance evidence
+
+The immediately following dated closure entry is the authoritative P0.5 result. Its fresh **182-test default reactor** and **persistent six-event demonstration** are distinct evidence sets. Do not sum preserved prior Surefire reports into that count, or treat it as the number of all integration scenarios ever run.
+
+| Evidence | Provenance |
+|---|---|
+| Implementation and closure | `6939e3e` implementation; `a32a727` closure documentation |
+| Persistent acceptance | `.cache/p05d/7cf1bf26-a614-4bb1-93fa-31c2bf3033f7/results.json` and associated timeline/fact/command evidence |
+| Fresh image/reactor evidence | `.cache/application-images/8d5a2f9e8262437fa8d36d4697a8173f`; use fresh owner Surefire directories, not `*-prior-surefire` |
+| Command and environment | Owner's Windows/PowerShell 7, Java 21 and Docker; `scripts/verify-development-pipeline.ps1`, as recorded in the closure entry |
+| Scope limit | Synthetic local deployment; persistent forbidden writes, production readiness, recovery and AI are not established |
+
+These ignored evidence directories are local artifacts, not promised downloadable GitHub files. Historical container health is not a current live-status check. Consult the [runbook](../LOCAL_DEPLOYMENT.md) for deliberate operations and the [scenario coverage map](../evaluation/FAILURE_MATRIX.md#current-coverage) for the distinction between P0 tests and the broader FM catalog.
+
+## Reading the historical ledger
+
+Entries below are reverse chronological. Useful milestones are the dated P0.5 A/B/C/D closures; P0.4 final packaged closure (2026-10-21); P0.3 final packaged acceptance (2026-10-20); and P0.2 integrated gate (2026-10-16). Commands in failed/prepared entries describe those attempts, not instructions to repeat completed work.
+
+No Maven or Docker suite was rerun for the documentation-only review. Its separate checks are recorded in [DOCUMENTATION_REVIEW](../DOCUMENTATION_REVIEW.md).
 
 ## 2026-10-24 — P0.5 COMPLETE within local-development acceptance scope
 

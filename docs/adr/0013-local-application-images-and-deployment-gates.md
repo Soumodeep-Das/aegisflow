@@ -1,5 +1,7 @@
 # ADR 0013: Local application images and progressive persistent deployment
 
+> **Implementation evidence update — 2026-10-24:** P0.5 A/B/C/D acceptance is complete within documented local scopes: verified images, persistent credentials/infrastructure, nine long-running services, healthy/missing/late-evidence demonstration and retained restarts. Final closure combines a fresh 182-test reactor with separate Docker acceptance evidence; these are not one aggregate test count. Original pending-gate statements below are historical. See [current status](../STATUS.md) and the [preserved evidence ledger](../evidence/TEST_RESULTS.md). The original decision, date, context and consequences below are unchanged.
+
 - Status: accepted for P0.5 implementation; real A image gate pending
 - Date: 2026-10-22
 - Baseline: clean main1d0b1f5, synchronized with origin/main

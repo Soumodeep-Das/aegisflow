@@ -1,5 +1,7 @@
 # ADR 0008: P0.2 persistence primitives and database roles
 
+> **Implementation evidence update — 2026-10-24:** Four owner-managed databases, separate bootstrap/migration/runtime identities, constraints, exact money, versions and atomic outboxes are implemented. P0.5 reused this separation with generated persistent credentials and retained-volume verification. See [current status](../STATUS.md) and the [preserved evidence ledger](../evidence/TEST_RESULTS.md). The original decision, date, context and consequences below are unchanged.
+
 - **Status:** Accepted implementation choices within approved P0.2; host verification gate passed 2026-10-16 (see evidence; persistent Compose rehearsal remains separate)
 - **Date:** 2026-10-13
 - **Complements:** ADRs 0001, 0002, 0003, 0004, and 0007; historical decisions are preserved
