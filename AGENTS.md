@@ -4,7 +4,7 @@ This file is mandatory guidance for any human, Codex session, or other coding ag
 
 ## Mission and current boundary
 
-2026-10-24 continuation: A/B/C are verified; current authorized work is P0.5-D persistent deployment business acceptance. Use existing nine-service stack; no Testcontainers-only substitute. D is incomplete, with a partial opt-in owner CLI implementation; see latest HANDOFF. No recovery/AI/frontend/cloud or push. Stop at full P0.5 acceptance or honest documented checkpoint.
+2026-10-24 closure: P0.5 A/B/C/D are verified within documented local-development scopes. Persistent host run on6939e3e passed healthy/missing/late-evidence and retained restart acceptance; fresh182-test reactor passed with zero failures/errors/skips. STOP at P0.5. No recovery/AI/frontend/cloud, new milestone or push authorized. Preserve credentials, volumes and historical evidence; read latest HANDOFF before further work. Older in-progress instructions below are historical.
 
 P0.5 is explicitly approved on2026-10-22: persistent local Docker packaging, guarded credentials/bootstrap, unified lifecycle and ordinary-stack business/restart verification. Start from verified P0.4 checkpoint1d0b1f5; preserve project/volumes/private files and completed tests. Current gate is P0.5-A image verification, not a business redesign. No P1/recovery/AI, public deployment, unrelated infrastructure or push. Stop at an honest checkpoint if Docker access prevents actual acceptance; otherwise finish P0.5 and stop. Historical P0.4-only restrictions below are superseded solely for this approved P0.5 scope.
 

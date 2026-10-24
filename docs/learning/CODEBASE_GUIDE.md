@@ -1,5 +1,7 @@
 # Codebase guide
 
+Verified2026-10-24: the persistent D walkthrough below now has actual host evidence at .cache/p05d/7cf1bf26-a614-4bb1-93fa-31c2bf3033f7. All six real owner events traversed outbox/Kafka/Core. The same incident preserved UNKNOWN → VIOLATED → UNKNOWN(PROJECTION_UNSETTLED) → SATISFIED evaluations while remaining DETECTED through Core and full-stack restart. Fresh reactor182/0/0/0. The projection-backlog UNKNOWN is a safe intermediate assessment, not another incident. Historical implementation-only labels below describe their original checkpoints; latest TEST_RESULTS/HANDOFF record closure. Q86–Q90 and the deployment debugging exercise remain applicable.
+
 ## Persistent D walkthrough — implemented, live host acceptance pending
 
 scripts/verify-development-pipeline.ps1 builds fresh images through dev-build-images.ps1, uses dev-stack.ps1 to establish prerequisites, and applies a secret-free exact-tenant Compose overlay. Each simulator's LocalDemo.java starts a non-web owner-only context in a transient command container. awaitBarrier writes /tmp readiness and waits at most180 seconds; the runner releases Order first, then Payment/Warehouse, checking real occurrence timestamps rather than altering the45-second deadline. LocalDemoTests covers release/timeout without Docker. scripts/test-development-pipeline.ps1 extracts only helper definitions and mocks Docker; it never executes the deployment body.

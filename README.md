@@ -4,11 +4,11 @@ A Java 21/Spring Boot control plane that observes independently owned Order, Pay
 
 ## Current status
 
-2026-10-24: D remains incomplete pending host acceptance. The four PostgreSQL fixture tests passed. Run scripts/verify-development-pipeline.ps1 with Java21/PowerShell7 on the Docker host for the new persistent healthy/missing/late-evidence gate. It builds fresh images, briefly restarts the existing stack, and preserves credentials/volumes. Ten focused Java tests and mocked script checks passed locally; live runner success is not yet claimed.
+2026-10-24: **P0.5 complete within its local-development scope.** Fresh Java21 reactor:182 tests, zero failures/errors/skips. The actual nine-service deployment passed healthy, missing-Warehouse, Core-restart/late-evidence and full retained-stack restart acceptance on6939e3e. No rerun needed. Incident history remains DETECTED even when later evidence is SATISFIED; no authoritative recovery is claimed.
 
-P0.5-C is live verified on `a3e4a2b`: all nine persistent services healthy, four applications checked before/after clean application-only restart, infrastructure and credentials retained. No verification rerun needed. Lifecycle commands use scripts/dev-stack.ps1 -Action up, status, stop, down or restart-apps; storage is retained. P0.5-D full business demonstration remains unimplemented/unverified; full P0.5 is not complete.
+Lifecycle commands use scripts/dev-stack.ps1 -Action up, status, stop, down or restart-apps; storage is retained. Nine services were left healthy/running after acceptance. kafka-init is an exited one-shot provisioning job. A deliberate new demonstration uses scripts/verify-development-pipeline.ps1; it rebuilds images and briefly restarts the stack. Preserve .env.development and named volumes.
 
-P0.4 is complete at `1d0b1f5`. P0.5-A/B/C are verified within their documented scopes. The local stack now includes Core, Order, Payment, Warehouse, four owner databases and Kafka. D must prove business behavior on that ordinary persistent deployment.
+The stack includes Core, Order, Payment, Warehouse, four owner databases and Kafka. Permanent-broker forbidden-write probing remains a documented limitation; prior authentication/ACL inventory/metadata-denial checks are not a write test. Stop at P0.5; no recovery, AI or cloud deployment is implemented.
 
 Read the [local deployment guide](docs/LOCAL_DEPLOYMENT.md) and [exact handoff](docs/HANDOFF.md) before running commands. Historical results and failures are preserved in [test evidence](docs/evidence/TEST_RESULTS.md) and the [development journal](docs/devlog/DEVELOPMENT_JOURNAL.md); they are not current retry instructions.
 

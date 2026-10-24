@@ -1,4 +1,6 @@
-# Local deployment — P0.5 in progress
+# Local deployment — P0.5 verified
+
+Current2026-10-24: A/B/C/D passed within local-development scope. Nine services were left healthy after the persistent demonstration and retained restart; kafka-init is an exited one-shot job. No further verification required. From the repo in PowerShell7, use ./scripts/dev-stack.ps1 -Action up to start, status to inspect, restart-apps for application-only restart, and stop (or down) to stop without deleting containers/networks/volumes. For full restart use stop then up. Set JAVA_HOME to Java21 and run ./scripts/verify-development-pipeline.ps1 only for an intentional fresh demonstration (rebuilds images, creates synthetic evidence, briefly restarts stack). Never delete .env.development or volumes to resolve a warning; do not use --remove-orphans on infrastructure-only commands. Earlier pending-stage notes below are preserved history.
 
 Latest2026-10-23: A/B/C verified; owner left nine services healthy/running after application-only restart. No repeat verifier needed. Use scripts/dev-stack.ps1 -Action status to inspect, up to start, stop or down for non-destructive stop, restart-apps for app-only restart. kafka-init is one-shot and may appear exited. D business acceptance remains pending. Earlier pending-C instructions below are historical.
 
